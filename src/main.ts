@@ -4,9 +4,13 @@ import { loadComicFonts } from './comic';
 import { ComicDemoScene } from './dev/ComicDemoScene';
 import { MemoryScene } from './scenes/MemoryScene';
 import { CasebookScene } from './scenes/CasebookScene';
+import { wireSceneDeps } from './scenes/gameStateDeps';
 
 // Phaser must not create Text before the comic fonts are loaded.
 await loadComicFonts();
+
+// Memory + Casebook read/write the real GameState from here on.
+wireSceneDeps();
 
 // Scene list. Nav: add Boot/Title/Village… here and make Boot the first entry.
 const scenes: Phaser.Types.Scenes.SceneType[] = [MemoryScene, CasebookScene, ComicDemoScene];
