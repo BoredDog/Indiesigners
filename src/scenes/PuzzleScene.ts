@@ -234,6 +234,34 @@ export class PuzzleScene extends Phaser.Scene {
     return GROUP_COLORS[g % GROUP_COLORS.length];
   }
 
+  /**
+   * V10: every group also has a shape (circle, triangle, square, diamond, cross) so a rope and its
+   * gates match without relying on colour. Drawn in ink on a paper disc.
+   */
+  private mark(g: Phaser.GameObjects.Graphics, group: number, x: number, y: number, r: number, disc = true) {
+    if (disc) {
+      g.fillStyle(COLORS.paper, 1).fillCircle(x, y, r * 1.45);
+      g.lineStyle(3, COLORS.ink, 1).strokeCircle(x, y, r * 1.45);
+    }
+    g.fillStyle(COLORS.ink, 1);
+    switch (group % 5) {
+      case 0:
+        g.fillCircle(x, y, r * 0.8);
+        break;
+      case 1:
+        g.fillTriangle(x, y - r, x + r, y + r * 0.8, x - r, y + r * 0.8);
+        break;
+      case 2:
+        g.fillRect(x - r * 0.75, y - r * 0.75, r * 1.5, r * 1.5);
+        break;
+      case 3:
+        g.fillTriangle(x, y - r, x + r, y, x, y + r).fillTriangle(x, y - r, x - r, y, x, y + r);
+        break;
+      default:
+        g.fillRect(x - r, y - r * 0.3, r * 2, r * 0.6).fillRect(x - r * 0.3, y - r, r * 0.6, r * 2);
+    }
+  }
+
   private drawTerrain() {
     const g = this.terrain;
     const t = this.tile;
@@ -305,11 +333,13 @@ export class PuzzleScene extends Phaser.Scene {
           if (gateOpen(c, s)) {
             g.fillStyle(col, 0.9).fillRect(x + 8, y + 8, 12, t - 16).fillRect(x + t - 20, y + 8, 12, t - 16);
             g.lineStyle(3, COLORS.ink, 1).strokeRect(x + 8, y + 8, 12, t - 16).strokeRect(x + t - 20, y + 8, 12, t - 16);
+            this.mark(g, c.group, x + t / 2, y + t / 2, t * 0.09);
           } else {
             g.fillStyle(COLORS.charcoal, 1).fillRect(x + 8, y + 8, t - 16, t - 16);
             g.fillStyle(col, 1);
             for (let k = 0; k < 4; k++) g.fillRect(x + 14 + k * ((t - 34) / 3), y + 10, 8, t - 20);
             g.lineStyle(4, COLORS.ink, 1).strokeRect(x + 8, y + 8, t - 16, t - 16);
+            this.mark(g, c.group, x + t / 2, y + t / 2, t * 0.09);
           }
           return;
         }
@@ -330,6 +360,7 @@ export class PuzzleScene extends Phaser.Scene {
             }
           }
           g.lineStyle(2, COLORS.ink, 0.6).strokeRect(x + 2, y + 2, t - 4, t - 4);
+          this.mark(g, c.group, x + t * 0.8, y + t * 0.8, t * 0.06);
           return;
         }
         case 'switch': {
@@ -342,6 +373,7 @@ export class PuzzleScene extends Phaser.Scene {
             g.lineStyle(3, 0xc9a66b, 1).lineBetween(cxp, y + 8, cxp, cyp + t * 0.12);
             g.fillStyle(col, 1).fillCircle(cxp, cyp + t * 0.2, t * 0.14);
             g.lineStyle(4, COLORS.ink, 1).strokeCircle(cxp, cyp + t * 0.2, t * 0.14);
+            this.mark(g, c.groups[0], cxp, cyp + t * 0.2, t * 0.07, false);
           } else if (c.kind === 'sluice') {
             const col = this.groupColor(c.groups[0]);
             const r = t * 0.3;
@@ -351,7 +383,9 @@ export class PuzzleScene extends Phaser.Scene {
               const a = (k / 4) * Math.PI * 2 + Math.PI / 4;
               g.lineStyle(5, COLORS.ink, 1).lineBetween(cxp, cyp, cxp + Math.cos(a) * r, cyp + Math.sin(a) * r);
             }
-            g.fillStyle(col, 1).fillCircle(cxp, cyp, 8);
+            g.fillStyle(col, 1).fillCircle(cxp, cyp, t * 0.1);
+            if (c.groups.length === 1) this.mark(g, c.groups[0], cxp, cyp, t * 0.06, false);
+            else c.groups.forEach((grp, k) => this.mark(g, grp, cxp + (k - (c.groups.length - 1) / 2) * t * 0.3, cyp - r - t * 0.02, t * 0.06));
           } else {
             const r = t * 0.3;
             g.fillStyle(COLORS.spiritTeal, 0.35).fillCircle(cxp, cyp, r + 8);
@@ -359,7 +393,10 @@ export class PuzzleScene extends Phaser.Scene {
             g.lineStyle(4, COLORS.spiritTeal, 1).strokeCircle(cxp, cyp, r);
             c.groups.forEach((grp, k) => {
               const a = (k / c.groups.length) * Math.PI * 2 - Math.PI / 2;
-              g.fillStyle(this.groupColor(grp), 1).fillCircle(cxp + Math.cos(a) * r * 0.55, cyp + Math.sin(a) * r * 0.55, 9);
+              const mx = cxp + Math.cos(a) * r * 0.5;
+              const my = cyp + Math.sin(a) * r * 0.5;
+              g.fillStyle(this.groupColor(grp), 1).fillCircle(mx, my, t * 0.09);
+              this.mark(g, grp, mx, my, t * 0.05, false);
             });
           }
           return;
@@ -745,20 +782,35 @@ export class PuzzleScene extends Phaser.Scene {
     this.tweens.add({ targets: bits, alpha: 0, y: 30, scale: 0.6, duration: dur(380), onComplete: () => bits.destroy() });
   }
 
-  /** Slip / caught: ink swallows the wisp, then the memory rewinds one step (counts toward HINT/SKIP). */
+  /** Slip / caught: ink splashes over the wisp, then the memory rewinds one step (counts toward HINT/SKIP). */
   private rewind(kind: 'slip' | 'caught') {
     this.fails++;
-    const blot = this.add.circle(this.wisp.x, this.wisp.y, this.tile * 0.2, kind === 'slip' ? COLORS.ink : 0xc0392b, 0.9).setDepth(60);
     this.toast(kind === 'slip' ? T.slip : T.caught);
-    this.tweens.add({
-      targets: blot,
-      scale: 3,
-      alpha: 0,
-      duration: dur(450),
+    if (kind === 'caught') impact(this); // no-op under Reduce Motion / Reduce Flashing
+    const back = () => {
+      this.restore(this.history.pop()!);
+      this.busy = false;
+    };
+    if (comicSettings.reduceMotion) return back();
+    const color = kind === 'slip' ? COLORS.ink : 0xc0392b;
+    const splat = this.add.graphics().setDepth(60).setPosition(this.wisp.x, this.wisp.y);
+    splat.fillStyle(color, 0.95).fillCircle(0, 0, this.tile * 0.34);
+    for (let k = 0; k < 9; k++) {
+      const a = (k / 9) * Math.PI * 2 + Math.sin(k * 3.7);
+      const d = this.tile * (0.3 + 0.18 * ((k * 7) % 5) / 4);
+      splat.fillCircle(Math.cos(a) * d, Math.sin(a) * d, this.tile * (0.07 + 0.05 * (k % 3)));
+    }
+    splat.setScale(0.15);
+    this.tweens.add({ targets: this.wisp, scale: 0.4, alpha: 0.4, duration: 200 });
+    this.tweens.chain({
+      targets: splat,
+      tweens: [
+        { scale: 1, duration: 220, ease: 'Back.Out' },
+        { alpha: 0, duration: 280, delay: 120 },
+      ],
       onComplete: () => {
-        blot.destroy();
-        this.restore(this.history.pop()!);
-        this.busy = false;
+        splat.destroy();
+        back();
       },
     });
   }
@@ -767,7 +819,7 @@ export class PuzzleScene extends Phaser.Scene {
   private restore(s: State) {
     this.state = s;
     this.tweens.killTweensOf(this.wisp);
-    this.wisp.setPosition(this.cx(s.pos), this.cy(s.pos));
+    this.wisp.setPosition(this.cx(s.pos), this.cy(s.pos)).setScale(1).setAlpha(1);
     // Rebuild crate bookkeeping from positions.
     const boxes = [...this.crates.values()];
     this.crates.clear();

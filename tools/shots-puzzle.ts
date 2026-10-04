@@ -6,6 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium, type Page } from '@playwright/test';
 import { preview } from 'vite';
+import sharp from 'sharp';
 import { parseLevel } from '../src/puzzle/Rules';
 import { solve } from '../src/puzzle/Solver';
 import type { LevelFile } from '../src/puzzle/types';
@@ -93,6 +94,8 @@ try {
     const taught = await dismissPopups();
     check(taught === mechanics, `${l.id}: ${taught}/${mechanics} mechanic captions on a fresh save`);
     await shot(`${l.id}-0-start`);
+    // V10: the board must read without colour; keep a greyscale copy for review.
+    await sharp(`${outDir}/${l.id}-0-start.png`).greyscale().toFile(`${outDir}/${l.id}-0-start-grey.png`);
     const sol = solve(parseLevel(l))!;
     // Play all but the last move, screenshot mid-solve, then finish.
     const moves = sol.moves.join('');
