@@ -78,3 +78,17 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | A7 | Hidden Archive background | Uploaded as `bg_archive.*` | Tue 10:00 | todo |
 | A8 | 2 external playtesters (Blueprint T1 log) | Log posted in Team HQ | Tue 11:30 | todo |
 | A9 | itch.io page text: description, controls, content warning, AI disclosure | Text posted in Team HQ | Tue 12:00 | todo |
+
+## Godot track (side project; the Phaser build stays the jam prototype)
+Port in `godot/` (see `godot/README.md`). Shared data in `content/`; `npm run test:godot` must pass.
+| ID | Owner | Task | Done when | Status |
+|---|---|---|---|---|
+| GD1 | Garv | Project skeleton, content sync, StoryData / GameState / Deductions ports + headless tests | `npm run test:godot` passes (6 orders → 9/9, save round trip) | done |
+| GD2 | Garv | Comic layer in Godot: panel crops, grey→colour/halftone/ink shader, SFX word, bubbles with markup | Demo scene matches the Phaser comic demo | todo |
+| GD3 | Garv | Memory page scene from `content/pages/*.json` | Mira page playable in Godot | todo |
+| GD4 | Garv | Title, Village, Conversation, Deduction, Aftermath | Mira loop playable start to finish | todo |
+| GD5 | Garv | Casebook | Threads + notes from GameState | todo |
+| GD6 | Garv | Opening, Finale, Ending | Game completable in Godot | todo |
+| V12 | Vansh | Puzzle rules engine + solver in GDScript | 11 levels solve at the TS par in a headless test | todo |
+| V13 | Vansh | Godot Puzzle scene (+ Archive) | Every level playable; returns `justFound` | todo |
+| GD7 | Garv | Web export + autoplay test in Godot | Exported build plays in a browser | todo |
