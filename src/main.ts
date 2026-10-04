@@ -15,6 +15,8 @@ import { PauseScene } from './scenes/PauseScene';
 import { OpeningScene } from './scenes/OpeningScene';
 import { FinaleScene } from './scenes/FinaleScene';
 import { EndingScene } from './scenes/EndingScene';
+import { PuzzleScene } from './scenes/PuzzleScene';
+import { ArchiveScene } from './scenes/ArchiveScene';
 import { gameState } from './core/GameState';
 
 // Phaser must not create Text before the comic fonts are loaded.
@@ -30,9 +32,11 @@ const scenes: Phaser.Types.Scenes.SceneType[] = [
   VillageScene,
   ConversationScene,
   MemoryScene,
+  PuzzleScene,
   DeductionScene,
   AftermathScene,
   CasebookScene,
+  ArchiveScene,
   PauseScene,
   OpeningScene,
   FinaleScene,
