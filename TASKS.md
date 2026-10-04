@@ -48,13 +48,13 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 ## Vansh — puzzles
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
-| V1 | Puzzle JSON schema + pure-TS rules engine (move, light/ink, dial, lever/gate) + unit tests | Tests pass | Mon 13:00 | todo |
-| V2 | BFS solver `tools/solve-puzzles.ts` (CI fails on an unsolvable level) | Reports par + hint path per level | Mon 13:00 | todo |
-| V3 | Puzzle scene over panel art (wisp, ink shadows, rotation, undo/reset/hint/skip, win → evidence id) | `pz_tower` playable in the browser | Mon 16:00 | todo |
-| V4 | Levels `pz_tower`, `pz_sis_1`, `pz_sis_3` | Solver passes, playable from Mira's page | Mon 19:00 | todo |
-| V5 | Sluice/water, crate, sentinels, nodes, collapsing floor | Each mechanic has a unit test | Mon 23:00 | todo |
-| V6 | Levels `pz_bro_2`, `pz_bro_3`, `pz_mom_1`, `pz_mom_3`, `pz_archive` + Archive scene | Solver passes; archive escape leads to finale | Tue 02:30 | todo |
-| V7 | Difficulty tuning from playtests; stretch levels `pz_sis_2`, `pz_bro_1`, `pz_mom_2` if time | Testers finish every puzzle without skip | Tue 12:00 | todo |
+| V1 | Puzzle JSON schema + pure-TS rules engine (move, light/ink, dial, lever/gate) + unit tests | Tests pass | Mon 13:00 | review |
+| V2 | BFS solver `tools/solve-puzzles.ts` (CI fails on an unsolvable level) | Reports par + hint path per level | Mon 13:00 | review |
+| V3 | Puzzle scene over panel art (wisp, ink shadows, rotation, undo/reset/hint/skip, win → evidence id) | `pz_tower` playable in the browser | Mon 16:00 | review |
+| V4 | Levels `pz_tower`, `pz_sis_1`, `pz_sis_3` | Solver passes, playable from Mira's page | Mon 19:00 | review |
+| V5 | Sluice/water, crate, sentinels, nodes, collapsing floor | Each mechanic has a unit test | Mon 23:00 | review |
+| V6 | Levels `pz_bro_2`, `pz_bro_3`, `pz_mom_1`, `pz_mom_3`, `pz_archive` + Archive scene | Solver passes; archive escape leads to finale | Tue 02:30 | review |
+| V7 | Difficulty tuning from playtests; stretch levels `pz_sis_2`, `pz_bro_1`, `pz_mom_2` if time | Testers finish every puzzle without skip | Tue 12:00 | review |
 
 ## Bhumi — character & key art (upload to `art/incoming/bhumi/`)
 | ID | Task | Done when | Due | Status |

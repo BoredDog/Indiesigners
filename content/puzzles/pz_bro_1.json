@@ -1,0 +1,22 @@
+{
+  "id": "pz_bro_1",
+  "title": "CLANK! The Emergency Sluice",
+  "tip": "One sluice drains one channel and floods the other. Crates can be pushed.",
+  "reward": "ev_arun_clank",
+  "light": "E",
+  "shadow": 2,
+  "par": 10,
+  "tiles": [
+    "G~..#.",
+    "#~....",
+    "._....",
+    ".~.CL.",
+    "::::::",
+    ".~.S.."
+  ],
+  "legend": {
+    "~": "water:s1",
+    ":": "water:s2:dry",
+    "L": "sluice:s1,s2"
+  }
+}
