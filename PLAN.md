@@ -413,3 +413,49 @@ npm run dev                  # play locally
 npm run build                # production build into dist/
 git add -A && git commit -m "<what changed>" && git push   # then open a PR to main; Garv merges
 ```
+
+---
+
+## 12. Ideas backlog: researched, NOT implemented yet
+
+> Added 5 Oct (early morning) after looking at comparable games. **Nothing here is scheduled.** Garv picks what (if anything) goes into the Phaser jam build before the 12:00 freeze; the rest feeds the Godot version. Each idea lists the judging criterion it serves.
+
+### A. Gaps against our own Blueprint (cheapest wins, Phaser)
+| # | Idea | Serves | Effort | Notes |
+|---|---|---|---|---|
+| A1 | **Spirit-light lantern mode** (Blueprint F3, N "Spirit-light reveal", S "L: spirit-light mode"): hold L / toggle the lantern icon on a memory page → a soft light circle follows the cursor and reveals hidden residue + the silhouette's outline; some optional evidence only shows under the light | Theme (Light) 20 · Gameplay 30 | 2–3 h | Specified but **not built**. Uses the existing ComicFx shader + a geometry/bitmap mask. Strongest "Light" signal we can add. |
+| A2 | **Final accusation at THE RECORD**: "Who caused the incident?", pick one clue per witness + the case-request handwriting, options include *"The investigator. Me."* | Theme (Twist) · Gameplay | 1–2 h | Proposed 5 Oct, awaiting Garv's decision. Reuses the Deduction screen. |
+| A3 | **Unreliable narration made visible** (Blueprint B4): when a page's evidence contradicts its narration box, the box glitches and a corrected line is stamped over it | Theme (Twist) · AV cohesion | 1–2 h | Twist-planting lines already exist in `memory_text.json` (`twistNarration`). |
+| A4 | Text size setting actually applied (N7) | Technical stability | 1 h | Already Nav's task. |
+
+### B. Deduction design (from Golden Idol, Obra Dinn, Roottrees)
+| # | Idea | Serves | Effort | Reference |
+|---|---|---|---|---|
+| B1 | **Closeness feedback instead of right/wrong**: when an attempt fails, say *"Your conclusion fits, but one card doesn't belong"* vs *"The cards fit, the conclusion doesn't"* | Gameplay | 1 h | Golden Idol's "two or fewer slots are incorrect" rewards being close without giving the answer ([Game Developer](https://www.gamedeveloper.com/design/case-of-the-golden-idol)) |
+| B2 | **Anti-guessing**: today a player can brute-force the 3 conclusions. Lock in deductions **in pairs/threes** (Obra Dinn rule of three), or hide which deduction was wrong | Gameplay | 2 h | Obra Dinn only confirms fates three at a time to stop brute-forcing ([Film Stories](https://filmstories.co.uk/?p=83249)) |
+| B3 | **Fill-in-the-blanks night reconstruction** before the finale: *"At [2:17] the [Echo Lantern] rang the bell. At [2:31] [Elias] carried [Nia] to the [lantern chamber]…"*, word chips earned from evidence, colour-coded by type | Gameplay · Theme | 4–6 h | Golden Idol's "Thinking" page ([Adventure Game Hotspot](https://adventuregamehotspot.com/2022/11/21/the-case-of-the-golden-idol)) |
+| B4 | **Player-made contradictions**: drag Arun's 2:31 card onto Mira's 2:17 card to *raise* the CONTRADICTION thread instead of it appearing automatically; fixes "each deduction is solvable from one page" | Gameplay | 3 h | Roottrees' evidence board shapes reasoning across sources ([DiGRA paper](https://dl.digra.org/index.php/dl/article/download/2932/2916/2975)) |
+
+### C. Echo Paths puzzles (from Lara Croft GO, Felix the Reaper)
+| # | Idea | Serves | Effort | Reference |
+|---|---|---|---|---|
+| C1 | **Shadow preview**: hovering the clock dial shows where ink will fall after the 90° turn | Gameplay (readability) | 1 h | Felix lets you preview the two shadow states before switching ([Gamereactor](https://www.gamereactor.eu/felix-the-reaper-handson-impressions)) |
+| C2 | **Stacking**: a crate on a crate casts a longer shadow; plan moves *before* turning the light | Gameplay | 2–3 h | Felix stacks barrels on boxes to extend shade ([TheGamer](https://www.thegamer.com/felix-reaper-review/)) |
+| C3 | **Readable enemy telegraphs**: each sentinel type shows its next step; one-mechanic-at-a-time introduction | Gameplay | 1–2 h | Lara GO: alternating turns + fixed enemy routes keep puzzles readable ([Macworld](https://www.macworld.com/article/226419/lara-croft-go-does-touchscreen-tomb-raiding-right.html)) |
+| C4 | **Dial = clock hands**: rotating the light visibly moves a clock face 2:17 → 2:31, so the puzzle retells the timeline | Theme | 1 h | Ties Felix's sun rotation to our 2:17 motif |
+
+### D. Comic presentation (from Gorogoa)
+| # | Idea | Serves | Effort | Reference |
+|---|---|---|---|---|
+| D1 | **Enter a memory through a frame**: zoom into the window / clock face / lantern in the conversation art until it *becomes* the memory page | AV cohesion · Theme (Comic) | 2–3 h | Gorogoa's sub-framing: moving through doors, windows and paintings ([Unwinnable](https://unwinnable.com/2018/07/02/unwinnable_monthly_gorogoa_104/)) |
+| D2 | **Finale panel ordering**: the player drags the 8 finale panels into the right order before the silhouette dissolves | Gameplay · Theme | 3 h | Gorogoa's slide / stack / zoom panel mechanics ([Mechanics of Magic](https://mechanicsofmagic.com/2026/07/29/how-gorogoa-connects-the-puzzle-of-looking-through-pictures/)) |
+
+### E. Godot-version only (post-jam / side track)
+| # | Idea | Notes |
+|---|---|---|
+| E1 | **2.5D village**: panels as quads in 3D space, camera flies *through* panel frames between scenes | The original "3D later" goal; Godot handles 3D natively |
+| E2 | Toon/ink outline + halftone as a 3D post-process shader | Port of `ComicFxPipeline` |
+| E3 | **Web export**: GL Compatibility (done), and on itch either tick **SharedArrayBuffer support** or export without threads | Common Godot-4-on-itch failure ([itch forum](https://itch.io/jam/go-godot-jam-4/topic/2853480/solved-godot-4-cant-export-for-web), [foosel](https://foosel.net/til/2023-05-14-how-to-export-a-godot-4-game-to-run-on-the-web-on-itchio/)) |
+| E4 | Audio pass (parked for the jam): ChipTone SFX per comic word, the Blueprint O1 music picks | AV cohesion |
+
+**Suggested picks if there's time before the freeze (Garv to decide):** A1 spirit-light (Light theme), A2 final accusation (Twist), B1 closeness feedback (Gameplay). All three are small, use existing systems and hit the three heaviest criteria.
