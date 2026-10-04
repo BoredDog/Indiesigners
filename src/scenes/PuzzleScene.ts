@@ -431,7 +431,7 @@ export class PuzzleScene extends Phaser.Scene {
       if (this.level.cells[i].k === 'void' || this.state.collapsed.includes(i)) continue; // ink over a pit reads as noise
       const x = this.ox + (i % this.level.w) * t;
       const y = this.oy + Math.floor(i / this.level.w) * t;
-      g.fillStyle(COLORS.ink, 0.94);
+      g.fillStyle(COLORS.ink, 0.84); // objects under the ink stay faintly visible: a hint to move the light
       const pts: Phaser.Math.Vector2[] = [];
       const n = 14;
       for (let k = 0; k < n; k++) {
