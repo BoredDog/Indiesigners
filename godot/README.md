@@ -29,6 +29,7 @@ bash tools/godot.sh -e --path godot        # open the editor
 | `src/core/DeductionController.ts` | `core/deduction_controller.gd` (autoload `Deductions`) | ✅ ported + tested |
 | `src/puzzle/*` (Rules, Solver) | `puzzle/echo_rules.gd`, `puzzle/echo_solver.gd` | ✅ ported + tested (`-s res://tests/test_puzzles.gd`: same moves + state counts as TS) |
 | `src/scenes/PuzzleScene.ts` | `scenes/puzzle.tscn` (+ `scenes/puzzle_menu.tscn` test menu) | ✅ ported + tested (`res://tests/test_puzzle_scene.tscn`). Open with `PuzzleScene.open(tree, {puzzleId, evidenceId, witness, returnTo})`, read `PuzzleScene.take_result()` |
+| `src/scenes/ArchiveScene.ts` | `scenes/archive.tscn` | ✅ ported (beat → `pz_archive` → escaped → Finale; flag `archiveEscaped`) |
 | `src/comic/*` (panels, shader, bubbles, SFX) | `comic/` (+ `comic_fx.gdshader`) | ⏳ GD2 |
 | scenes Title → Village → Conversation → Memory → Deduction → Aftermath → Casebook → Archive → Finale → Ending | `scenes/*.tscn` | ⏳ GD3–GD8 |
 
