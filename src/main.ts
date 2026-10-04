@@ -5,6 +5,14 @@ import { ComicDemoScene } from './dev/ComicDemoScene';
 import { MemoryScene } from './scenes/MemoryScene';
 import { CasebookScene } from './scenes/CasebookScene';
 import { wireSceneDeps } from './scenes/gameStateDeps';
+import { BootScene } from './scenes/BootScene';
+import { TitleScene } from './scenes/TitleScene';
+import { VillageScene } from './scenes/VillageScene';
+import { ConversationScene } from './scenes/ConversationScene';
+import { DeductionScene } from './scenes/DeductionScene';
+import { AftermathScene } from './scenes/AftermathScene';
+import { PauseScene } from './scenes/PauseScene';
+import { gameState } from './core/GameState';
 
 // Phaser must not create Text before the comic fonts are loaded.
 await loadComicFonts();
@@ -12,12 +20,24 @@ await loadComicFonts();
 // Memory + Casebook read/write the real GameState from here on.
 wireSceneDeps();
 
-// Scene list. Nav: add Boot/Title/Village… here and make Boot the first entry.
-const scenes: Phaser.Types.Scenes.SceneType[] = [MemoryScene, CasebookScene, ComicDemoScene];
+// Scene list. Boot runs first: it loads shared textures (paper, placeholders), then opens Title.
+const scenes: Phaser.Types.Scenes.SceneType[] = [
+  BootScene,
+  TitleScene,
+  VillageScene,
+  ConversationScene,
+  MemoryScene,
+  DeductionScene,
+  AftermathScene,
+  CasebookScene,
+  PauseScene,
+  ComicDemoScene,
+];
 
-// Dev shortcut: ?scene=Memory&witness=mira jumps straight to a scene.
+// Dev shortcut: ?scene=Memory&witness=mira jumps straight to a scene (via Boot, so shared
+// textures exist; Boot forwards the other params as scene data).
 const params = new URLSearchParams(location.search);
-const startKey = params.get('scene') ?? 'ComicDemo';
+const startKey = params.get('scene');
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -28,7 +48,12 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: scenes,
 });
-game.events.once(Phaser.Core.Events.READY, () => {
-  for (const s of game.scene.getScenes(true)) game.scene.stop(s.scene.key);
-  game.scene.start(startKey, Object.fromEntries(params));
-});
+if (startKey) {
+  game.events.once(Phaser.Core.Events.READY, () => {
+    for (const s of game.scene.getScenes(true)) game.scene.stop(s.scene.key);
+    game.scene.start('Boot', { ...Object.fromEntries(params), next: startKey });
+  });
+}
+
+// Test hook for tools/autoplay*.ts.
+(window as unknown as { __echoes: unknown }).__echoes = { game, gameState };
