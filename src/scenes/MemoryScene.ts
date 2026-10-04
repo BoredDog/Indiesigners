@@ -1,0 +1,299 @@
+import Phaser from 'phaser';
+import {
+  Bubble,
+  ComicButton,
+  ComicPage,
+  ComicPanel,
+  COLORS,
+  FONTS,
+  gridFrames,
+  pageTurn,
+  SfxWord,
+  TEXT_RESOLUTION,
+  type PageDef,
+} from '../comic';
+import { makePlaceholders } from '../dev/placeholders';
+import { MEMORY_PAGES, type FragmentDef, type Witness } from './memory/MemoryData';
+import { memoryDeps } from './memory/MemoryDeps';
+
+export interface MemorySceneData {
+  witness?: Witness;
+  /** Set by the Puzzle scene when the player solved the puzzle guarding this evidence. */
+  justFound?: string;
+}
+
+const PAGE_BOUNDS = { x: 60, y: 24, w: 1580, h: 1032 };
+const RAIL_X = 1780; // centre of the right-hand HUD rail (Blueprint M: icons top-right)
+
+/**
+ * A witness memory page (Blueprint H): a 6-panel comic page, grey until evidence is found.
+ * Free panel exploration → SFX words reveal evidence (puzzle-locked ones launch Echo Paths) →
+ * RECONSTRUCT when a deduction's evidence is complete → LEAVE MEMORY when all three are confirmed.
+ * All state lives in GameState (via memoryDeps), so the scene is rebuilt from scratch on every visit.
+ */
+export class MemoryScene extends Phaser.Scene {
+  witness: Witness = 'mira';
+  page!: ComicPage;
+  words = new Map<string, SfxWord>();
+  private counter!: Phaser.GameObjects.Text;
+  private reconstructBtn!: ComicButton;
+  private leaveBtn!: ComicButton;
+  private toastText?: Phaser.GameObjects.Text;
+
+  constructor() {
+    super('Memory');
+  }
+
+  preload() {
+    if (!this.textures.exists('paper')) this.load.image('paper', 'assets/textures/paper002.jpg');
+  }
+
+  create(data: MemorySceneData = {}) {
+    this.witness = data.witness ?? 'mira';
+    this.words.clear();
+    const def = MEMORY_PAGES[this.witness];
+    if (!def) {
+      this.toast(`No memory page for ${this.witness} yet.`);
+      return;
+    }
+    makePlaceholders(this);
+    const deps = memoryDeps();
+    const readOnly = deps.isResolved(this.witness);
+
+    // Clicking empty space closes a zoomed panel.
+    this.add
+      .rectangle(0, 0, 1920, 1080, 0x000000, 0)
+      .setOrigin(0)
+      .setInteractive()
+      .on('pointerup', () => this.page.unfocus());
+
+    const frames = gridFrames(PAGE_BOUNDS, def.layout);
+    const pageDef: PageDef = {
+      id: `memory_${def.witness}`,
+      background: def.background,
+      bounds: PAGE_BOUNDS,
+      panels: def.panels.map((p, i) => ({ ...p, frame: frames[i] })),
+    };
+    this.page = new ComicPage(this, pageDef, { paperKey: 'paper', grey: true });
+    this.add.existing(this.page);
+    this.page.on('panel-click', (panel: ComicPanel) =>
+      this.page.focused === panel ? this.page.unfocus() : this.page.focus(panel.def.id),
+    );
+
+    def.bubbles.forEach((b, i) => {
+      const bubble = new Bubble(this, b.x, b.y, { kind: b.kind, text: b.text, tail: b.tail, maxWidth: b.maxWidth });
+      this.page.panel(b.panel).overlay.add(bubble.appear(150 + i * 60));
+    });
+
+    for (const f of def.fragments) this.addFragment(f, data.justFound);
+    this.refreshPanelsColour(false);
+
+    this.buildRail(def.title, readOnly);
+    this.refreshHud();
+
+    if (!this.anyEvidenceFound() && !deps.seen('tip_evidence')) this.showTip();
+    if (data.justFound) this.time.delayedCall(350, () => this.words.get(data.justFound!)?.pop());
+
+    this.input.keyboard?.on('keydown-ESC', () => this.page.unfocus());
+    (window as unknown as { __memory: MemoryScene }).__memory = this;
+  }
+
+  // ---------------------------------------------------------------- fragments
+
+  private addFragment(f: FragmentDef, justFound?: string) {
+    const deps = memoryDeps();
+    const known = deps.hasEvidence(f.evidence) && f.evidence !== justFound;
+    const locked = !!f.puzzle && !deps.hasEvidence(f.evidence) && f.evidence !== justFound;
+    const word = new SfxWord(this, f.x, f.y, {
+      text: f.sfx,
+      evidence: f.text,
+      color: f.color,
+      size: f.size,
+      angle: f.angle,
+      locked,
+      area: { w: this.page.panel(f.panel).frameW, h: this.page.panel(f.panel).frameH },
+      cardAt: f.card,
+    });
+    this.page.panel(f.panel).overlay.add(word);
+    this.words.set(f.evidence, word);
+
+    if (known) word.pop(true);
+    else if (f.first) word.pulse();
+
+    word.on('reveal', () => {
+      deps.addEvidence(f.evidence);
+      this.refreshPanelsColour(true);
+      this.refreshHud();
+    });
+    word.on('locked', () => this.openPuzzle(f));
+  }
+
+  private openPuzzle(f: FragmentDef) {
+    if (this.scene.manager.keys['Puzzle']) {
+      this.scene.start('Puzzle', { puzzleId: f.puzzle, evidenceId: f.evidence, witness: this.witness, returnTo: 'Memory' });
+      return;
+    }
+    // Puzzle scene not merged yet: unlock directly so the page stays playable.
+    this.toast(`Echo Path "${f.puzzle}" is not built yet. Fragment unlocked for testing.`);
+    this.words.get(f.evidence)?.unlock();
+  }
+
+  private anyEvidenceFound() {
+    const def = MEMORY_PAGES[this.witness]!;
+    return def.fragments.some((f) => memoryDeps().hasEvidence(f.evidence));
+  }
+
+  /** A panel fills with colour once every fragment on it is recovered. */
+  private refreshPanelsColour(animate: boolean) {
+    const def = MEMORY_PAGES[this.witness]!;
+    for (const panel of this.page.panels) {
+      const frags = def.fragments.filter((f) => f.panel === panel.def.id);
+      const done = frags.length > 0 && frags.every((f) => memoryDeps().hasEvidence(f.evidence));
+      if (done && (panel.fx?.colour ?? 1) < 1) panel.setColour(1, animate ? undefined : 0);
+    }
+  }
+
+  // ---------------------------------------------------------------- HUD rail
+
+  private buildRail(title: string, readOnly: boolean) {
+    const t = this.add
+      .text(RAIL_X, 40, title.toUpperCase(), {
+        fontFamily: `"${FONTS.sfx}"`,
+        fontSize: '34px',
+        color: COLORS.paperCss,
+        align: 'center',
+        wordWrap: { width: 230 },
+        resolution: TEXT_RESOLUTION,
+      })
+      .setOrigin(0.5, 0);
+
+    this.counter = this.add
+      .text(RAIL_X, t.y + t.height + 18, '', {
+        fontFamily: `"${FONTS.sfx}"`,
+        fontSize: '34px',
+        color: COLORS.amberCss,
+        stroke: COLORS.inkCss,
+        strokeThickness: 6,
+        resolution: TEXT_RESOLUTION,
+      })
+      .setOrigin(0.5, 0);
+
+    this.add.existing(
+      new ComicButton(this, RAIL_X, 300, { label: 'CASEBOOK', width: 220, fontSize: 28 }).on('click', () =>
+        this.openCasebook(),
+      ),
+    );
+
+    this.reconstructBtn = new ComicButton(this, RAIL_X, 860, {
+      label: 'RECONSTRUCT',
+      width: 230,
+      fontSize: 30,
+      fill: COLORS.spiritTeal,
+    }).on('click', () => this.reconstruct());
+    this.leaveBtn = new ComicButton(this, RAIL_X, 960, { label: 'LEAVE MEMORY', width: 230, fontSize: 30 }).on(
+      'click',
+      () => this.leave(),
+    );
+    this.add.existing(this.reconstructBtn);
+    this.add.existing(this.leaveBtn);
+
+    if (readOnly) {
+      this.add
+        .text(RAIL_X, 420, 'READ-ONLY\nMEMORY', {
+          fontFamily: `"${FONTS.narration}"`,
+          fontSize: '22px',
+          color: COLORS.paperCss,
+          align: 'center',
+        })
+        .setOrigin(0.5);
+    }
+  }
+
+  private refreshHud() {
+    const def = MEMORY_PAGES[this.witness]!;
+    const deps = memoryDeps();
+    const core = def.fragments.filter((f) => f.core);
+    const found = core.filter((f) => deps.hasEvidence(f.evidence)).length;
+    this.counter.setText(`EVIDENCE ${found}/${core.length}`);
+
+    const deductions = deps.deductionsFor(this.witness);
+    const ready = this.readyDeduction();
+    this.reconstructBtn.setVisible(!!ready && !deps.isResolved(this.witness));
+    const allConfirmed = deductions.length > 0 && deductions.every((d) => d.confirmed);
+    this.leaveBtn.setVisible(allConfirmed || deps.isResolved(this.witness));
+  }
+
+  /** First deduction whose required evidence is all known and that isn't confirmed yet. */
+  private readyDeduction() {
+    const deps = memoryDeps();
+    return deps
+      .deductionsFor(this.witness)
+      .find((d) => !d.confirmed && d.requiredEvidence.every((e) => deps.hasEvidence(e)));
+  }
+
+  // ---------------------------------------------------------------- navigation
+
+  private reconstruct() {
+    const d = this.readyDeduction();
+    if (!d) return;
+    if (this.scene.manager.keys['Deduction']) {
+      this.scene.start('Deduction', { deductionId: d.id, witness: this.witness, returnTo: 'Memory' });
+      return;
+    }
+    // Deduction scene not merged yet: confirm directly so the loop can be tested.
+    memoryDeps().confirmDeduction(d.id);
+    this.toast(`Deduction confirmed: ${d.id} (Deduction screen not built yet).`);
+    this.refreshHud();
+  }
+
+  private leave() {
+    const witness = this.witness;
+    pageTurn(this, () => {
+      if (this.scene.manager.keys['Aftermath']) this.scene.start('Aftermath', { witness });
+      else if (this.scene.manager.keys['Village']) this.scene.start('Village');
+      else this.scene.restart({ witness });
+    });
+  }
+
+  private openCasebook() {
+    if (this.scene.manager.keys['Casebook']) {
+      this.scene.pause();
+      this.scene.launch('Casebook', { returnTo: 'Memory' });
+    } else this.toast('Casebook is not built yet.');
+  }
+
+  // ---------------------------------------------------------------- popups
+
+  private showTip() {
+    const layer = this.add.container(0, 0).setDepth(500);
+    const dim = this.add.rectangle(0, 0, 1920, 1080, 0x000000, 0.45).setOrigin(0).setInteractive();
+    const box = new Bubble(this, 960, 500, {
+      kind: 'narration',
+      text: 'Tip: Inspect loud words and strange objects to uncover evidence.',
+      maxWidth: 520,
+      fontSize: 30,
+    });
+    const ok = new ComicButton(this, 960, 620, { label: 'GOT IT', fontSize: 30 });
+    layer.add([dim, box, ok]);
+    ok.on('click', () => {
+      memoryDeps().markSeen('tip_evidence');
+      layer.destroy();
+    });
+  }
+
+  toast(msg: string) {
+    this.toastText?.destroy();
+    const t = this.add
+      .text(860, 1050, msg, {
+        fontFamily: `"${FONTS.narration}"`,
+        fontSize: '22px',
+        color: COLORS.paperCss,
+        backgroundColor: '#111114',
+        padding: { x: 12, y: 6 },
+      })
+      .setOrigin(0.5, 1)
+      .setDepth(600);
+    this.toastText = t;
+    this.tweens.add({ targets: t, alpha: 0, delay: 2600, duration: 400, onComplete: () => t.destroy() });
+  }
+}
