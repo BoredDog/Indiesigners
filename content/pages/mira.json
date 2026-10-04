@@ -211,11 +211,8 @@
     {
       "evidence": "ev_mira_bell",
       "panel": "P1",
-      "sfx": "BELL!",
-      "text": "The village bell rang at 2:17.",
       "x": 120,
       "y": 215,
-      "core": true,
       "first": true,
       "card": {
         "x": 330,
@@ -225,55 +222,38 @@
     {
       "evidence": "ev_mira_clocks",
       "panel": "P2",
-      "sfx": "TICK!",
-      "text": "Three clocks stopped at 2:17.",
       "x": 360,
       "y": 230,
-      "core": true,
       "angle": 5
     },
     {
       "evidence": "ev_mira_resonance",
       "panel": "P3",
-      "sfx": "HUM!",
-      "text": "Lantern resonance reached the bell tower.",
       "x": 170,
       "y": 150,
-      "core": true,
-      "puzzle": "pz_sis_1",
       "color": "#7fe0d4"
     },
     {
       "evidence": "ev_mira_later_entry",
       "panel": "P4",
-      "sfx": "SCRATCH!",
-      "text": "A later entry reads 2:31.",
       "x": 560,
       "y": 120,
-      "core": true,
       "angle": 8,
       "size": 52
     },
     {
       "evidence": "ev_mira_staff",
       "panel": "P5",
-      "sfx": "GLASS!",
-      "text": "The figure carried the apprentice lantern staff.",
       "x": 150,
       "y": 110,
-      "core": true,
-      "puzzle": "pz_sis_3",
       "color": "#7fe0d4",
       "size": 56
     },
     {
       "evidence": "ev_mira_erased_entry",
       "panel": "P6",
-      "sfx": "PAPER!",
-      "text": "Elias Vane, apprentice — entry removed.",
       "x": 640,
       "y": 230,
-      "core": false,
       "size": 52,
       "card": {
         "x": 560,
@@ -283,11 +263,8 @@
     {
       "evidence": "ev_mira_clinic",
       "panel": "P6",
-      "sfx": "INK!",
-      "text": "Nia Vane — clinic record.",
       "x": 900,
       "y": 200,
-      "core": false,
       "size": 48,
       "angle": -10,
       "card": {

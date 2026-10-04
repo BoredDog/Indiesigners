@@ -13,7 +13,11 @@ export class BootScene extends Phaser.Scene {
 
   create(data: { next?: string; [k: string]: unknown } = {}) {
     makePlaceholders(this);
-    const { next = 'Title', ...rest } = data;
+    // Boot auto-starts as the first scene, so the ?scene= dev shortcut is read here
+    // (restarting Boot from main.ts with data raced the auto-start and was ignored).
+    const params = Object.fromEntries(new URLSearchParams(location.search));
+    const { scene: urlScene, ...urlData } = params;
+    const { next = urlScene ?? 'Title', ...rest } = data.next ? data : { ...urlData, ...data };
     this.scene.start(next, rest);
   }
 }
