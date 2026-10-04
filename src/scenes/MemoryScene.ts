@@ -100,6 +100,7 @@ export class MemoryScene extends Phaser.Scene {
     if (data.justFound) this.time.delayedCall(350, () => this.words.get(data.justFound!)?.pop());
 
     this.input.keyboard?.on('keydown-ESC', () => this.page.unfocus());
+    this.input.keyboard?.on('keydown-C', () => this.openCasebook());
     (window as unknown as { __memory: MemoryScene }).__memory = this;
   }
 
