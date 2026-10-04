@@ -599,7 +599,7 @@ func _draw_ink() -> void:
 			var a := k / 14.0 * TAU
 			var wob := 0.5 + 0.08 * sin(i * 7.3 + k * 2.1) + 0.05 * cos(i * 3.1 + k * 5.7)
 			pts.append(ctr + Vector2.from_angle(a) * tile * wob * (1.04 if k % 2 else 1.12))
-		draw_colored_polygon(pts, Color(INK, 0.94))
+		draw_colored_polygon(pts, Color(INK, 0.84))
 
 
 func _draw_danger() -> void:
