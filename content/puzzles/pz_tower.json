@@ -1,0 +1,17 @@
+{
+  "id": "pz_tower",
+  "title": "The Frozen Clock",
+  "tip": "Ink is erased memory: the wisp cannot enter shadow. Step on the clock dial to turn the light.",
+  "reward": "ev_tower_residue",
+  "light": "W",
+  "shadow": 2,
+  "par": 8,
+  "tiles": [
+    ".S...",
+    "D....",
+    ".....",
+    "..##G",
+    "....."
+  ],
+  "legend": {}
+}

@@ -41,7 +41,7 @@ const state = () =>
     };
   });
 
-await page.goto(`http://localhost:4180/?scene=Memory&witness=${witness}`);
+await page.goto(`http://localhost:4180/?scene=Memory&witness=${witness}&autosolve=1`);
 await page.waitForFunction(() => (window as any).__memory?.page);
 await page.waitForTimeout(1200);
 await shot('01-tip');
@@ -52,7 +52,7 @@ await shot('02-page');
 const ids: string[] = await page.evaluate(() => [...(window as any).__memory.words.keys()]);
 for (const id of ids) {
   const word = `s.words.get(${JSON.stringify(id)})`;
-  await clickObj(word); // locked words unlock on first click (no Puzzle scene yet)
+  await clickObj(word); // locked words open the Puzzle, which autosolves and returns with the fragment
   const locked = await page.evaluate((code) => new Function('s', `return ${code}.revealed`)((window as any).__memory), word);
   if (!locked) await clickObj(word);
 }
