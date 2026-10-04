@@ -1,0 +1,41 @@
+{
+  "_source": "Blueprint D2 (relationship + why) and Part I (caption + reaction). A thread appears as soon as both endpoint deductions are confirmed (A20).",
+  "threads": [
+    {
+      "id": "th_sis1_mom1", "from": "sis_1", "type": "corroborates", "to": "mom_1",
+      "why": "The bell's resonance matches the Echo Lantern's documented network behavior.",
+      "caption": "The bell resonance matches the machine's documented network behavior.",
+      "reaction": { "speaker": "leela", "line": "Then the bell was part of the machine." }
+    },
+    {
+      "id": "th_sis2_bro2", "from": "sis_2", "type": "contradicts", "to": "bro_2",
+      "why": "The fixed 2:17 clocks conflict with Arun's 2:31 watch, exposing the false timeline.",
+      "caption": "The 2:17 freeze conflicts with Arun's 2:31 watch.",
+      "reaction": { "speaker": "arun", "line": "So my watch was right." }
+    },
+    {
+      "id": "th_sis3_bro3", "from": "sis_3", "type": "reveals", "to": "bro_3",
+      "why": "The same figure and tools connect the apprentice to the person carrying Nia.",
+      "caption": "The same tools identify the fourth figure.",
+      "reaction": { "speaker": "arun", "line": "That was his case." }
+    },
+    {
+      "id": "th_bro1_mom3", "from": "bro_1", "type": "corroborates", "to": "mom_3",
+      "why": "The underground sluice ends beneath the lantern chamber, proving the river was displaced by the network event.",
+      "caption": "The hidden sluice ends beneath the lantern chamber.",
+      "reaction": { "speaker": "leela", "line": "The river was another anchor." }
+    },
+    {
+      "id": "th_bro3_mom2", "from": "bro_3", "type": "reveals", "to": "mom_2",
+      "why": "Nia's identity explains why Elias later erased the records: he was protecting the secret experiment and his guilt.",
+      "caption": "Nia's identity explains why the records were erased.",
+      "reaction": { "speaker": "leela", "line": "He was trying to save her." }
+    },
+    {
+      "id": "th_mom2_sis3", "from": "mom_2", "type": "corroborates", "to": "sis_3",
+      "why": "The erased apprentice entry explains why the photograph and witness memories lost Elias's identity.",
+      "caption": "The deleted apprentice entry explains the missing identity.",
+      "reaction": { "speaker": "mira", "line": "The name was removed, not forgotten." }
+    }
+  ]
+}

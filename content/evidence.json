@@ -1,0 +1,31 @@
+{
+  "_source": "Blueprint H3 (SFX word -> fragment text). core = counts toward the page's 'Evidence 0/5'; optional = extra context (A3, A15). 'puzzle' = Echo Path that guards it (PLAN 3.3); null = click-to-reveal.",
+  "evidence": [
+    { "id": "ev_tower_residue", "witness": "tower", "panel": null, "sfx": "HUM!", "text": "Lantern residue matches the Echo Lantern network.", "core": false, "puzzle": "pz_tower", "note": "Derived from Blueprint F3 (first spirit-lantern use at the clock tower); exact fragment text not in the doc." },
+
+    { "id": "ev_mira_bell", "witness": "mira", "panel": "P1", "sfx": "BELL!", "text": "The village bell rang at 2:17.", "core": true, "puzzle": null },
+    { "id": "ev_mira_clocks", "witness": "mira", "panel": "P2", "sfx": "TICK!", "text": "Three clocks stopped at 2:17.", "core": true, "puzzle": null },
+    { "id": "ev_mira_resonance", "witness": "mira", "panel": "P3", "sfx": "HUM!", "text": "Lantern resonance reached the bell tower.", "core": true, "puzzle": "pz_sis_1" },
+    { "id": "ev_mira_later_entry", "witness": "mira", "panel": "P4", "sfx": "SCRATCH!", "text": "A later entry reads 2:31.", "core": true, "puzzle": "pz_sis_2" },
+    { "id": "ev_mira_staff", "witness": "mira", "panel": "P5", "sfx": "GLASS!", "text": "The figure carried the apprentice lantern staff.", "core": true, "puzzle": "pz_sis_3" },
+    { "id": "ev_mira_erased_entry", "witness": "mira", "panel": "P6", "sfx": "PAPER!", "text": "Elias Vane, apprentice - entry removed.", "core": false, "puzzle": null },
+    { "id": "ev_mira_clinic", "witness": "mira", "panel": "P6", "sfx": "INK!", "text": "Nia Vane - clinic record.", "core": false, "puzzle": null },
+
+    { "id": "ev_arun_splash", "witness": "arun", "panel": "P1", "sfx": "SPLASH!", "text": "River current recorded before the incident.", "core": true, "puzzle": null },
+    { "id": "ev_arun_tick", "witness": "arun", "panel": "P2", "sfx": "TICK!", "text": "Pocket watch stopped at 2:31.", "core": true, "puzzle": "pz_bro_2" },
+    { "id": "ev_arun_clank", "witness": "arun", "panel": "P3", "sfx": "CLANK!", "text": "Emergency sluice opens beneath the workshop.", "core": true, "puzzle": "pz_bro_1" },
+    { "id": "ev_arun_footsteps", "witness": "arun", "panel": "P4", "sfx": "FOOTSTEPS!", "text": "Figure crossed the river path.", "core": true, "puzzle": null },
+    { "id": "ev_arun_cloth", "witness": "arun", "panel": "P4", "sfx": "CLOTH!", "text": "Silver hairclip caught on the coat.", "core": true, "puzzle": "pz_bro_3" },
+    { "id": "ev_arun_hiss", "witness": "arun", "panel": "P5", "sfx": "HISS!", "text": "Case initials: E.V.", "core": false, "puzzle": null },
+    { "id": "ev_arun_whisper", "witness": "arun", "panel": "P6", "sfx": "WHISPER!", "text": "Memory echo repeats the child's route.", "core": false, "puzzle": null },
+
+    { "id": "ev_leela_tink", "witness": "leela", "panel": "P1", "sfx": "TINK!", "text": "Echo Lantern memory spool.", "core": true, "puzzle": "pz_mom_1" },
+    { "id": "ev_leela_hum", "witness": "leela", "panel": "P2", "sfx": "HUM!", "text": "32 village anchor points.", "core": true, "puzzle": null },
+    { "id": "ev_leela_beep", "witness": "leela", "panel": "P3", "sfx": "BEEP!", "text": "Nia Vane - memory preservation notes.", "core": true, "puzzle": null },
+    { "id": "ev_leela_click", "witness": "leela", "panel": "P4", "sfx": "CLICK!", "text": "Network link opened by Elias.", "core": true, "puzzle": "pz_mom_2" },
+    { "id": "ev_leela_whoom", "witness": "leela", "panel": "P5", "sfx": "WHOOM!", "text": "All village nodes activated.", "core": true, "puzzle": "pz_mom_3" },
+    { "id": "ev_leela_crack", "witness": "leela", "panel": "P5", "sfx": "CRACK!", "text": "Memory field overload.", "core": false, "puzzle": null },
+    { "id": "ev_leela_ash", "witness": "leela", "panel": "P6", "sfx": "ASH!", "text": "Master log: Elias activated the network.", "core": false, "puzzle": null },
+    { "id": "ev_leela_paper", "witness": "leela", "panel": "P6", "sfx": "PAPER!", "text": "Self-purge sequence.", "core": false, "puzzle": null }
+  ]
+}
