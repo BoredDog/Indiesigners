@@ -84,7 +84,7 @@ Port in `godot/` (see `godot/README.md`). Shared data in `content/`; `npm run te
 | ID | Owner | Task | Done when | Status |
 |---|---|---|---|---|
 | GD1 | Garv | Project skeleton, content sync, StoryData / GameState / Deductions ports + headless tests | `npm run test:godot` passes (6 orders → 9/9, save round trip) | done |
-| GD2 | Garv | Comic layer in Godot: panel crops, grey→colour/halftone/ink shader, SFX word, bubbles with markup | Demo scene matches the Phaser comic demo | todo |
+| GD2 | Garv | Comic layer in Godot: panel crops, grey→colour/halftone/ink shader, SFX word, bubbles with markup | Demo scene matches the Phaser comic demo | review |
 | GD3 | Garv | Memory page scene from `content/pages/*.json` | Mira page playable in Godot | todo |
 | GD4 | Garv | Title, Village, Conversation, Deduction, Aftermath | Mira loop playable start to finish | todo |
 | GD5 | Garv | Casebook | Threads + notes from GameState | todo |
