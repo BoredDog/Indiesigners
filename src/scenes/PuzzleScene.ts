@@ -38,6 +38,8 @@ export class PuzzleScene extends Phaser.Scene {
   private busy = false;
   private done = false;
   private queued?: Dir;
+  private explained = new Set<string>();
+  private hoverG!: Phaser.GameObjects.Graphics;
 
   private tile = 100;
   private ox = 0;
@@ -68,6 +70,7 @@ export class PuzzleScene extends Phaser.Scene {
     this.busy = false;
     this.done = false;
     this.queued = undefined;
+    this.explained.clear();
     this.crates.clear();
     this.sentinels = [];
     this.dialHands = [];
@@ -98,8 +101,10 @@ export class PuzzleScene extends Phaser.Scene {
     this.terrain = this.add.graphics();
     this.ink = this.add.graphics();
     this.overlay = this.add.graphics();
+    this.hoverG = this.add.graphics().setDepth(15);
     this.buildGoal();
     this.buildEntities();
+    this.moveSentinels(0, 0);
     this.buildLightGlyph();
     this.buildRail();
     this.buildInput();
@@ -109,7 +114,7 @@ export class PuzzleScene extends Phaser.Scene {
       const tip = new Bubble(this, PANEL.x + PANEL.w / 2, PANEL.y + 58, {
         kind: 'narration',
         text: level.tip,
-        maxWidth: 1100,
+        maxWidth: 1420,
         fontSize: 26,
       });
       this.add.existing(tip.appear(100));
@@ -342,6 +347,7 @@ export class PuzzleScene extends Phaser.Scene {
     this.children.moveAbove(g, old);
     const t = this.tile;
     for (const i of inkTiles(this.level, this.state)) {
+      if (this.level.cells[i].k === 'void' || this.state.collapsed.includes(i)) continue; // ink over a pit reads as noise
       const x = this.ox + (i % this.level.w) * t;
       const y = this.oy + Math.floor(i / this.level.w) * t;
       g.fillStyle(COLORS.ink, 0.94);
@@ -565,15 +571,31 @@ export class PuzzleScene extends Phaser.Scene {
     const bw = this.level.w * this.tile;
     const bh = this.level.h * this.tile;
     const zone = this.add.zone(this.ox, this.oy, bw, bh).setOrigin(0).setInteractive({ useHandCursor: true }).setName('board');
-    zone.on('pointerup', (p: Phaser.Input.Pointer) => {
+    const dirAt = (p: Phaser.Input.Pointer): Dir | undefined => {
       const tx = Math.floor((p.x - this.ox) / this.tile);
       const ty = Math.floor((p.y - this.oy) / this.tile);
       const [wx, wy] = xy(this.level, this.state.pos);
       const dx = tx - wx;
       const dy = ty - wy;
-      if (Math.abs(dx) + Math.abs(dy) !== 1) return;
-      this.tryMove(dx === 1 ? 'E' : dx === -1 ? 'W' : dy === 1 ? 'S' : 'N');
+      if (Math.abs(dx) + Math.abs(dy) !== 1) return undefined;
+      return dx === 1 ? 'E' : dx === -1 ? 'W' : dy === 1 ? 'S' : 'N';
+    };
+    zone.on('pointerup', (p: Phaser.Input.Pointer) => {
+      const d = dirAt(p);
+      if (d) this.tryMove(d);
     });
+    // Hover: outline the neighbouring tile under the cursor (teal = you can go, grey = blocked).
+    zone.on('pointermove', (p: Phaser.Input.Pointer) => {
+      this.hoverG.clear();
+      const d = dirAt(p);
+      if (!d || this.done) return;
+      const i = neighbour(this.level, this.state.pos, d);
+      const ok = step(this.level, this.state, d).event !== 'blocked';
+      const x = this.ox + (i % this.level.w) * this.tile;
+      const y = this.oy + Math.floor(i / this.level.w) * this.tile;
+      this.hoverG.lineStyle(6, ok ? COLORS.spiritTeal : 0x777777, ok ? 1 : 0.6).strokeRect(x + 5, y + 5, this.tile - 10, this.tile - 10);
+    });
+    zone.on('pointerout', () => this.hoverG.clear());
     const keys: Record<string, Dir> = {
       UP: 'N', W: 'N', DOWN: 'S', S: 'S', LEFT: 'W', A: 'W', RIGHT: 'E', D: 'E',
     };
@@ -593,7 +615,12 @@ export class PuzzleScene extends Phaser.Scene {
       return;
     }
     const r = step(this.level, this.state, d);
-    if (r.event === 'blocked') return this.bump(d);
+    if (r.event === 'blocked') {
+      this.explain(r.reason);
+      return this.bump(d);
+    }
+    this.hoverG.clear();
+    this.trail(this.state.pos);
     this.drawOverlay();
     this.history.push(this.state);
     const prev = this.state;
@@ -659,6 +686,25 @@ export class PuzzleScene extends Phaser.Scene {
         this.busy = false;
       },
     });
+  }
+
+  /** One-time rule reminder the first time a move is blocked for a given reason. */
+  private explain(reason: string | undefined) {
+    const msg = reason && T.blocked[reason];
+    if (!msg || this.explained.has(reason)) return;
+    this.explained.add(reason);
+    this.toast(msg);
+  }
+
+  /** Fading lantern motes where the wisp has been. */
+  private trail(from: number) {
+    if (comicSettings.reduceMotion) return;
+    for (let k = 0; k < 3; k++) {
+      const mote = this.add
+        .circle(this.cx(from) + Phaser.Math.Between(-14, 14), this.cy(from) + Phaser.Math.Between(-14, 14), Phaser.Math.Between(5, 9), COLORS.spiritTeal, 0.7)
+        .setDepth(38);
+      this.tweens.add({ targets: mote, alpha: 0, scale: 0.3, y: mote.y - 12, duration: 500 + k * 120, onComplete: () => mote.destroy() });
+    }
   }
 
   private crumble(i: number) {

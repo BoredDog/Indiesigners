@@ -35,4 +35,11 @@ export const PUZZLE_TEXT = {
   solved: 'FRAGMENT RECOVERED',
   controls: 'Click a neighbouring tile or use the arrow keys / WASD.  Z = undo · R = reset',
   light: 'LIGHT',
+  // First time a move is blocked for each reason (once per board).
+  blocked: {
+    ink: 'Ink is erased memory. Move the light to move the shadows.',
+    gate: 'A closed gate. Its rope or node opens it.',
+    water: 'Flooded. A sluice drains this channel.',
+    crate: 'The crate will not move that way.',
+  } as Record<string, string>,
 } as const;

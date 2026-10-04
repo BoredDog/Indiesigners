@@ -252,8 +252,8 @@ if (!spec) {
 const samples = Number(process.argv[3] ?? 40000);
 seed = Number(process.argv[4] ?? 1);
 
-const found: { f: LevelFile; len: number; explored: number }[] = [];
-for (let i = 0; i < samples && found.length < 40; i++) {
+const found: { f: LevelFile; len: number; explored: number; detour: number }[] = [];
+for (let i = 0; i < samples && found.length < 200; i++) {
   const f = sample(spec);
   if (!f) continue;
   const len = solLen(f);
@@ -272,12 +272,17 @@ for (let i = 0; i < samples && found.length < 40; i++) {
     if (!good) break;
   }
   if (!good) continue;
-  const explored = solve(parseLevel(f))!.explored;
-  found.push({ f, len, explored });
+  const lv = parseLevel(f);
+  const explored = solve(lv)!.explored;
+  const [sx, sy] = [lv.start % lv.w, Math.floor(lv.start / lv.w)];
+  const [gx, gy] = [lv.goal % lv.w, Math.floor(lv.goal / lv.w)];
+  const detour = len - (Math.abs(sx - gx) + Math.abs(sy - gy)); // moves spent on anything but walking there
+  found.push({ f, len, explored, detour });
 }
-found.sort((a, b) => b.explored - a.explored);
-for (const { f, len, explored } of found.slice(0, 5)) {
-  console.log(`--- len ${len}, explored ${explored}, light ${f.light}`);
+// Prefer boards that make you go out of your way, then bigger decision spaces.
+found.sort((a, b) => b.detour * 1000 + b.explored - (a.detour * 1000 + a.explored));
+for (const { f, len, explored, detour } of found.slice(0, 5)) {
+  console.log(`--- len ${len}, detour ${detour}, explored ${explored}, light ${f.light}`);
   console.log(JSON.stringify({ tiles: f.tiles, legend: f.legend, light: f.light, shadow: f.shadow, sentinels: f.sentinels, par: len }));
 }
 console.log(`${found.length} candidates`);
