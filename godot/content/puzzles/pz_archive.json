@@ -1,0 +1,39 @@
+{
+  "id": "pz_archive",
+  "title": "THE RECORD: Archive Collapse",
+  "tip": "The archive is collapsing. Cracked floor falls away the moment you leave it.",
+  "light": "N",
+  "shadow": 2,
+  "par": 19,
+  "tiles": [
+    "S..xL..",
+    ".x#..#x",
+    "xx#..xx",
+    ".x.x...",
+    "x.x.D..",
+    "A______",
+    "x..Gx#."
+  ],
+  "legend": {
+    "A": "gate:g1",
+    "L": "lever:g1"
+  },
+  "sentinels": [
+    {
+      "path": [
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          3
+        ]
+      ]
+    }
+  ]
+}
