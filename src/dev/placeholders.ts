@@ -7,12 +7,16 @@ export const PH = {
   village: 'ph_village',
   figure: 'ph_figure',
   mira: 'ph_mira',
+  elias: 'ph_elias_young', // finale reveal: same outline as ph_figure, in colour, face visible
+  nia: 'ph_nia',
 } as const;
 
 export function makePlaceholders(scene: Phaser.Scene): void {
   if (!scene.textures.exists(PH.village)) drawVillage(scene);
   if (!scene.textures.exists(PH.figure)) drawFigure(scene);
   if (!scene.textures.exists(PH.mira)) drawMira(scene);
+  if (!scene.textures.exists(PH.elias)) drawYoungElias(scene);
+  if (!scene.textures.exists(PH.nia)) drawNia(scene);
 }
 
 function canvas(scene: Phaser.Scene, key: string, w: number, h: number) {
@@ -243,5 +247,75 @@ function drawMira(scene: Phaser.Scene) {
   ctx.fillStyle = '#1a1a1a';
   ctx.fillRect(100, 112, 8, 8);
   ctx.fillRect(132, 112, 8, 8);
+  tex.refresh();
+}
+
+function drawYoungElias(scene: Phaser.Scene) {
+  // Young Elias (Blueprint C): the silhouette's exact outline, now in charcoal / amber / teal.
+  const { tex, ctx } = canvas(scene, PH.elias, 300, 640);
+  glow(ctx, 230, 150, 90, 'rgba(127,224,212,0.75)');
+  ctx.fillStyle = '#3a3a42';
+  ctx.fillRect(222, 150, 10, 490); // staff
+  ctx.fillStyle = '#7fe0d4';
+  ctx.fillRect(212, 128, 30, 40); // lantern
+  ctx.fillStyle = '#34343c'; // coat
+  ctx.beginPath();
+  ctx.moveTo(80, 190);
+  ctx.lineTo(200, 190);
+  ctx.lineTo(230, 600);
+  ctx.lineTo(50, 600);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#e0a33a'; // amber collar lining
+  ctx.fillRect(105, 150, 70, 50);
+  ctx.fillStyle = '#e8cfb0'; // face
+  ctx.beginPath();
+  ctx.arc(140, 120, 38, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#1b1b20'; // hat + hair
+  ctx.fillRect(80, 82, 120, 12);
+  ctx.fillRect(108, 40, 64, 46);
+  ctx.fillRect(104, 92, 72, 10);
+  ctx.fillRect(126, 118, 7, 7); // eyes
+  ctx.fillRect(150, 118, 7, 7);
+  ctx.fillStyle = '#34343c'; // arm
+  ctx.beginPath();
+  ctx.moveTo(185, 220);
+  ctx.lineTo(228, 300);
+  ctx.lineTo(214, 316);
+  ctx.lineTo(170, 250);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#1b1b20';
+  ctx.fillRect(85, 600, 40, 40);
+  ctx.fillRect(155, 600, 40, 40);
+  tex.refresh();
+}
+
+function drawNia(scene: Phaser.Scene) {
+  // Nia, a sick child: small, pale, silver hairclip (the clue Arun finds).
+  const { tex, ctx } = canvas(scene, PH.nia, 160, 340);
+  glow(ctx, 80, 170, 120, 'rgba(200,220,255,0.25)');
+  ctx.fillStyle = '#c9c3b6';
+  ctx.beginPath();
+  ctx.moveTo(30, 120);
+  ctx.lineTo(130, 120);
+  ctx.lineTo(145, 340);
+  ctx.lineTo(15, 340);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#f0dcc4';
+  ctx.beginPath();
+  ctx.arc(80, 75, 40, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#3b2a20';
+  ctx.beginPath();
+  ctx.arc(80, 62, 42, Math.PI, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#d9dde3'; // silver hairclip
+  ctx.fillRect(98, 42, 22, 7);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(66, 74, 6, 6);
+  ctx.fillRect(88, 74, 6, 6);
   tex.refresh();
 }

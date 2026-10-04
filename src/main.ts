@@ -12,6 +12,9 @@ import { ConversationScene } from './scenes/ConversationScene';
 import { DeductionScene } from './scenes/DeductionScene';
 import { AftermathScene } from './scenes/AftermathScene';
 import { PauseScene } from './scenes/PauseScene';
+import { OpeningScene } from './scenes/OpeningScene';
+import { FinaleScene } from './scenes/FinaleScene';
+import { EndingScene } from './scenes/EndingScene';
 import { gameState } from './core/GameState';
 
 // Phaser must not create Text before the comic fonts are loaded.
@@ -31,6 +34,9 @@ const scenes: Phaser.Types.Scenes.SceneType[] = [
   AftermathScene,
   CasebookScene,
   PauseScene,
+  OpeningScene,
+  FinaleScene,
+  EndingScene,
   ComicDemoScene,
 ];
 
