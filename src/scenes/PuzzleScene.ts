@@ -48,7 +48,7 @@ export class PuzzleScene extends Phaser.Scene {
   private terrain!: Phaser.GameObjects.Graphics;
   private ink!: Phaser.GameObjects.Graphics;
   private overlay!: Phaser.GameObjects.Graphics; // danger tiles, hint markers, hover
-  private dialHands: Phaser.GameObjects.Graphics[] = [];
+  private dialHands: (Phaser.GameObjects.Graphics | Phaser.GameObjects.Text)[] = []; // per-dial objects rebuilt with the terrain
   private wisp!: Phaser.GameObjects.Container;
   private crates = new Map<number, Phaser.GameObjects.Container>();
   private sentinels: Phaser.GameObjects.Container[] = [];
@@ -326,6 +326,18 @@ export class PuzzleScene extends Phaser.Scene {
           hand.fillStyle(COLORS.ink, 1).fillCircle(0, 0, 6);
           hand.setRotation((s.light * Math.PI) / 2);
           this.dialHands.push(hand);
+          // Each quarter turn moves the frozen clock on 14 minutes: 2:17 → 2:31 (Arun's watch) → … (PLAN §12 C4).
+          const turns = (s.light - this.level.light + 4) % 4;
+          const mins = 17 + turns * 14;
+          const label = this.add
+            .text(x + t / 2, y + t / 2 + r * 0.42, `2:${String(mins).padStart(2, '0')}`, {
+              fontFamily: `"${FONTS.narration}"`,
+              fontSize: `${Math.round(t * 0.12)}px`,
+              color: COLORS.inkCss,
+              resolution: TEXT_RESOLUTION,
+            })
+            .setOrigin(0.5);
+          this.dialHands.push(label);
           return;
         }
         case 'gate': {
@@ -663,6 +675,7 @@ export class PuzzleScene extends Phaser.Scene {
       const x = this.ox + (i % this.level.w) * this.tile;
       const y = this.oy + Math.floor(i / this.level.w) * this.tile;
       this.hoverG.lineStyle(6, ok ? COLORS.spiritTeal : 0x777777, ok ? 1 : 0.6).strokeRect(x + 5, y + 5, this.tile - 10, this.tile - 10);
+      if (ok) this.previewInk(d);
     });
     zone.on('pointerout', () => this.hoverG.clear());
     const keys: Record<string, Dir> = {
@@ -755,6 +768,32 @@ export class PuzzleScene extends Phaser.Scene {
         this.busy = false;
       },
     });
+  }
+
+  /**
+   * Shadow preview (PLAN §12 C1, after Felix the Reaper): if this move turns the light or pushes a
+   * crate, show where the ink will fall afterwards as faint dashed blots.
+   */
+  private previewInk(d: Dir) {
+    const r = step(this.level, this.state, d);
+    if (!r.rotated && !r.pushed) return;
+    const now = inkTiles(this.level, this.state);
+    const next = inkTiles(this.level, r.state);
+    const t = this.tile;
+    for (const i of next) {
+      if (now.has(i) || this.level.cells[i].k === 'void') continue;
+      const x = this.ox + (i % this.level.w) * t;
+      const y = this.oy + Math.floor(i / this.level.w) * t;
+      this.hoverG.fillStyle(COLORS.ink, 0.35).fillRect(x + 10, y + 10, t - 20, t - 20);
+      this.hoverG.lineStyle(3, COLORS.ink, 0.8);
+      for (let k = 0; k < 4; k++) this.hoverG.lineBetween(x + 10 + k * ((t - 20) / 4), y + 10, x + 10 + k * ((t - 20) / 4) + (t - 20) / 8, y + 10);
+    }
+    for (const i of now) {
+      if (next.has(i) || this.level.cells[i].k === 'void') continue;
+      const x = this.ox + (i % this.level.w) * t;
+      const y = this.oy + Math.floor(i / this.level.w) * t;
+      this.hoverG.lineStyle(4, COLORS.amber, 0.9).strokeRect(x + 12, y + 12, t - 24, t - 24); // this ink will lift
+    }
   }
 
   /** One-time rule reminder the first time a move is blocked for a given reason. */
