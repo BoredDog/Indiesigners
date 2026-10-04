@@ -1,0 +1,113 @@
+{
+  "_source": "Blueprint D1. requiredEvidence = must all be selected (and known) to confirm; supportingEvidence = may also be selected without breaking the deduction. wrongConclusions are NOT in the blueprint (added by Nav's Claude for the deduction screen; proofread).",
+  "deductions": [
+    {
+      "id": "sis_1", "witness": "mira", "panel": "P3",
+      "question": "Who activated the village bell at 2:17?",
+      "requiredDescription": "Untouched bell rope; identical 2:17 timestamps; lantern resonance mark.",
+      "requiredEvidence": ["ev_mira_bell", "ev_mira_clocks", "ev_mira_resonance"],
+      "supportingEvidence": ["ev_tower_residue"],
+      "conclusion": "The Echo Lantern triggered the bell through the underground network. No person rang it.",
+      "wrongConclusions": ["Mira rang the bell herself to warn the village.", "A villager pulled the rope and fled before anyone saw."],
+      "unlocks": ["loc_tower_basement", "note_timeline_1"],
+      "unlockText": "Unlock clock-tower basement and first corrected timeline note.",
+      "reaction": "The bell was never the warning. It was the broadcast."
+    },
+    {
+      "id": "sis_2", "witness": "mira", "panel": "P4",
+      "question": "Why do witness memories show different times?",
+      "requiredDescription": "Mira's stopped clock; school stopwatch; Arun's later timestamp.",
+      "requiredEvidence": ["ev_mira_clocks", "ev_mira_later_entry"],
+      "supportingEvidence": ["ev_mira_bell", "ev_arun_tick"],
+      "conclusion": "2:17 is the system freeze. Events continued after the clocks stopped.",
+      "wrongConclusions": ["The clocks were simply broken. Nothing happened after 2:17.", "The later entry is a mistake. Every clock was right."],
+      "unlocks": ["overlay_timeline"],
+      "unlockText": "Unlock corrected timeline overlay.",
+      "reaction": "If time was edited, someone edited it on purpose."
+    },
+    {
+      "id": "sis_3", "witness": "mira", "panel": "P5",
+      "question": "Who is the fourth figure?",
+      "requiredDescription": "Coat silhouette; lantern staff; apprentice sketch.",
+      "requiredEvidence": ["ev_mira_staff", "ev_mira_later_entry"],
+      "supportingEvidence": ["ev_mira_erased_entry", "ev_arun_hiss", "ev_arun_footsteps"],
+      "conclusion": "The recurring figure is Elias Vane, the former Veyra apprentice.",
+      "wrongConclusions": ["The figure was a stranger passing through Veyra.", "The figure was Arun, carrying lanterns down to the river."],
+      "unlocks": ["file_apprentice"],
+      "unlockText": "Unlock sealed apprentice file.",
+      "reaction": "I knew that shape. I just did not know I knew it."
+    },
+    {
+      "id": "bro_1", "witness": "arun", "panel": "P3",
+      "question": "Why did the river disappear?",
+      "requiredDescription": "Dry riverbed; emergency sluice; river ledger.",
+      "requiredEvidence": ["ev_arun_splash", "ev_arun_clank"],
+      "supportingEvidence": ["ev_arun_whisper"],
+      "conclusion": "The river was diverted underground during the lantern overload.",
+      "wrongConclusions": ["A long drought dried the river weeks before.", "The villagers dammed the river upstream."],
+      "unlocks": ["loc_well_tunnel"],
+      "unlockText": "Unlock well and tunnel route.",
+      "reaction": "The river did not vanish. It was sent somewhere."
+    },
+    {
+      "id": "bro_2", "witness": "arun", "panel": "P2",
+      "question": "When did Arun actually see the figure?",
+      "requiredDescription": "2:31 pocket watch; 2:17 village clock; figure sighting.",
+      "requiredEvidence": ["ev_arun_tick", "ev_arun_footsteps"],
+      "supportingEvidence": ["ev_mira_clocks", "ev_mira_bell", "ev_mira_later_entry"],
+      "conclusion": "The night continued after 2:17, proving the village timeline is false.",
+      "wrongConclusions": ["Arun saw the figure before the clocks stopped.", "Arun's watch ran fast. He saw nothing after 2:17."],
+      "unlocks": ["timeline_post_217"],
+      "unlockText": "Unlock post-2:17 timeline segment.",
+      "reaction": "The night kept moving after the clocks stopped."
+    },
+    {
+      "id": "bro_3", "witness": "arun", "panel": "P4",
+      "question": "Who was Elias carrying to the lantern chamber?",
+      "requiredDescription": "Silver hairclip; clinic card; figure silhouette.",
+      "requiredEvidence": ["ev_arun_cloth", "ev_arun_footsteps"],
+      "supportingEvidence": ["ev_arun_hiss", "ev_arun_whisper", "ev_mira_clinic", "ev_leela_beep"],
+      "conclusion": "Nia was the child in Elias's arms. The experiment was meant to preserve her mind.",
+      "wrongConclusions": ["A stranger's child, carried away from the flood.", "One of Mira's pupils, fleeing the bell."],
+      "unlocks": ["record_nia_medical"],
+      "unlockText": "Unlock Nia's medical record and motive clue.",
+      "reaction": "I was not rescuing the village. I was taking someone to the machine."
+    },
+    {
+      "id": "mom_1", "witness": "leela", "panel": "P1",
+      "question": "What can the Echo Lantern actually do?",
+      "requiredDescription": "Technical schematic; memory spool; anchor notation.",
+      "requiredEvidence": ["ev_leela_tink", "ev_leela_hum"],
+      "supportingEvidence": ["ev_tower_residue"],
+      "conclusion": "It can extract, store and transfer memories, and bind multiple minds as anchors.",
+      "wrongConclusions": ["It is only a lamp for reading old records.", "It can show memories, but it can never take them."],
+      "unlocks": ["diagram_ritual"],
+      "unlockText": "Unlock the complete ritual diagram.",
+      "reaction": "I knew what it did. I had forgotten what it could cost."
+    },
+    {
+      "id": "mom_2", "witness": "leela", "panel": "P4",
+      "question": "Why were the memories altered?",
+      "requiredDescription": "Edited ledger; overwritten notes; Elias annotations.",
+      "requiredEvidence": ["ev_leela_click", "ev_leela_beep"],
+      "supportingEvidence": ["ev_leela_ash", "ev_leela_paper", "ev_mira_erased_entry"],
+      "conclusion": "Elias triggered a second pulse to erase his role and hide the experiment.",
+      "wrongConclusions": ["Ten years of grief wore the memories away.", "Leela edited the records to hide her own mistake."],
+      "unlocks": ["record_personal"],
+      "unlockText": "Unlock sealed personal record.",
+      "reaction": "The missing pieces were not missing. I removed them."
+    },
+    {
+      "id": "mom_3", "witness": "leela", "panel": "P5",
+      "question": "What caused the mass disappearance?",
+      "requiredDescription": "Master console; Nia monitor; village network map.",
+      "requiredEvidence": ["ev_leela_whoom", "ev_leela_beep"],
+      "supportingEvidence": ["ev_leela_crack", "ev_leela_ash", "ev_leela_hum"],
+      "conclusion": "Elias activated the network to save Nia, trapping villagers and creating the ghost loops.",
+      "wrongConclusions": ["A storm struck the tower and overloaded the network.", "Leela connected every node and lost control."],
+      "unlocks": ["archive_reconstruction"],
+      "unlockText": "Unlock final archive reconstruction.",
+      "reaction": "The case stopped being about what happened to them. It became about what I did."
+    }
+  ]
+}
