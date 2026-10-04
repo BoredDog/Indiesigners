@@ -164,6 +164,34 @@ try {
   await page.waitForTimeout(1200);
   check(r.ev ? await gs<boolean>(`gs.hasEvidence('${r.ev}')`) : true, 'skip still recovers the fragment');
 
+  // Archive flow: intro beat → ESCAPE → pz_archive → escaped beat → CONTINUE → Finale.
+  await page.goto('http://localhost:4183/?scene=Archive');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await waitScene('Archive');
+  await page.waitForTimeout(2600);
+  await shot('archive-1-intro');
+  const clickBtn = (scene: string, name: string) =>
+    page.evaluate(
+      ([sc, n]) => {
+        const s = (window as any).__echoes.game.scene.getScene(sc);
+        s.children.list.find((o: any) => o.name === n)?.emit('click');
+      },
+      [scene, name],
+    );
+  await clickBtn('Archive', 'btn:ESCAPE WITH THE RECORD');
+  await waitScene('Puzzle');
+  await page.waitForFunction(() => (window as any).__puzzle?.level?.id === 'pz_archive');
+  await dismissPopups();
+  await page.evaluate(() => (window as any).__puzzle.solve());
+  await waitScene('Archive');
+  await page.waitForTimeout(1500);
+  await shot('archive-2-escaped');
+  check(await gs<boolean>(`gs.flag('archiveEscaped')`), 'archive escape recorded');
+  await clickBtn('Archive', 'btn:CONTINUE');
+  await waitScene('Finale', 8000).catch(() => {});
+  check((await activeScene(page)).includes('Finale'), 'archive hands off to the Finale');
+
   // Missing level → straight back with the fragment (contract).
   await page.goto('http://localhost:4183/?scene=Puzzle&puzzleId=pz_missing&evidenceId=ev_mira_bell&witness=mira&returnTo=Memory');
   await waitScene('Memory');

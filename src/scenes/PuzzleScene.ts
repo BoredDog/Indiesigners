@@ -135,6 +135,7 @@ export class PuzzleScene extends Phaser.Scene {
     this.cameras.main.fadeIn(dur(200), 0, 0, 0);
     (window as unknown as { __puzzle: PuzzleScene }).__puzzle = this;
     this.time.delayedCall(250, () => void this.teach());
+    this.startDust();
   }
 
   /** Mechanics on this board, in teaching order. */
@@ -775,11 +776,36 @@ export class PuzzleScene extends Phaser.Scene {
     }
   }
 
+  /** Cracked floor gives way: the tile drops and spins into the dark, dust puffs, the room rumbles. */
   private crumble(i: number) {
-    const bits = this.add.graphics().setDepth(25);
-    bits.fillStyle(COLORS.paper, 1);
-    for (let k = 0; k < 6; k++) bits.fillRect(this.cx(i) - 30 + (k % 3) * 22, this.cy(i) - 20 + Math.floor(k / 3) * 22, 16, 16);
-    this.tweens.add({ targets: bits, alpha: 0, y: 30, scale: 0.6, duration: dur(380), onComplete: () => bits.destroy() });
+    if (comicSettings.reduceMotion) return;
+    const t = this.tile;
+    const slab = this.add.container(this.cx(i), this.cy(i)).setDepth(25);
+    slab.add([
+      this.add.rectangle(0, 0, t - 6, t - 6, COLORS.paper).setStrokeStyle(3, COLORS.ink),
+      this.add.line(0, 0, -t * 0.3, -t * 0.25, t * 0.1, t * 0.05, COLORS.ink).setLineWidth(3).setOrigin(0),
+      this.add.line(0, 0, t * 0.1, t * 0.05, t * 0.3, t * 0.3, COLORS.ink).setLineWidth(3).setOrigin(0),
+    ]);
+    this.tweens.add({ targets: slab, scale: 0.15, angle: 35, alpha: 0, y: slab.y + t * 0.25, duration: 420, ease: 'Quad.In', onComplete: () => slab.destroy() });
+    for (let k = 0; k < 6; k++) {
+      const puff = this.add.circle(this.cx(i) + Phaser.Math.Between(-t / 2, t / 2), this.cy(i) + Phaser.Math.Between(-t / 3, t / 2), Phaser.Math.Between(6, 12), 0x9a958a, 0.7).setDepth(26);
+      this.tweens.add({ targets: puff, y: puff.y - Phaser.Math.Between(10, 30), alpha: 0, scale: 1.8, duration: 500 + k * 60, onComplete: () => puff.destroy() });
+    }
+    if (!comicSettings.reduceFlashing) this.cameras.main.shake(140, 0.0025);
+  }
+
+  /** Archive collapse ambience: grit falling across the board (boards with cracked floor only). */
+  private startDust() {
+    if (comicSettings.reduceMotion || !this.level.cells.some((c) => c.k === 'collapse')) return;
+    const bw = this.level.w * this.tile;
+    this.time.addEvent({
+      delay: 260,
+      loop: true,
+      callback: () => {
+        const grit = this.add.rectangle(this.ox + Math.random() * bw, this.oy - 20, 4, 4 + Math.random() * 6, 0xb8b2a4, 0.8).setDepth(48);
+        this.tweens.add({ targets: grit, y: this.oy + this.level.h * this.tile + 20, alpha: 0.2, duration: 1400 + Math.random() * 900, onComplete: () => grit.destroy() });
+      },
+    });
   }
 
   /** Slip / caught: ink splashes over the wisp, then the memory rewinds one step (counts toward HINT/SKIP). */
