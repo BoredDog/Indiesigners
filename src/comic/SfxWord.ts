@@ -13,15 +13,23 @@ export interface SfxWordOptions {
   angle?: number; // degrees
   /** Fragment text revealed under the word when it is clicked (Blueprint H3 "fragment text it hides"). */
   evidence?: string;
+  /** Locked words (behind an Echo Paths puzzle) emit 'locked' on click instead of revealing. */
+  locked?: boolean;
+  /** Panel size (panel-local px). The evidence card is kept inside it. */
+  area?: { w: number; h: number };
+  /** Explicit evidence-card centre in panel-local px (overrides the default "below the word"). */
+  cardAt?: { x: number; y: number };
 }
 
 /**
  * A clickable comic sound-effect word that hides an evidence fragment.
- * Emits 'reveal' (this) when clicked the first time.
+ * Emits 'reveal' (this) when clicked the first time, or 'locked' (this) while locked.
  */
 export class SfxWord extends Phaser.GameObjects.Container {
   readonly opts: SfxWordOptions;
   revealed = false;
+  locked: boolean;
+  private lockMark?: Phaser.GameObjects.Text;
   private label: Phaser.GameObjects.Text;
   private art: Phaser.GameObjects.Container; // burst + letters; fades after the pop, the evidence card doesn't
   private pulseTween?: Phaser.Tweens.Tween;
@@ -29,6 +37,7 @@ export class SfxWord extends Phaser.GameObjects.Container {
   constructor(scene: Phaser.Scene, x: number, y: number, opts: SfxWordOptions) {
     super(scene, x, y);
     this.opts = opts;
+    this.locked = !!opts.locked;
     const size = opts.size ?? 64;
 
     this.label = scene.add
@@ -60,7 +69,46 @@ export class SfxWord extends Phaser.GameObjects.Container {
     this.setInteractive({ useHandCursor: true });
     this.on('pointerup', (_p: Phaser.Input.Pointer, _x: number, _y: number, e: Phaser.Types.Input.EventData) => {
       e.stopPropagation(); // don't also trigger the panel under the word
-      this.pop();
+      if (this.locked) {
+        this.emit('locked', this);
+        this.wiggle();
+      } else this.pop();
+    });
+
+    if (this.locked) {
+      // Small spirit-light padlock badge: this fragment sits behind an Echo Path.
+      this.lockMark = scene.add
+        .text(w * 0.5, -h * 0.55, '◆', {
+          fontFamily: `"${FONTS.sfx}"`,
+          fontSize: `${Math.round(size * 0.45)}px`,
+          color: COLORS.spiritTealCss,
+          stroke: COLORS.inkCss,
+          strokeThickness: 6,
+          resolution: TEXT_RESOLUTION,
+        })
+        .setOrigin(0.5);
+      this.art.add(this.lockMark);
+    }
+  }
+
+  /** Remove the lock (e.g. after the puzzle is solved). */
+  unlock(): this {
+    this.locked = false;
+    this.lockMark?.destroy();
+    this.lockMark = undefined;
+    return this;
+  }
+
+  private wiggle() {
+    if (comicSettings.reduceMotion) return;
+    const base = this.art.angle;
+    this.scene.tweens.chain({
+      targets: this.art,
+      tweens: [
+        { angle: base - 5, duration: 60 },
+        { angle: base + 5, duration: 80 },
+        { angle: base, duration: 60 },
+      ],
     });
   }
 
@@ -78,14 +126,24 @@ export class SfxWord extends Phaser.GameObjects.Container {
     return this;
   }
 
-  /** Burst animation (1.0 → 1.15 → 1.0 with a tiny rotation, then fade) and evidence reveal. */
-  pop(): void {
+  /**
+   * Burst animation (1.0 → 1.15 → 1.0 with a tiny rotation, then fade) and evidence reveal.
+   * `silent` shows the already-revealed state instantly and emits nothing (evidence found earlier).
+   */
+  pop(silent = false): void {
     if (this.revealed) return;
     this.revealed = true;
+    this.unlock();
     this.pulseTween?.stop();
     this.pulseTween = undefined;
     this.disableInteractive();
     this.art.setScale(1);
+
+    if (silent) {
+      this.art.setAlpha(0.35);
+      if (this.opts.evidence) this.add(this.evidenceCard(-10));
+      return;
+    }
 
     const scene = this.scene;
     scene.tweens.chain({
@@ -100,12 +158,7 @@ export class SfxWord extends Phaser.GameObjects.Container {
 
     if (this.opts.evidence) {
       // The evidence card fades in under the word with a small upward motion (Blueprint N).
-      const card = new Bubble(scene, 0, this.label.height * 0.9, {
-        kind: 'evidence',
-        text: this.opts.evidence,
-        maxWidth: 300,
-        fontSize: 21,
-      });
+      const card = this.evidenceCard(0);
       this.add(card);
       card.setAlpha(0);
       scene.tweens.add({
@@ -118,5 +171,22 @@ export class SfxWord extends Phaser.GameObjects.Container {
       });
     }
     this.emit('reveal', this);
+  }
+
+  /** Evidence card positioned below the word (or at `cardAt`), clamped inside `area`. */
+  private evidenceCard(dy: number): Bubble {
+    const card = new Bubble(this.scene, 0, 0, { kind: 'evidence', text: this.opts.evidence ?? '', maxWidth: 280, fontSize: 21 });
+    const { area, cardAt } = this.opts;
+    // Work in panel-local coordinates (this container sits at x,y in the panel overlay).
+    let cx = cardAt ? cardAt.x : this.x;
+    let cy = cardAt ? cardAt.y : this.y + this.label.height * 0.5 + card.height / 2 + 6;
+    if (area) {
+      const m = 8;
+      if (!cardAt && cy + card.height / 2 > area.h - m) cy = this.y - this.label.height * 0.5 - card.height / 2 - 6;
+      cx = Phaser.Math.Clamp(cx, card.width / 2 + m, area.w - card.width / 2 - m);
+      cy = Phaser.Math.Clamp(cy, card.height / 2 + m, area.h - card.height / 2 - m);
+    }
+    card.setPosition(cx - this.x, cy - this.y + dy);
+    return card;
   }
 }

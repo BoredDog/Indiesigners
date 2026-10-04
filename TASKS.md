@@ -24,7 +24,7 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | G3 | Art pipeline `npm run art` | Raw upload → trimmed WebP + `manifest.json` | Mon 10:00 | done |
 | G4 | CI build check + GitHub Pages deploy | Every PR shows a green build; `main` auto-deploys to the Pages link | Mon 10:00 | done |
 | G5 | Protect `main`, labels, pinned Team HQ issue | PR-only merges enforced; Team HQ pinned with the play link | Mon 10:00 | done |
-| G6 | `MemoryPage` scene (zoom/dim, 5 fragments, Evidence 0/5, puzzle launch, RECONSTRUCT / LEAVE MEMORY) | Mira page playable from data | Mon 16:00 | todo |
+| G6 | `MemoryPage` scene (zoom/dim, 5 fragments, Evidence 0/5, puzzle launch, RECONSTRUCT / LEAVE MEMORY) | Mira page playable from data | Mon 16:00 | done |
 | G7 | Casebook (columns, timeline, FIGURE/NIA cards, CORROBORATES / CONTRADICTS / REVEALS threads, Figure flip) | Opens from anywhere; threads appear when both clues are known | Mon 23:00 | todo |
 | G8 | Opening (6 frames) + Finale (8 frames) + Truth ending + Summary/Credits | Plays start to end from data; silhouette dissolves into young Elias | Tue 02:30 | todo |
 | G9 | Import all final art; style pass (crops, halftone, transitions, title idle) | No placeholder art left | Tue 12:00 | todo |
@@ -35,11 +35,11 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 ## Nav — gameplay core
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
-| N1 | `GameState` + `SaveManager` (localStorage autosave, Continue/New Game) | Close tab → Continue restores evidence, deductions and witness states | Mon 13:00 | todo |
-| N2 | Extract blueprint text into `content/*.json` (exact IDs sis_1…mom_3) + `design/script_review.html` | Every on-screen line from Blueprint D, F–M is in JSON; review page readable | Mon 15:00 | todo |
-| N3 | `StoryData` loader + `DeductionController` | Unit test: right cards + conclusion confirms; wrong set returns "does not support" | Mon 15:00 | todo |
-| N4 | Boot → Title → Village hub (hotspots, hover status, NEW EVIDENCE shimmer) | Title Continue/New Game work; witnesses clickable | Mon 17:00 | todo |
-| N5 | Conversation scene (evidence-gated questions, ENTER MEMORY) + Deduction screen + Aftermath page | Mira loop works end to end with G6 | Mon 19:00 | todo |
+| N1 | `GameState` + `SaveManager` (localStorage autosave, Continue/New Game) | Close tab → Continue restores evidence, deductions and witness states | Mon 13:00 | doing |
+| N2 | Extract blueprint text into `content/*.json` (exact IDs sis_1…mom_3) + `design/script_review.html` | Every on-screen line from Blueprint D, F–M is in JSON; review page readable | Mon 15:00 | doing |
+| N3 | `StoryData` loader + `DeductionController` | Unit test: right cards + conclusion confirms; wrong set returns "does not support" | Mon 15:00 | doing |
+| N4 | Boot → Title → Village hub (hotspots, hover status, NEW EVIDENCE shimmer) | Title Continue/New Game work; witnesses clickable | Mon 17:00 | doing |
+| N5 | Conversation scene (evidence-gated questions, ENTER MEMORY) + Deduction screen + Aftermath page | Mira loop works end to end with G6 | Mon 19:00 | doing |
 | N6 | Arun + Leela wiring, all 9 deductions + 6 threads, THE RECORD unlock, witness resolution beats | All 9 confirmable; archive opens at 9/9 | Tue 01:00 | todo |
 | N7 | Pause/Settings (text size, Reduce Motion, fullscreen) → writes `comicSettings` | Settings persist in the save | Tue 01:00 | todo |
 | N8 | Autoplay test (Playwright, all 6 witness orders to the credits) | `npm run test:autoplay` passes | Tue 02:30 | todo |
