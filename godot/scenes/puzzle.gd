@@ -3,6 +3,9 @@ extends Node2D
 ## and animates between states. Contract, same as the Phaser build:
 ##   PuzzleScene.open(get_tree(), {puzzleId, evidenceId, witness, returnTo})   # returnTo = scene path
 ##   ...the caller's _ready():  var r := PuzzleScene.take_result()   # {justFound, witness, solved}
+## With the Router autoload (GD4) it also works like the Phaser scene.start contract:
+##   Router.goto("puzzle", {puzzleId, evidenceId, witness, returnTo: "memory"})
+##   → on leave: Router.goto(returnTo, {witness, justFound, solved})
 ## A missing level hands the fragment straight back. Keys: arrows/WASD move, Z undo, R reset, H hint.
 
 signal finished(result: Dictionary)
@@ -94,9 +97,17 @@ var _skip_btn: Button
 var _teach_box: PanelContainer
 
 
+## The Router autoload if the project has one (looked up at runtime so this scene also runs without it).
+func _router() -> Node:
+	return get_node_or_null("/root/Router")
+
+
 func _ready() -> void:
 	params = request.duplicate()
 	request = {}
+	var router := _router()
+	if params.is_empty() and router and router.get("data") is Dictionary:
+		params = (router.data as Dictionary).duplicate()
 	font = ThemeDB.fallback_font
 	sfx_font = _load_font("res://assets/fonts/Bangers-Regular.ttf")
 	level = Solver.load_level(str(params.get("puzzleId", "")))
@@ -433,6 +444,10 @@ func _finish(solved: bool) -> void:
 	if instant:
 		return
 	var back: String = params.get("returnTo", "")
+	var router := _router()
+	if router and back != "" and not back.begins_with("res://") and router.has_scene(back):
+		router.goto(back, r)  # Router key, e.g. "memory" / "village" / "archive"
+		return
 	if back == "" or not ResourceLoader.exists(back):
 		back = MENU_PATH
 	get_tree().change_scene_to_file(back)

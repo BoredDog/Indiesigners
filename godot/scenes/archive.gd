@@ -25,6 +25,9 @@ func _ready() -> void:
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 	var r := PuzzleScene.take_result()
+	var router := get_node_or_null("/root/Router")
+	if r.is_empty() and router and router.get("data") is Dictionary:
+		r = router.data  # came back through Router.goto("archive", {solved: ...})
 	if r.get("solved") == "pz_archive":
 		GameState.set_flag("archiveEscaped")
 	if GameState.flag("archiveEscaped"):
@@ -83,7 +86,11 @@ func _intro() -> void:
 	var crack := _sfx("CRACK!", Vector2(420, 600), 110)
 	crack.rotation_degrees = -8
 	var go := _button(TEXT.escape, func():
-		PuzzleScene.open(get_tree(), {"puzzleId": "pz_archive", "returnTo": SELF}))
+		var router := get_node_or_null("/root/Router")
+		if router:
+			router.goto("puzzle", {"puzzleId": "pz_archive", "returnTo": "archive"})
+		else:
+			PuzzleScene.open(get_tree(), {"puzzleId": "pz_archive", "returnTo": SELF}))
 	go.modulate.a = 0.0
 	create_tween().tween_property(go, "modulate:a", 1.0, 0.3).set_delay(1.2)
 
@@ -101,4 +108,8 @@ func _escaped(fresh: bool) -> void:
 	_box(cue.get("text", "The evidence fits. Reconstruct the night."), Vector2(520, 680), 30)
 	var label: String = (cue.get("buttons", ["CONTINUE"]) as Array)[0]
 	_button(label, func():
-		get_tree().change_scene_to_file(FINALE if ResourceLoader.exists(FINALE) else "res://scenes/boot.tscn"))
+		var router := get_node_or_null("/root/Router")
+		if router and router.has_scene("finale"):
+			router.goto("finale")
+		else:
+			get_tree().change_scene_to_file(FINALE if ResourceLoader.exists(FINALE) else "res://scenes/boot.tscn"))
