@@ -10,7 +10,7 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 ## Milestones
 | ID | Milestone | Done when | Due | Status |
 |---|---|---|---|---|
-| M0 | Team setup | Repo protected, CI + Pages live, Team HQ pinned, comic layer merged | Mon 10:00 | doing |
+| M0 | Team setup | Repo protected, CI + Pages live, Team HQ pinned, comic layer merged | Mon 10:00 | done |
 | M1 | Mira vertical slice | On the Pages link: talk to Mira → memory page → 2 puzzles → 3 deductions → back to village | Mon 19:00 | todo |
 | M2 | Content complete | Game playable start → credits on the Pages link; autoplay test passes for all 6 witness orders | Tue 02:30 | todo |
 | M3 | Feature freeze | Final art in, playtested by 2 outsiders, only bug fixes after this | Tue 12:00 | todo |
@@ -19,11 +19,11 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 ## Garv — lead, comic UI, build & release
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
-| G1 | Project setup (Vite + TS + Phaser 3.90) | `npm run dev` / `npm run build` work | Mon 10:00 | review |
-| G2 | Comic layer `src/comic/` (pages, panels, shader, SFX words, bubbles, markup, transitions) | Demo scene renders with no console errors; screenshots checked | Mon 10:00 | review |
-| G3 | Art pipeline `npm run art` | Raw upload → trimmed WebP + `manifest.json` | Mon 10:00 | review |
-| G4 | CI build check + GitHub Pages deploy | Every PR shows a green build; `main` auto-deploys to the Pages link | Mon 10:00 | doing |
-| G5 | Protect `main`, labels, pinned Team HQ issue | PR-only merges enforced; Team HQ pinned with the play link | Mon 10:00 | doing |
+| G1 | Project setup (Vite + TS + Phaser 3.90) | `npm run dev` / `npm run build` work | Mon 10:00 | done |
+| G2 | Comic layer `src/comic/` (pages, panels, shader, SFX words, bubbles, markup, transitions) | Demo scene renders with no console errors; screenshots checked | Mon 10:00 | done |
+| G3 | Art pipeline `npm run art` | Raw upload → trimmed WebP + `manifest.json` | Mon 10:00 | done |
+| G4 | CI build check + GitHub Pages deploy | Every PR shows a green build; `main` auto-deploys to the Pages link | Mon 10:00 | done |
+| G5 | Protect `main`, labels, pinned Team HQ issue | PR-only merges enforced; Team HQ pinned with the play link | Mon 10:00 | done |
 | G6 | `MemoryPage` scene (zoom/dim, 5 fragments, Evidence 0/5, puzzle launch, RECONSTRUCT / LEAVE MEMORY) | Mira page playable from data | Mon 16:00 | todo |
 | G7 | Casebook (columns, timeline, FIGURE/NIA cards, CORROBORATES / CONTRADICTS / REVEALS threads, Figure flip) | Opens from anywhere; threads appear when both clues are known | Mon 23:00 | todo |
 | G8 | Opening (6 frames) + Finale (8 frames) + Truth ending + Summary/Credits | Plays start to end from data; silhouette dissolves into young Elias | Tue 02:30 | todo |
