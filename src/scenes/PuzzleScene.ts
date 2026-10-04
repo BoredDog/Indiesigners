@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { attachComicFx, Bubble, COLORS, comicSettings, dur, FONTS, impact, pageTurn, TEXT_RESOLUTION } from '../comic';
+import { gameState } from '../core/GameState';
 import { PH, makePlaceholders } from '../dev/placeholders';
 import { getLevel, PUZZLE_TEXT as T } from '../puzzle/levels';
 import { initialState, inkTiles, neighbour, sentinelAt, step, xy, gateOpen, waterDry } from '../puzzle/Rules';
@@ -133,6 +134,36 @@ export class PuzzleScene extends Phaser.Scene {
 
     this.cameras.main.fadeIn(dur(200), 0, 0, 0);
     (window as unknown as { __puzzle: PuzzleScene }).__puzzle = this;
+    this.time.delayedCall(250, () => void this.teach());
+  }
+
+  /** Mechanics on this board, in teaching order. */
+  mechanics(): string[] {
+    const c = this.level.cells;
+    const has = (k: string) => c.some((x) => x.k === k);
+    const sw = (kind: string) => c.some((x) => x.k === 'switch' && x.kind === kind);
+    const out: string[] = [];
+    if (has('pillar') || this.level.crates.length) out.push('light');
+    if (has('dial')) out.push('dial');
+    if (sw('lever')) out.push('lever');
+    if (sw('sluice')) out.push('sluice');
+    if (this.level.crates.length) out.push('crate');
+    if (this.level.sentinels.length) out.push('sentinel');
+    if (sw('node')) out.push('node');
+    if (has('collapse')) out.push('collapse');
+    return out;
+  }
+
+  /** V8: one rule caption per mechanic the first time it appears (saved via gameState flags). */
+  private async teach() {
+    const fresh = this.mechanics().filter((m) => !gameState.flag(`pz_taught_${m}`));
+    if (!fresh.length || this.done) return;
+    this.busy = true;
+    for (const m of fresh) {
+      await popup(this, T.teach[m], [T.teachOk]);
+      gameState.setFlag(`pz_taught_${m}`);
+    }
+    this.busy = false;
   }
 
   // ------------------------------------------------------------------ public test hooks

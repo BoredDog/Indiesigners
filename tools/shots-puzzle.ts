@@ -54,6 +54,25 @@ function route(l: LevelFile) {
   return { q: `puzzleId=${l.id}&evidenceId=${ev.id}&witness=${ev.witness}&returnTo=Memory`, back: 'Memory', ev: ev.id };
 }
 
+/** Clicks through any open popups (first-time mechanic captions); returns how many. */
+async function dismissPopups(): Promise<number> {
+  let n = 0;
+  for (let k = 0; k < 10; k++) {
+    await page.waitForTimeout(350);
+    const clicked = await page.evaluate(() => {
+      const p = (window as any).__puzzle;
+      const layer = p?.children.list.find((o: any) => o.name === 'popup');
+      const b = layer?.list.find((o: any) => o.name === 'btn:GOT IT');
+      if (!b) return false;
+      b.emit('click');
+      return true;
+    });
+    if (!clicked) break;
+    n++;
+  }
+  return n;
+}
+
 async function open(l: LevelFile) {
   const r = route(l);
   await page.goto(`http://localhost:4183/?scene=Puzzle&${r.q}`);
@@ -68,6 +87,11 @@ async function open(l: LevelFile) {
 try {
   for (const l of levels) {
     const r = await open(l);
+    await page.waitForTimeout(300);
+    await shot(`${l.id}-0-teach`);
+    const mechanics = await page.evaluate(() => (window as any).__puzzle.mechanics().length);
+    const taught = await dismissPopups();
+    check(taught === mechanics, `${l.id}: ${taught}/${mechanics} mechanic captions on a fresh save`);
     await shot(`${l.id}-0-start`);
     const sol = solve(parseLevel(l))!;
     // Play all but the last move, screenshot mid-solve, then finish.
@@ -89,6 +113,15 @@ try {
   // Controls: undo, reset → HINT after 3, SKIP after 6, skip awards the evidence.
   const l = levels.find((x) => x.id === 'pz_sis_1') ?? levels[0];
   const r = await open(l);
+  await dismissPopups();
+  // Captions are shown once: restarting the board in the same session shows none.
+  await page.evaluate(() => {
+    const p = (window as any).__puzzle;
+    p.scene.restart(p.data0);
+  });
+  await page.waitForTimeout(800);
+  await page.waitForFunction(() => (window as any).__puzzle?.level);
+  check((await dismissPopups()) === 0, 'mechanic captions only shown once per save');
   const P = <T>(code: string) => page.evaluate((c) => new Function('p', `return ${c}`)((window as any).__puzzle), code) as Promise<T>;
   const first = solve(parseLevel(l))!.moves[0];
   await page.evaluate((m) => (window as any).__puzzle.play(m), first);
