@@ -164,6 +164,7 @@ export class PuzzleScene extends Phaser.Scene {
       await popup(this, T.teach[m], [T.teachOk]);
       gameState.setFlag(`pz_taught_${m}`);
     }
+    this.queued = undefined; // keys pressed while a caption was open must not fire later
     this.busy = false;
   }
 
@@ -883,6 +884,7 @@ export class PuzzleScene extends Phaser.Scene {
   /** Jump to a state without animating the turn (undo / reset / rewind). */
   private restore(s: State) {
     this.state = s;
+    this.queued = undefined;
     this.tweens.killTweensOf(this.wisp);
     this.wisp.setPosition(this.cx(s.pos), this.cy(s.pos)).setScale(1).setAlpha(1);
     // Rebuild crate bookkeeping from positions.
@@ -935,6 +937,7 @@ export class PuzzleScene extends Phaser.Scene {
     if (this.busy || this.done) return;
     this.busy = true;
     const choice = await popup(this, T.skipConfirm, [T.skip, T.back]);
+    this.queued = undefined;
     this.busy = false;
     if (choice === T.skip) this.finish(true);
   }
