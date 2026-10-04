@@ -1,0 +1,20 @@
+{
+  "id": "pz_bro_2",
+  "title": "TICK! The Pocket Watch",
+  "tip": "Sluice switches drain or flood the channels.",
+  "reward": "ev_arun_tick",
+  "light": "E",
+  "shadow": 1,
+  "par": 8,
+  "tiles": [
+    "._...",
+    "G~...",
+    ".~...",
+    ".~..S",
+    ".~..L"
+  ],
+  "legend": {
+    "~": "water:s1",
+    "L": "sluice:s1"
+  }
+}

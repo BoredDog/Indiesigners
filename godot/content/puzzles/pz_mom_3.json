@@ -1,0 +1,50 @@
+{
+  "id": "pz_mom_3",
+  "title": "WHOOM! Every Node at Once",
+  "tip": "Nodes, echoes and the clock: one wrong step wakes the network.",
+  "reward": "ev_leela_whoom",
+  "light": "N",
+  "shadow": 2,
+  "par": 18,
+  "tiles": [
+    "...._M#",
+    "b______",
+    "L..._#.",
+    "...D_.G",
+    "....A..",
+    "..S._..",
+    "...._.."
+  ],
+  "legend": {
+    "A": "gate:g1",
+    "b": "gate:g2:open",
+    "L": "node:g1,g2",
+    "M": "node:g2"
+  },
+  "sentinels": [
+    {
+      "path": [
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    {
+      "path": [
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ]
+      ]
+    }
+  ]
+}
