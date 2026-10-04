@@ -3,12 +3,13 @@ import './style.css';
 import { loadComicFonts } from './comic';
 import { ComicDemoScene } from './dev/ComicDemoScene';
 import { MemoryScene } from './scenes/MemoryScene';
+import { CasebookScene } from './scenes/CasebookScene';
 
 // Phaser must not create Text before the comic fonts are loaded.
 await loadComicFonts();
 
 // Scene list. Nav: add Boot/Title/Village… here and make Boot the first entry.
-const scenes: Phaser.Types.Scenes.SceneType[] = [MemoryScene, ComicDemoScene];
+const scenes: Phaser.Types.Scenes.SceneType[] = [MemoryScene, CasebookScene, ComicDemoScene];
 
 // Dev shortcut: ?scene=Memory&witness=mira jumps straight to a scene.
 const params = new URLSearchParams(location.search);

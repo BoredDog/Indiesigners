@@ -44,6 +44,11 @@ export class MemoryScene extends Phaser.Scene {
     super('Memory');
   }
 
+  /** Current state adapter (exposed for tests via window.__memory.deps). */
+  get deps() {
+    return memoryDeps();
+  }
+
   preload() {
     if (!this.textures.exists('paper')) this.load.image('paper', 'assets/textures/paper002.jpg');
   }
@@ -257,7 +262,7 @@ export class MemoryScene extends Phaser.Scene {
 
   private openCasebook() {
     if (this.scene.manager.keys['Casebook']) {
-      this.scene.pause();
+      this.scene.sleep(); // the board is opaque: stop rendering the page under it
       this.scene.launch('Casebook', { returnTo: 'Memory' });
     } else this.toast('Casebook is not built yet.');
   }
