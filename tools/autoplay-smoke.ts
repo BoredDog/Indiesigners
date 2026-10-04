@@ -83,6 +83,12 @@ try {
   check(!(await find(page, 'btn:CONTINUE')), 'no Continue without a save');
   await shot('02-title-menu');
   await click('btn:NEW GAME');
+  // New Game plays the Opening first (6 frames); click through it into the Village.
+  await scene('Opening');
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press('Space');
+    await wait(700);
+  }
   await scene('Village');
   await shot('03-village');
 
