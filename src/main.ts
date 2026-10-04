@@ -34,11 +34,8 @@ const scenes: Phaser.Types.Scenes.SceneType[] = [
   ComicDemoScene,
 ];
 
-// Dev shortcut: ?scene=Memory&witness=mira jumps straight to a scene (via Boot, so shared
-// textures exist; Boot forwards the other params as scene data).
-const params = new URLSearchParams(location.search);
-const startKey = params.get('scene');
-
+// Dev shortcut: ?scene=Memory&witness=mira jumps straight to a scene. BootScene reads it,
+// so shared textures exist and the other params become scene data.
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'app',
@@ -48,12 +45,6 @@ const game = new Phaser.Game({
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
   scene: scenes,
 });
-if (startKey) {
-  game.events.once(Phaser.Core.Events.READY, () => {
-    for (const s of game.scene.getScenes(true)) game.scene.stop(s.scene.key);
-    game.scene.start('Boot', { ...Object.fromEntries(params), next: startKey });
-  });
-}
 
 // Test hook for tools/autoplay*.ts.
 (window as unknown as { __echoes: unknown }).__echoes = { game, gameState };
