@@ -6,7 +6,7 @@ import { preview } from 'vite';
 
 const outDir = process.argv[2] ?? 'test-results/core';
 const server = await preview({ preview: { port: 4181, strictPort: true }, logLevel: 'silent' });
-const url = 'http://localhost:4181/';
+const url = 'http://localhost:4181/?autosolve=1'; // autosolve: Echo Paths hand their fragment straight back (tools/shots-puzzle.ts plays them)
 const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
 const errors: string[] = [];
@@ -154,7 +154,7 @@ try {
   await scene('Village');
   await shot('11-village-after-mira');
 
-  // Clock tower clue (Puzzle not merged → direct reveal)
+  // Clock tower clue (Puzzle scene autosolves → back to Village with the evidence)
   await click('spot:tower');
   await shot('12-tower-evidence');
   await click('btn:CONTINUE');
