@@ -1,0 +1,32 @@
+{
+  "_source": "Blueprint L2 (finale frames) and L3 (truth ending, epilogue, summary). 'see', 'shows' and 'animation' are direction for the panel art, not on-screen text.",
+  "frames": [
+    { "id": 1, "see": "Three witness panels and their resolved evidence cards.", "narration": "I thought I was solving three separate stories.", "shows": "Mira, Arun and Leela each hold one part of the same event.", "sfx": "LOW HEARTBEAT...", "animation": "Panels slide into one investigation board." },
+    { "id": 2, "see": "2:17 clocks overlaid with Arun's 2:31 watch.", "narration": "The clocks stopped. The night did not.", "shows": "The fixed time is shown as a false anchor.", "sfx": "TICK...", "animation": "The 2:31 hand keeps moving." },
+    { "id": 3, "see": "Nia's clinic record beside the child from the memory echo.", "narration": "I remembered a disappearance. I did not remember her name.", "shows": "The child is Nia Vane, the person Elias was carrying.", "sfx": "PAPER!", "animation": "The redacted name resolves." },
+    { "id": 4, "see": "Master console and village network lit simultaneously.", "narration": "Someone gave the lantern all of Veyra.", "shows": "The activation record shows Elias opening every node.", "sfx": "WHOOM!", "animation": "Lines spread across the village map." },
+    { "id": 5, "see": "Casebook threads converge on THE FIGURE.", "narration": "The stories were never separate.", "shows": "Every decisive clue points to the same silhouette and tools.", "sfx": "THUMP!", "animation": "Threads snap into one point." },
+    { "id": 6, "see": "Anonymous case request beside old Elias handwriting.", "narration": "I did not remember writing the case that brought me here.", "shows": "The handwriting and paper match Elias's own archived notes.", "sfx": "SCRATCH!", "animation": "Ink duplicates and aligns." },
+    { "id": 7, "see": "Close black silhouette holding the lantern staff.", "narration": "I knew the shape because I had been carrying it for years.", "shows": "The outline becomes the younger Elias.", "sfx": "WHOOM!", "animation": "Black mask dissolves from the edges inward." },
+    { "id": 8, "see": "Young Elias activates the machine, then reaches for the self-purge control.", "narration": "I caused the incident. Then I erased the person who caused it.", "shows": "The original experiment, Nia, the village network and the self-memory purge are shown in one unedited record.", "sfx": "SILENCE... CHIME.", "animation": "The past overlays the present.", "button": "CONTINUE" }
+  ],
+  "truthEnding": {
+    "outcome": "Elias remembers the entire Veyra incident and the player sees the canonical reconstructed truth.",
+    "narration": "I came here looking for the person who erased the village. It was me.",
+    "panels": ["Nia", "The overloaded lantern", "The vanished village", "Elias facing the archive"],
+    "finalState": "The silhouette is gone; Elias is fully visible; Veyra remains quiet but no longer loops."
+  },
+  "epilogue": {
+    "condition": "All optional evidence found (100% evidence).",
+    "outcome": "The final page briefly shows the master log being archived under Elias's real name.",
+    "narration": "The truth was never missing. I was.",
+    "panel": "The village clock advances from 2:17 to 2:18.",
+    "finalState": "The casebook closes on a complete timeline with every required clue connected."
+  },
+  "summary": {
+    "title": "Investigation complete.",
+    "shows": "The nine confirmed deductions, witness resolutions, optional evidence count, discovered locations, then Credits.",
+    "replayHint": "Some evidence was easier to miss.",
+    "buttons": ["BACK TO TITLE", "PLAY AGAIN"]
+  }
+}
