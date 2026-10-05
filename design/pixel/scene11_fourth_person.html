@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"></head><body><title>Veyra Cast</title>
+<!doctype html><html><head><meta charset="utf-8"></head><body><title>The Fourth Person</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -69,41 +69,38 @@ ol.steps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:72ch}
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Echoes of Sorrow · Characters · Drafts for Bhumi</div>
-    <h1>The <span class="t">Cast</span></h1>
-    <p class="lede">The three witnesses as 64 × 64 conversation busts, plus the sister and the unknown woman as full-body sprites on the same 32 × 58 frame as Elias.</p>
-    <p>Drawn in code from flat shapes, auto ink outline and a hard shadow on the side away from the light. Paint over them: keep the canvas size, the palette and the head position so they drop straight into the game.</p>
+    <div class="eyebrow">Echoes of Sorrow · Finale · Scene 11 · Drafts for Bhumi</div>
+    <h1>The Fourth <span class="t">Person</span></h1>
+    <p class="lede">"The fourth person was Elias." His sister, seriously ill. Hanna: "You don't know what it will do." The lantern network wakes. "I'm trying to save you." / "You were trying to save me. But you were the one who killed me." He changes what they remembered, then his own. 2:17 → 2:18. The ghosts are gone.</p>
+    <p>Five panels in story order, plus young Elias (face finally shown) and the sister in two states. Young Elias keeps the same hat, coat, staff and amber scarf as the Elias you have been playing, so the outline itself is the reveal.</p>
   </header>
 
-  <section aria-labelledby="busts">
-    <h2 id="busts">Portraits · 64 × 64</h2>
-    <div class="cast" id="busts-row"></div>
-    <p class="cap">Shown at 5×. Order Bhumi paints them: Hanna first (Vansh needs her for the unknown woman), then Ivy, then Luke. In the present day the game washes them pale in code; the art stays in full colour for the memories.</p>
+  <section aria-labelledby="p">
+    <h2 id="p">Finale panels · 480 × 270</h2>
+    <div id="panels" style="display:grid;gap:18px"></div>
+    <div class="controls" role="group" aria-label="Mockup controls"><button id="play" type="button">Pause</button></div>
   </section>
 
-  <section aria-labelledby="sprites">
-    <h2 id="sprites">Sprites · 32 × 58</h2>
+  <section aria-labelledby="cast">
+    <h2 id="cast">Young Elias and the sister</h2>
     <div class="cast" id="sprites-row"></div>
-    <p class="cap">Shown at 5×, feet on y = 56 like Elias. The unknown woman is Hanna in a pale, colourless variant: same outline, so the reveal in scene 9 lands.</p>
-  </section>
-
-  <section aria-labelledby="notes">
-    <h2 id="notes">Who they are, in pixels</h2>
-    <div class="tbl"><table>
-      <thead><tr><th>Character</th><th>Read at a glance</th><th>Accent</th></tr></thead>
-      <tbody>
-        <tr><td>Hanna</td><td>Village archivist, fifties. Grey hair pulled into a bun with a white streak, round spectacles, high collar, mud-brown shawl, dried-blood brooch. Stern mouth.</td><td>Violet</td></tr>
-        <tr><td>Ivy</td><td>Schoolteacher, twenties. Dark bob with a silver clip, big worried eyes, chalk on her cheek, dusty-blue cardigan over a bone blouse.</td><td>Dusty blue</td></tr>
-        <tr><td>Luke</td><td>Boatman, thirties. Flat cap, short beard, heavy brows, olive oilskin over a roll-neck. A watch chain hangs from his pocket (the watch says 2:31).</td><td>Olive</td></tr>
-        <tr><td>Sister</td><td>About nine, seriously ill. Long braid, bone nightgown, a blood-red blanket round her shoulders, grey under the eyes.</td><td>Dried blood</td></tr>
-        <tr><td>Unknown woman</td><td>Hanna's outline in ghost colours only: mist dress, bone skin, no accent. She must not read as Hanna by colour.</td><td>None</td></tr>
-      </tbody>
-    </table></div>
+    <p class="cap">Portrait 64 × 64; bodies 32 × 58 (feet on y = 56); the sister in bed is 56 × 24. The teal pixel in his eyes is the lantern's reflection: keep it, it is the only colour in his face.</p>
   </section>
 
   <section aria-labelledby="files">
-    <h2 id="files">Files</h2>
-    <p><code>art-src/pixel/chars/</code>: <code>portrait_hanna.png</code>, <code>portrait_ivy.png</code>, <code>portrait_luke.png</code> (64×64), <code>char_sister.png</code>, <code>char_unknown_woman.png</code> (32×58). Finals go to <code>art/incoming/bhumi/</code> under the same names.</p>
+    <h2 id="files">Files · <code>art-src/pixel/scene11/</code></h2>
+    <div class="tbl"><table>
+      <thead><tr><th>File</th><th>What it is</th></tr></thead>
+      <tbody>
+        <tr><td><code>panel_bedside.png</code></td><td>Young Elias at his sister's bed, the lantern on the table.</td></tr>
+        <tr><td><code>panel_network.png</code></td><td>The village lantern network lights up from the tower outward (lines + points drawn in code over this sky).</td></tr>
+        <tr><td><code>panel_confront.png</code></td><td>The sister's ghost faces him: "You were the one who killed me."</td></tr>
+        <tr><td><code>panel_erase.png</code></td><td>He turns the lantern on himself; teal floods in from the glass.</td></tr>
+        <tr><td><code>panel_alone.png</code></td><td>Present day: Elias alone in the chamber; the three ghosts dither away one by one.</td></tr>
+        <tr><td><code>portrait_elias_young.png</code>, <code>char_elias_young.png</code>, <code>char_sister_bed.png</code>, <code>char_sister_ghost.png</code></td><td>In <code>art-src/pixel/chars/</code>.</td></tr>
+      </tbody>
+    </table></div>
+    <p>The 2:17 → 2:18 beat reuses the scene 2 clock with the minute hand moved one tick; the photo swap uses scene 6's two states.</p>
   </section>
 </div>
 
@@ -236,7 +233,7 @@ function toCanvas(b) {
 }
 // Light with any pair of tables (LIT1/LIT2 = lantern teal, LITA1/LITA2 = warm lamp)
 const LITA1 = [6,2,3,5,5,21,7,8,12,10,10,11,13,13,15,15,18,17,17,6,7,8,2,23,23,25,25];
-const LITA2 = [6,6,7,7,8,8,14,14,12,10,12,11,13,13,15,15,18,17,17,7,8,12,6,23,23,25,25];
+const LITA2 = [6,6,7,7,8,8,7,14,12,10,12,11,13,13,15,15,18,17,17,7,8,12,6,23,23,25,25];
 function lightT(b, lx, ly, R, T1, T2, sq = 1.15) {
   lx = Math.round(lx); ly = Math.round(ly);
   for (let y = Math.max(0, ly - R); y < Math.min(b.h, ly + R); y++) for (let x = Math.max(0, lx - R); x < Math.min(b.w, lx + R); x++) {
@@ -251,139 +248,146 @@ function stamp(dst, src, ox, oy, flip = false) {
   for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) { const v = src.c[y * src.w + (flip ? src.w - 1 - x : x)]; if (v !== 255) dst.set(ox + x, oy + y, v); }
 }
 
-// ------------------------------------------------ portraits 64x64
-function bustBase(f, P, broad) {
-  const s = broad ? 4 : 0;
-  f.poly([[6 - s, 64], [10 - s, 49], [21, 43], [43, 43], [54 + s, 49], [58 + s, 64]], P.coat);
-  f.rect(28 - (broad ? 1 : 0), 35, broad ? 10 : 8, 10, P.skin);
-}
-function eyes(b, y, big, col = C.ink) {
-  for (const ex of [26, 35]) {
-    b.rect(ex, y, 4, big ? 3 : 2, C.bone);
-    b.rect(ex + 1, y, 2, big ? 3 : 2, col);
-    if (big) b.set(ex + 1, y, C.bone);
-    b.rect(ex - (ex === 26 ? 1 : 0), y - 1, 5, 1, C.ink);
-  }
-}
-function hanna(ghost) {
-  const P = ghost
-    ? { skin: 0, hair: 1, coat: 2, shawl: 3, collar: 4 }
-    : { skin: 0, hair: 1, coat: 2, shawl: 3, collar: 4 };
-  const parts = ghost
-    ? [{ base: C.bone, shade: C.boneD, line: true }, { base: C.boneD, shade: C.mist, line: true }, { base: C.mist, shade: C.haze, line: true }, { base: C.haze, shade: C.dusk, line: true }, { base: C.bone, shade: C.boneD, line: true }]
-    : [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.stoneL, shade: C.stone, line: true }, { base: C.violet, shade: C.violetD, line: true }, { base: C.mud, shade: C.mudD, line: true }, { base: C.bone, shade: C.boneD, line: true }];
-  return { P, parts };
-}
-function portraitHanna() {
-  const { P, parts } = hanna(false), f = Figure(64, 64, parts);
-  bustBase(f, P);
-  f.poly([[8, 64], [12, 50], [22, 45], [30, 53], [26, 64]], P.shawl); f.poly([[56, 64], [52, 50], [42, 45], [34, 53], [38, 64]], P.shawl);
-  f.poly([[26, 43], [38, 43], [37, 49], [32, 51], [27, 49]], P.collar);
-  f.ell(32, 13, 9, 5, P.hair); f.ell(32, 23, 13, 11, P.hair);
-  f.ell(21, 28, 2, 3, P.skin); f.ell(43, 28, 2, 3, P.skin);
-  f.ell(32, 28, 10, 11, P.skin);
-  f.poly([[21, 25], [22, 15], [32, 12], [42, 15], [43, 25], [40, 19], [32, 17], [24, 19]], P.hair);
-  const b = f.render();
-  eyes(b, 28, false);
-  for (const ex of [25, 34]) { b.line(ex, 26, ex + 5, 26, C.ink); b.line(ex, 31, ex + 5, 31, C.ink); b.line(ex, 26, ex, 31, C.ink); b.line(ex + 5, 26, ex + 5, 31, C.ink); }
-  b.line(31, 28, 33, 28, C.ink);
-  b.line(25, 24, 29, 23, C.stone); b.line(35, 23, 39, 24, C.stone);
-  b.line(32, 30, 33, 33, C.mudL); b.set(31, 34, C.mudL);
-  b.line(29, 37, 35, 37, C.mud); b.set(28, 36, C.mudL); b.set(36, 36, C.mudL);
-  b.set(25, 34, C.mudL); b.set(39, 34, C.mudL);
-  b.line(27, 13, 24, 22, C.boneD); b.line(28, 13, 25, 21, C.boneD);
-  b.rect(31, 46, 3, 3, C.blood); b.set(32, 46, C.bone);
-  return b;
-}
-function portraitIvy() {
-  const P = { skin: 0, hair: 1, coat: 2, blouse: 3 };
-  const parts = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.blue, shade: C.blueD, line: true }, { base: C.bone, shade: C.boneD, line: true }];
-  const f = Figure(64, 64, parts);
-  bustBase(f, P);
-  f.poly([[25, 43], [39, 43], [32, 57]], P.blouse);
-  f.ell(32, 24, 14, 13, P.hair); f.rect(18, 24, 28, 15, P.hair);
-  f.ell(32, 28, 10, 11, P.skin);
-  f.poly([[20, 27], [21, 16], [32, 11], [43, 16], [44, 27], [41, 20], [35, 17], [30, 21], [24, 19]], P.hair);
-  const b = f.render();
-  eyes(b, 27, true, C.blueD);
-  b.set(25, 27, C.ink); b.set(39, 27, C.ink);
-  b.line(25, 24, 29, 24, C.mudD); b.line(35, 24, 39, 24, C.mudD); b.set(29, 23, C.mudD); b.set(35, 23, C.mudD);
-  b.line(32, 31, 32, 32, C.mudL);
-  b.line(30, 35, 34, 35, C.blood); b.set(29, 36, C.mudL);
-  b.set(38, 32, C.bone); b.set(39, 33, C.bone); b.set(37, 33, C.bone);
-  b.line(40, 17, 43, 19, C.bone); b.set(41, 17, C.stoneL);
-  b.set(25, 50, C.boneD); b.set(26, 55, C.boneD); b.set(27, 60, C.boneD);
-  return b;
-}
-function portraitLuke() {
-  const P = { skin: 0, beard: 1, cap: 2, coat: 3, knit: 4 };
-  const parts = [{ base: C.mudL, shade: C.mud, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.oliveD, shade: C.ink, line: true }, { base: C.olive, shade: C.oliveD, line: true }, { base: C.mud, shade: C.mudD, line: true }];
-  const f = Figure(64, 64, parts);
-  bustBase(f, P, true);
-  f.poly([[24, 41], [40, 41], [39, 50], [25, 50]], P.knit);
-  f.ell(20.5, 28, 2, 3, P.skin); f.ell(43.5, 28, 2, 3, P.skin);
-  f.ell(32, 27, 11, 12, P.skin);
-  f.poly([[21, 28], [22, 36], [27, 41], [32, 42], [37, 41], [42, 36], [43, 28], [40, 33], [36, 35], [28, 35], [24, 33]], P.beard);
-  f.poly([[19, 22], [21, 13], [32, 10], [43, 13], [46, 20], [44, 22]], P.cap);
-  f.poly([[19, 22], [46, 20], [48, 23], [20, 25]], P.cap);
-  const b = f.render();
-  eyes(b, 27, false);
-  b.line(24, 25, 30, 25, C.ink); b.line(34, 25, 40, 25, C.ink); b.line(25, 24, 29, 24, C.mudD); b.line(35, 24, 39, 24, C.mudD);
-  b.line(32, 28, 33, 31, C.mud); b.set(31, 32, C.mud); b.set(34, 32, C.mud);
-  b.line(28, 35, 36, 35, C.ink); b.line(30, 37, 34, 37, C.mud);
-  b.line(18, 46, 25, 60, C.oliveD); b.line(46, 46, 39, 60, C.oliveD);
-  b.line(41, 54, 45, 57, C.boneD); b.set(46, 58, C.boneD); b.set(43, 55, C.stoneL);
-  b.line(22, 15, 41, 14, C.ink);
-  return b;
-}
+const W = 480, H = 270;
 
-// ------------------------------------------------ full-body sprites 32x58 (feet at y=56)
-function spriteWoman(ghost) {
-  const { P, parts } = hanna(ghost), f = Figure(32, 58, parts);
-  f.poly([[9, 56], [10, 30], [12, 19], [20, 19], [22, 30], [23, 56]], P.coat);
-  f.poly([[9, 33], [11, 20], [16, 21], [14, 34]], P.shawl); f.poly([[23, 33], [21, 20], [16, 21], [18, 34]], P.shawl);
-  f.rect(14, 17, 4, 3, P.collar);
-  f.ell(16, 4, 2.5, 2, P.hair); f.ell(16, 9, 5, 5, P.hair);
-  f.ell(16, 11, 4, 4.5, P.skin);
-  f.poly([[11, 10], [12, 6], [16, 5], [20, 6], [21, 10], [19, 8], [13, 8]], P.hair);
-  f.rect(13, 34, 2, 3, P.skin); f.rect(18, 34, 2, 3, P.skin);
-  const b = f.render(1, 1);
-  b.set(14, 11, C.ink); b.set(18, 11, C.ink);
-  if (!ghost) { b.set(13, 11, C.ink); b.set(15, 11, C.ink); b.set(17, 11, C.ink); b.set(19, 11, C.ink); b.set(16, 18, C.blood); }
-  b.line(15, 14, 17, 14, ghost ? C.boneD : C.mud);
-  b.rect(11, 56, 4, 1, C.ink); b.rect(17, 56, 4, 1, C.ink);
-  return b;
-}
-function spriteSister() {
-  const P = { skin: 0, hair: 1, gown: 2, blanket: 3 };
-  const parts = [{ base: C.bone, shade: C.boneD, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.bone, shade: C.boneD, line: true }, { base: C.blood, shade: C.mudD, line: true }];
+// ------------------------------------------------ characters
+function youngElias() {
+  const parts = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.ink, shade: C.ink, line: false }, { base: C.soot, shade: C.ink, line: true }, { base: C.amber, shade: C.amberD, line: true }, { base: C.ink, shade: C.ink, line: false }];
   const f = Figure(32, 58, parts);
-  f.poly([[10, 56], [11, 36], [13, 28], [19, 28], [21, 36], [22, 56]], P.gown);
-  f.poly([[9, 44], [10, 31], [14, 27], [18, 27], [22, 31], [23, 44], [19, 40], [13, 40]], P.blanket);
-  f.ell(16, 21, 4.5, 5, P.hair); f.poly([[19, 22], [21, 24], [21, 38], [19, 38]], P.hair);
-  f.ell(16, 22.5, 3.5, 4, P.skin);
-  f.poly([[12, 21], [13, 17], [16, 16], [19, 17], [20, 21], [18, 19], [14, 19]], P.hair);
+  f.poly([[8, 50], [10, 20], [22, 20], [24, 50]], 2);
+  f.rect(11, 50, 4, 6, 4); f.rect(17, 50, 4, 6, 4);
+  f.rect(13, 16, 6, 4, 0); f.ell(16, 12, 4.5, 5, 0);
+  f.rect(10, 18, 12, 3, 3); f.poly([[10, 19], [6, 26], [8, 27], [12, 21]], 3);
+  f.rect(12, 1, 8, 6, 1); f.rect(8, 6, 16, 2, 1);
+  f.rect(22, 24, 3, 12, 2); f.rect(22, 35, 3, 3, 0);
   const b = f.render(1, 1);
-  b.set(14, 22, C.ink); b.set(18, 22, C.ink); b.set(14, 23, C.mist); b.set(18, 23, C.mist);
-  b.set(16, 25, C.mudL);
-  b.rect(13, 56, 2, 1, C.boneD); b.rect(17, 56, 2, 1, C.boneD);
-  b.set(21, 30, C.ink); b.set(21, 33, C.ink); b.set(21, 36, C.ink);
+  b.set(14, 12, C.ink); b.set(18, 12, C.ink); b.set(18, 11, C.tealM); b.line(15, 15, 17, 15, C.mudL);
+  b.rect(8, 6, 16, 1, C.stoneD); b.rect(12, 1, 8, 1, C.stoneD); b.rect(19, 2, 1, 4, C.stoneD); b.rect(12, 5, 8, 1, C.stone);
+  b.line(16, 21, 16, 48, C.ink); b.rect(11, 56, 4, 1, C.ink); b.rect(17, 56, 4, 1, C.ink);
+  b.line(26, 2, 26, 56, C.mudD); b.set(27, 1, C.mudD); b.set(28, 1, C.mudD); b.set(29, 2, C.ink);
+  b.rect(27, 4, 5, 7, C.ink); b.rect(28, 5, 3, 5, C.teal); b.set(29, 7, C.bone);
   return b;
 }
-
-// ------------------------------------------------ show + export hook
-const SPRITES = {
-  'portrait_hanna.png': portraitHanna(), 'portrait_ivy.png': portraitIvy(), 'portrait_luke.png': portraitLuke(),
-  'char_sister.png': spriteSister(), 'char_unknown_woman.png': spriteWoman(true), 'char_hanna_body.png': spriteWoman(false),
-};
-const LABEL = { 'portrait_hanna.png': 'Hanna', 'portrait_ivy.png': 'Ivy', 'portrait_luke.png': 'Luke', 'char_sister.png': 'Sister', 'char_unknown_woman.png': 'Unknown woman', 'char_hanna_body.png': 'Hanna (memory)' };
-for (const [name, b] of Object.entries(SPRITES)) {
-  const row = document.getElementById(name.startsWith('portrait') ? 'busts-row' : 'sprites-row');
-  const fig = document.createElement('figure'); const c = toCanvas(b);
-  c.style.width = (b.w * 5) + 'px'; c.setAttribute('role', 'img'); c.setAttribute('aria-label', LABEL[name] + ' pixel draft');
-  fig.appendChild(c); const cap = document.createElement('figcaption'); cap.textContent = LABEL[name] + ' · ' + b.w + '×' + b.h; fig.appendChild(cap); row.appendChild(fig);
+function youngEliasPortrait() {
+  const parts = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.ink, shade: C.ink, line: true }, { base: C.soot, shade: C.ink, line: true }, { base: C.amber, shade: C.amberD, line: true }];
+  const f = Figure(64, 64, parts);
+  f.poly([[4, 64], [8, 50], [20, 44], [44, 44], [56, 50], [60, 64]], 2);
+  f.rect(27, 36, 10, 9, 0);
+  f.ell(32, 26, 15, 13, 1); f.ell(32, 29, 10, 11.5, 0);
+  f.poly([[18, 26], [20, 13], [26, 12], [30, 18], [34, 12], [40, 14], [46, 24], [42, 20], [37, 19], [31, 22], [25, 19]], 1);
+  f.poly([[20, 42], [44, 42], [46, 48], [18, 48]], 3); f.poly([[22, 46], [16, 60], [22, 61], [27, 48]], 3);
+  const b = f.render();
+  for (const ex of [26, 35]) { b.rect(ex, 28, 4, 2, C.bone); b.rect(ex + 1, 28, 2, 2, C.ink); b.rect(ex - 1, 27, 5, 1, C.ink); b.set(ex + 2, 28, C.tealM); }
+  b.line(25, 25, 29, 26, C.ink); b.line(35, 26, 39, 25, C.ink);
+  b.set(26, 31, C.mudL); b.set(37, 31, C.mudL); b.line(25, 32, 29, 32, C.mudL); b.line(35, 32, 39, 32, C.mudL);
+  b.line(32, 30, 32, 33, C.mudL); b.line(30, 37, 34, 37, C.mud);
+  return b;
 }
-window.__veyra = { SPRITES, toCanvas };
+function sisterBed() {
+  const b = new Buf(56, 24); b.c.fill(255);
+  b.disc(8, 10, 6, C.mudD); b.disc(9, 11, 4, C.bone); b.set(8, 11, C.ink); b.set(11, 11, C.ink); b.set(8, 12, C.mist); b.set(11, 12, C.mist);
+  b.line(4, 15, 18, 22, C.mudD); b.line(4, 16, 17, 22, C.mudD);
+  for (let x = 14; x < 54; x++) { const h = 6 + Math.round(Math.sin((x - 14) / 40 * Math.PI) * 4); b.rect(x, 18 - h, 1, h + 2, x === 14 || x === 53 ? C.ink : (x % 7 === 0 ? C.mudD : C.blood)); b.set(x, 18 - h - 1, C.ink); }
+  b.rect(16, 11, 4, 3, C.bone); return b;
+}
+function sisterGhost() {
+  const parts = [{ base: C.bone, shade: C.boneD, line: true }, { base: C.boneD, shade: C.mist, line: true }, { base: C.bone, shade: C.mist, line: true }, { base: C.mist, shade: C.haze, line: true }];
+  const f = Figure(32, 58, parts);
+  f.poly([[10, 56], [11, 36], [13, 28], [19, 28], [21, 36], [22, 56]], 2);
+  f.poly([[9, 44], [10, 31], [14, 27], [18, 27], [22, 31], [23, 44], [19, 40], [13, 40]], 3);
+  f.ell(16, 21, 4.5, 5, 1); f.poly([[19, 22], [21, 24], [21, 38], [19, 38]], 1); f.ell(16, 22.5, 3.5, 4, 0);
+  const b = f.render(1, 1); b.set(14, 22, C.ink); b.set(18, 22, C.ink); b.line(15, 25, 17, 25, C.boneD); return b;
+}
+function ghost(hair, accent) {
+  const parts = [{ base: C.bone, shade: C.boneD, line: true }, { base: hair, shade: C.mist, line: true }, { base: accent, shade: C.haze, line: true }];
+  const f = Figure(32, 58, parts);
+  f.poly([[9, 56], [10, 30], [12, 19], [20, 19], [22, 30], [23, 56]], 2); f.ell(16, 9, 5, 5, 1); f.ell(16, 11, 4, 4.5, 0);
+  const b = f.render(1, 1); b.set(14, 11, C.ink); b.set(18, 11, C.ink); return b;
+}
+const YE = youngElias(), YEP = youngEliasPortrait(), SB = sisterBed(), SG = sisterGhost();
+const GH = [ghost(C.mist, C.blue), ghost(C.boneD, C.olive), ghost(C.boneD, C.violet)];
+
+function stampScaled(dst, src, ox, oy, s) { for (let y = 0; y < src.h * s; y++) for (let x = 0; x < src.w * s; x++) { const v = src.c[Math.floor(y / s) * src.w + Math.floor(x / s)]; if (v !== 255) dst.set(ox + x, oy + y, v); } }
+function sky(b, horizon) { const st = [C.night, C.soot, C.dusk, C.haze]; for (let y = 0; y < H; y++) { const tt = Math.min(2.999, (y / horizon) * 3), s = Math.floor(tt), fr = tt - s; for (let x = 0; x < W; x++) b.set(x, y, band(fr) > bay(x, y) ? st[s + 1] : st[s], 1); } }
+
+// ------------------------------------------------ panels
+function bedside(t) {
+  const b = new Buf(W, H), r = rng(4);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) b.set(x, y, y < 200 ? ((x + y * 3) % 29 === 0 ? C.dusk : C.soot) : ((y - 200) % 7 === 0 ? C.ink : C.mudD));
+  b.rect(60, 40, 70, 80, C.mudD); b.rect(64, 44, 62, 72, C.dusk); b.disc(108, 62, 7, C.bone); b.disc(112, 59, 6, C.dusk); b.rect(94, 44, 2, 72, C.mudD); b.rect(64, 78, 62, 2, C.mudD);
+  b.rect(170, 168, 160, 8, C.mudL); b.rect(170, 176, 160, 20, C.mud); b.rect(170, 196, 6, 18, C.mudD); b.rect(324, 196, 6, 18, C.mudD); b.rect(168, 140, 8, 60, C.mudD); b.rect(324, 150, 8, 50, C.mudD);
+  b.rect(176, 160, 148, 10, C.bone); b.rect(176, 168, 148, 2, C.boneD);
+  stampScaled(b, SB, 178, 128, 2.6);
+  b.rect(350, 170, 40, 6, C.mudL); b.rect(352, 176, 4, 30, C.mudD); b.rect(384, 176, 4, 30, C.mudD);
+  b.rect(364, 152, 12, 18, C.ink); b.rect(366, 154, 8, 14, C.teal); b.rect(369, 158, 2, 6, C.bone);
+  stampScaled(b, YE, 380, 98, 2);
+  light(b, 370, 160, 140 + (hash(Math.floor(t * 7)) > 0.5 ? 5 : 0));
+  b.rect(366, 154, 8, 14, C.teal); b.rect(369, 158 - (hash(Math.floor(t * 9)) > 0.5 ? 1 : 0), 2, 6, C.bone);
+  return b;
+}
+const NET = (() => { const r = rng(12), pts = []; for (let i = 0; i < 26; i++) pts.push([20 + r() * 440, 120 + r() * 70]); return pts; })();
+function network(t) {
+  const b = new Buf(W, H), r = rng(9); sky(b, 200);
+  let x = -4; while (x < W) { const w = 14 + (r() * 20 | 0), h = 18 + (r() * 40 | 0); b.rect(x, 210 - h, w, h + 60, C.far, 1); for (let k = 0; k < 6; k++) b.rect(x + k, 210 - h - 6 + k, w - 2 * k, 1, C.far, 1); x += w - 1; }
+  b.rect(228, 60, 24, 150, C.soot, 1); for (let k = 0; k < 22; k++) { const hh = Math.round(14 * k / 22); b.rect(240 - hh, 38 + k, hh * 2, 1, C.ink, 1); }
+  b.disc(240, 80, 8, C.ink, 1); b.disc(240, 80, 7, C.boneD, 1);
+  const tt = t % 8, reach = tt * 70;
+  for (const [px, py] of NET) { const d = Math.hypot(px - 240, py - 80); if (d < reach) { b.line(240, 80, px, py, bay(px | 0, py | 0) < 0.5 ? C.tealD : C.tealM, 1); } }
+  for (const [px, py] of NET) { const d = Math.hypot(px - 240, py - 80); if (d < reach) { b.disc(px, py, 2, C.teal, 1); b.set(px, py, C.bone, 1); } else b.set(px, py, C.ink, 1); }
+  b.disc(240, 80, 3, C.teal, 1);
+  return b;
+}
+function confront(t) {
+  const b = new Buf(W, H);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const s = Math.sin(x / 31 + t * 0.6) + Math.sin(y / 17 - t * 0.4); b.set(x, y, bay(x, y) < 0.08 + 0.06 * s ? C.tealD : C.ink); }
+  for (let x = 0; x < W; x++) b.set(x, 226, C.dusk);
+  stampScaled(b, SG, 100, 50, 3);
+  stampScaled(b, YE, 290, 50, 3);
+  light(b, 375, 72, 90);
+  stampScaled(b, YE, 290, 50, 3);
+  return b;
+}
+function erase(t) {
+  const b = new Buf(W, H), tt = t % 6;
+  for (let i = 0; i < b.c.length; i++) b.c[i] = C.ink;
+  stampScaled(b, YEP, 112, -20, 4);
+  const g = Math.min(1, tt / 4);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const d = Math.hypot(x - 380, y - 150) / 380; if (bay(x, y) < (g * 1.4 - d) ) { const c = b.c[y * W + x]; b.c[y * W + x] = c === C.ink ? C.tealD : (d < g * 0.5 ? C.teal : C.tealM); } }
+  b.rect(360, 120, 40, 60, C.ink); b.rect(364, 124, 32, 52, C.teal); b.rect(376, 136, 8, 24, C.bone);
+  return b;
+}
+function alone(t) {
+  const b = new Buf(W, H), r = rng(31), tt = t % 9;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const row = Math.floor(y / 12), off = (row % 2) * 12; b.set(x, y, y > 200 ? C.stoneD : ((y % 12 === 0 || (x + off) % 24 === 0) ? C.ink : C.stoneD)); }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const d = Math.hypot(x - 240, y - 170) / 260; if (bay(x, y) < d) b.c[y * W + x] = C.ink; }
+  b.rect(214, 168, 52, 32, C.stoneL); b.rect(214, 199, 52, 1, C.ink); b.rect(228, 132, 24, 36, C.ink); b.rect(231, 134, 18, 30, C.teal); b.rect(238, 140, 4, 16, C.bone);
+  const order = [[120, GH[0]], [170, GH[1]], [330, GH[2]]];
+  order.forEach(([x, g], k) => { const fade = Math.max(0, Math.min(1, (tt - 2 - k * 1.6) / 1.2)); for (let y = 0; y < 58; y++) for (let xx = 0; xx < 32; xx++) { const v = g.c[y * 32 + xx]; if (v !== 255 && bay(x + xx, 142 + y) >= fade) b.set(x + xx, 142 + y, v); } });
+  stampScaled(b, YE, 266, 142, 1);
+  light(b, 240, 150, 110);
+  b.rect(231, 134, 18, 30, C.teal); b.rect(238, 140, 4, 16, C.bone);
+  return b;
+}
+const PANELS = [['panel_bedside.png', bedside, 'Bedside · "I\'m trying to save you."'], ['panel_network.png', network, 'The network wakes'], ['panel_confront.png', confront, '"You were the one who killed me."'], ['panel_erase.png', erase, 'He erases his own memory'], ['panel_alone.png', alone, 'Present · the ghosts disappear']];
+const host = document.getElementById('panels'), views = [];
+for (const [name, fn, label] of PANELS) {
+  const fig = document.createElement('figure'); fig.style.margin = '0';
+  const st = document.createElement('div'); st.className = 'stage'; const cv = document.createElement('canvas'); cv.width = W; cv.height = H; cv.setAttribute('aria-label', label); st.appendChild(cv); fig.appendChild(st);
+  const cap = document.createElement('figcaption'); cap.className = 'cap'; cap.textContent = label; fig.appendChild(cap); host.appendChild(fig);
+  const ctx = cv.getContext('2d'); views.push({ fn, ctx, img: ctx.createImageData(W, H) });
+}
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let playing = !reduce, t = reduce ? 3.5 : 0, last = performance.now(), acc = 0;
+function draw() { for (const v of views) { blit(v.fn(t), v.img); v.ctx.putImageData(v.img, 0, 0); } }
+function loop(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; if (playing) { t += dt; acc += dt; if (acc > 1 / 15) { acc = 0; draw(); } } requestAnimationFrame(loop); }
+draw(); requestAnimationFrame(loop);
+const playBtn = document.getElementById('play'); const sync = () => { playBtn.textContent = playing ? 'Pause' : 'Play'; }; sync();
+playBtn.addEventListener('click', () => { playing = !playing; sync(); });
+const row = document.getElementById('sprites-row');
+for (const [s, l] of [[YEP, 'young Elias · portrait'], [YE, 'young Elias'], [SB, 'sister in bed'], [SG, 'sister · ghost']]) { const fig = document.createElement('figure'), c = toCanvas(s); c.style.width = (s.w * 5) + 'px'; c.setAttribute('role', 'img'); c.setAttribute('aria-label', l); fig.appendChild(c); const cap = document.createElement('figcaption'); cap.textContent = l; fig.appendChild(cap); row.appendChild(fig); }
+const SPR = { 'portrait_elias_young.png': YEP, 'char_elias_young.png': YE, 'char_sister_bed.png': SB, 'char_sister_ghost.png': SG };
+for (const [name, fn] of PANELS) SPR[name] = fn(3.5);
+window.__veyra = { toCanvas, SPRITES: SPR };
 })();
 </script>
 </body></html>

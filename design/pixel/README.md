@@ -36,13 +36,13 @@ Draft order (design chat):
 3. scene 7 (**done** · `art-src/pixel/scene7/` + `chars/char_ivy_body.png`, preview `scene7_ivy_memory.html`)
 4. scene 5 hub + props (**done** · `art-src/pixel/scene5/`, preview `scene5_village_square.html` with a hotspot overlay)
 5. scene 8 (**done** · `art-src/pixel/scene8/` + `chars/char_luke_body.png`, `char_luke_push.png`, preview `scene8_luke_memory.html`)
-6. scene 2 (**done**) + scene 6
-7. scene 9
-8. scene 10 tileset
-9. scene 11
-10. young Elias
+6. scene 2 (**done**) + scene 6 (**done** · `art-src/pixel/scene6/`, preview `scene6_abandoned_room.html`. Chair pivot is bottom-centre (20,43), placed at (246,222), rocking ±4° and decaying after she vanishes at 4.5 s; woman at (230,180))
+7. scene 9 (**done** · `art-src/pixel/scene9/` + `chars/char_figure_back.png`, `char_hanna_reach.png`, preview `scene9_hanna_memory.html`. Shelf door hinges on its left edge at (392,94); stairs layer shows behind it; chamber symbols pulse teal from `bg_chamber_residue`)
+8. scene 10 tileset (**done** · `art-src/pixel/scene10/`: `tiles_underground.png` 8×4 tiles of 16×16 + residue sheet, sample `bg_tunnel.png`, well lock close-up, `prop_key_turn.png` = 3 frames of 24×24. Underground darkness: everything beyond ~50 px from the lantern dithers down one step, then to ink, by ~180 px; see `scene10_under_veyra.html`)
+9. scene 11 (**done** · `art-src/pixel/scene11/panel_*.png`: bedside, network, confront, erase, alone. Preview `scene11_fourth_person.html`)
+10. young Elias (**done** · `chars/portrait_elias_young.png`, `chars/char_elias_young.png`, plus `char_sister_bed.png` and `char_sister_ghost.png`)
 
-Scene 1 is **done**. Scenes 3 and 4 follow.
+Scene 1 is **done**. Scenes 3 and 4 are **done** (`art-src/pixel/scene3/`: toy horse 20×16, window close-up 192×108, window figure 40×60 over the scene 1 street; `art-src/pixel/scene4/panel_*.png`: five sepia silhouette panels; preview `scene3_4_ten_years_ago.html`). **Every scene now has a draft.**
 
 Checkpoints: +2 h (~03:50), +4 h (~05:50), +6 h (~07:50). Post screenshots in Team HQ.
 

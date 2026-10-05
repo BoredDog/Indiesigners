@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"></head><body><title>Veyra Cast</title>
+<!doctype html><html><head><meta charset="utf-8"></head><body><title>Hanna's Archive</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -69,41 +69,43 @@ ol.steps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:72ch}
 </style>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Echoes of Sorrow · Characters · Drafts for Bhumi</div>
-    <h1>The <span class="t">Cast</span></h1>
-    <p class="lede">The three witnesses as 64 × 64 conversation busts, plus the sister and the unknown woman as full-body sprites on the same 32 × 58 frame as Elias.</p>
-    <p>Drawn in code from flat shapes, auto ink outline and a hard shadow on the side away from the light. Paint over them: keep the canvas size, the palette and the head position so they drop straight into the game.</p>
+    <div class="eyebrow">Echoes of Sorrow · Memory 3 · Scene 9 · Drafts for Bhumi</div>
+    <h1>Hanna's <span class="t">Archive</span></h1>
+    <p class="lede">Hanna in the archive at night, examining records. "The lantern was never meant to be used like this." A sound underground. A hidden entrance behind a shelf. Symbols on every wall. A chamber: an Echo Lantern is active, and someone stands beside it, face hidden. "Stop." Flash.</p>
+    <p>Two pages. The archive is warm (her candle). The chamber below is all teal, the first place the lantern's colour fills a whole frame.</p>
   </header>
 
-  <section aria-labelledby="busts">
-    <h2 id="busts">Portraits · 64 × 64</h2>
-    <div class="cast" id="busts-row"></div>
-    <p class="cap">Shown at 5×. Order Bhumi paints them: Hanna first (Vansh needs her for the unknown woman), then Ivy, then Luke. In the present day the game washes them pale in code; the art stays in full colour for the memories.</p>
+  <section aria-labelledby="s9a">
+    <h2 id="s9a">Page 1 · The archive</h2>
+    <div class="stage"><canvas id="cvA" width="480" height="270" aria-label="Pixel-art archive at night: Hanna reads records by candlelight; a bookshelf swings open onto stairs glowing teal from below"></canvas></div>
+    <p class="cap">Loop: 0–3 s she reads; 3 s dust falls from the floor (the sound below); 4.5 s the right-hand shelf swings open and teal light spills up the stairs.</p>
   </section>
 
-  <section aria-labelledby="sprites">
-    <h2 id="sprites">Sprites · 32 × 58</h2>
-    <div class="cast" id="sprites-row"></div>
-    <p class="cap">Shown at 5×, feet on y = 56 like Elias. The unknown woman is Hanna in a pale, colourless variant: same outline, so the reveal in scene 9 lands.</p>
-  </section>
-
-  <section aria-labelledby="notes">
-    <h2 id="notes">Who they are, in pixels</h2>
-    <div class="tbl"><table>
-      <thead><tr><th>Character</th><th>Read at a glance</th><th>Accent</th></tr></thead>
-      <tbody>
-        <tr><td>Hanna</td><td>Village archivist, fifties. Grey hair pulled into a bun with a white streak, round spectacles, high collar, mud-brown shawl, dried-blood brooch. Stern mouth.</td><td>Violet</td></tr>
-        <tr><td>Ivy</td><td>Schoolteacher, twenties. Dark bob with a silver clip, big worried eyes, chalk on her cheek, dusty-blue cardigan over a bone blouse.</td><td>Dusty blue</td></tr>
-        <tr><td>Luke</td><td>Boatman, thirties. Flat cap, short beard, heavy brows, olive oilskin over a roll-neck. A watch chain hangs from his pocket (the watch says 2:31).</td><td>Olive</td></tr>
-        <tr><td>Sister</td><td>About nine, seriously ill. Long braid, bone nightgown, a blood-red blanket round her shoulders, grey under the eyes.</td><td>Dried blood</td></tr>
-        <tr><td>Unknown woman</td><td>Hanna's outline in ghost colours only: mist dress, bone skin, no accent. She must not read as Hanna by colour.</td><td>None</td></tr>
-      </tbody>
-    </table></div>
+  <section aria-labelledby="s9b">
+    <h2 id="s9b">Page 2 · The chamber</h2>
+    <div class="stage"><canvas id="cvB" width="480" height="270" aria-label="Pixel-art underground chamber covered in glowing symbols; an Echo Lantern burns on a stone plinth; a hatted figure stands beside it with his back turned; Hanna raises her hand"></canvas></div>
+    <div class="controls" role="group" aria-label="Mockup controls">
+      <button id="play" type="button">Pause</button>
+      <button id="replay" type="button">Replay</button>
+    </div>
+    <p class="cap">Loop: the symbols pulse with the lantern. At 5 s, "Stop.": a 3-frame white-teal flash, then the memory collapses. The figure has the same hat-and-coat outline as Elias, but only from behind.</p>
   </section>
 
   <section aria-labelledby="files">
-    <h2 id="files">Files</h2>
-    <p><code>art-src/pixel/chars/</code>: <code>portrait_hanna.png</code>, <code>portrait_ivy.png</code>, <code>portrait_luke.png</code> (64×64), <code>char_sister.png</code>, <code>char_unknown_woman.png</code> (32×58). Finals go to <code>art/incoming/bhumi/</code> under the same names.</p>
+    <h2 id="files">Files · <code>art-src/pixel/scene9/</code></h2>
+    <div class="tbl"><table>
+      <thead><tr><th>File</th><th>Size</th><th>What is on it</th></tr></thead>
+      <tbody>
+        <tr><td><code>bg_archive.png</code></td><td class="mono">480×270</td><td>Archive with shelves, reading desk, candle, records. The hidden shelf is drawn closed.</td></tr>
+        <tr><td><code>prop_shelf_door.png</code></td><td class="mono">64×120</td><td>The shelf that swings open (hinge on its left edge, placed at 392, 94).</td></tr>
+        <tr><td><code>bg_archive_stairs.png</code></td><td class="mono">480×270</td><td>What is behind the shelf: stairs down with teal light. Only the doorway area is drawn.</td></tr>
+        <tr><td><code>bg_chamber.png</code></td><td class="mono">480×270</td><td>Chamber walls, plinth, floor. Unlit.</td></tr>
+        <tr><td><code>bg_chamber_residue.png</code></td><td class="mono">480×270</td><td>Symbols on the walls; the game pulses them teal.</td></tr>
+        <tr><td><code>char_figure_back.png</code></td><td class="mono">32×58</td><td>The figure beside the lantern, back view.</td></tr>
+        <tr><td><code>char_hanna_reach.png</code></td><td class="mono">32×58</td><td>Hanna with her hand raised ("Stop.").</td></tr>
+      </tbody>
+    </table></div>
+    <p>Hanna reading uses <code>chars/char_hanna_body.png</code>. The chamber reuses the scene 10 stone tiles, so the tunnels and this chamber match.</p>
   </section>
 </div>
 
@@ -236,7 +238,7 @@ function toCanvas(b) {
 }
 // Light with any pair of tables (LIT1/LIT2 = lantern teal, LITA1/LITA2 = warm lamp)
 const LITA1 = [6,2,3,5,5,21,7,8,12,10,10,11,13,13,15,15,18,17,17,6,7,8,2,23,23,25,25];
-const LITA2 = [6,6,7,7,8,8,14,14,12,10,12,11,13,13,15,15,18,17,17,7,8,12,6,23,23,25,25];
+const LITA2 = [6,6,7,7,8,8,7,14,12,10,12,11,13,13,15,15,18,17,17,7,8,12,6,23,23,25,25];
 function lightT(b, lx, ly, R, T1, T2, sq = 1.15) {
   lx = Math.round(lx); ly = Math.round(ly);
   for (let y = Math.max(0, ly - R); y < Math.min(b.h, ly + R); y++) for (let x = Math.max(0, lx - R); x < Math.min(b.w, lx + R); x++) {
@@ -251,139 +253,111 @@ function stamp(dst, src, ox, oy, flip = false) {
   for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) { const v = src.c[y * src.w + (flip ? src.w - 1 - x : x)]; if (v !== 255) dst.set(ox + x, oy + y, v); }
 }
 
-// ------------------------------------------------ portraits 64x64
-function bustBase(f, P, broad) {
-  const s = broad ? 4 : 0;
-  f.poly([[6 - s, 64], [10 - s, 49], [21, 43], [43, 43], [54 + s, 49], [58 + s, 64]], P.coat);
-  f.rect(28 - (broad ? 1 : 0), 35, broad ? 10 : 8, 10, P.skin);
+const W = 480, H = 270;
+
+const HP = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.stoneL, shade: C.stone, line: true }, { base: C.violet, shade: C.violetD, line: true }, { base: C.mud, shade: C.mudD, line: true }, { base: C.bone, shade: C.boneD, line: true }];
+function hannaBody(reach) {
+  const f = Figure(32, 58, HP);
+  f.poly([[9, 56], [10, 30], [12, 19], [20, 19], [22, 30], [23, 56]], 2);
+  f.poly([[9, 33], [11, 20], [16, 21], [14, 34]], 3); f.poly([[23, 33], [21, 20], [16, 21], [18, 34]], 3);
+  f.rect(14, 17, 4, 3, 4); f.ell(16, 4, 2.5, 2, 1); f.ell(16, 9, 5, 5, 1); f.ell(16, 11, 4, 4.5, 0);
+  f.poly([[11, 10], [12, 6], [16, 5], [20, 6], [21, 10], [19, 8], [13, 8]], 1);
+  if (reach) { f.poly([[20, 21], [30, 15], [31, 18], [21, 25]], 2); f.rect(29, 12, 3, 5, 0); } else { f.rect(13, 34, 2, 3, 0); f.rect(18, 34, 2, 3, 0); }
+  const b = f.render(1, 1);
+  for (const x of [13, 15, 17, 19]) b.set(x, 11, C.ink); b.set(16, 18, C.blood); b.line(15, 14, 17, 14, C.mud);
+  b.rect(11, 56, 4, 1, C.ink); b.rect(17, 56, 4, 1, C.ink); return b;
 }
-function eyes(b, y, big, col = C.ink) {
-  for (const ex of [26, 35]) {
-    b.rect(ex, y, 4, big ? 3 : 2, C.bone);
-    b.rect(ex + 1, y, 2, big ? 3 : 2, col);
-    if (big) b.set(ex + 1, y, C.bone);
-    b.rect(ex - (ex === 26 ? 1 : 0), y - 1, 5, 1, C.ink);
+const FIGURE = (() => { const b = new Buf(32, 58); b.c.fill(255);
+  b.rect(12, 2, 8, 6, C.ink); b.rect(8, 8, 16, 2, C.ink);
+  for (let k = 0; k < 40; k++) { const half = 6 + Math.round(k * 3 / 40); b.rect(16 - half, 10 + k, half * 2, 1, C.ink); }
+  b.rect(12, 50, 3, 6, C.ink); b.rect(18, 50, 3, 6, C.ink);
+  for (let y = 10; y < 50; y++) { const half = 6 + Math.round((y - 10) * 3 / 40); b.set(16 + half - 1, y, C.tealD); }
+  return b; })();
+
+// ------------------------------------------------ page 1: archive
+function archive() {
+  const b = new Buf(W, H), r = rng(19);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) b.set(x, y, y < 214 ? ((x * 3 + y * 7) % 37 === 0 ? C.dusk : C.soot) : (((y - 214) % 8 === 0 || (x + ((y - 214) >> 3) % 2 * 20) % 40 === 0) ? C.ink : C.mudD));
+  b.rect(0, 0, W, 10, C.ink);
+  for (const [sx, sw] of [[16, 120], [150, 60], [392, 64]]) {
+    b.rect(sx, 30, sw, 184, C.mudD); b.rect(sx, 30, 2, 184, C.ink); b.rect(sx + sw - 2, 30, 2, 184, C.ink);
+    for (let y = 34; y < 206; y += 28) { b.rect(sx, y + 24, sw, 3, C.mud); b.rect(sx, y + 27, sw, 1, C.ink); for (let x = sx + 4; x < sx + sw - 8; x += 7 + (r() * 5 | 0)) { const bh = 12 + (r() * 10 | 0), c = [C.boneD, C.mudL, C.blood, C.oliveD, C.violetD][r() * 5 | 0]; b.rect(x, y + 24 - bh, 6, bh, c); b.rect(x, y + 24 - bh, 6, 1, C.ink); b.rect(x + 5, y + 24 - bh, 1, bh, C.ink); } }
   }
-}
-function hanna(ghost) {
-  const P = ghost
-    ? { skin: 0, hair: 1, coat: 2, shawl: 3, collar: 4 }
-    : { skin: 0, hair: 1, coat: 2, shawl: 3, collar: 4 };
-  const parts = ghost
-    ? [{ base: C.bone, shade: C.boneD, line: true }, { base: C.boneD, shade: C.mist, line: true }, { base: C.mist, shade: C.haze, line: true }, { base: C.haze, shade: C.dusk, line: true }, { base: C.bone, shade: C.boneD, line: true }]
-    : [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.stoneL, shade: C.stone, line: true }, { base: C.violet, shade: C.violetD, line: true }, { base: C.mud, shade: C.mudD, line: true }, { base: C.bone, shade: C.boneD, line: true }];
-  return { P, parts };
-}
-function portraitHanna() {
-  const { P, parts } = hanna(false), f = Figure(64, 64, parts);
-  bustBase(f, P);
-  f.poly([[8, 64], [12, 50], [22, 45], [30, 53], [26, 64]], P.shawl); f.poly([[56, 64], [52, 50], [42, 45], [34, 53], [38, 64]], P.shawl);
-  f.poly([[26, 43], [38, 43], [37, 49], [32, 51], [27, 49]], P.collar);
-  f.ell(32, 13, 9, 5, P.hair); f.ell(32, 23, 13, 11, P.hair);
-  f.ell(21, 28, 2, 3, P.skin); f.ell(43, 28, 2, 3, P.skin);
-  f.ell(32, 28, 10, 11, P.skin);
-  f.poly([[21, 25], [22, 15], [32, 12], [42, 15], [43, 25], [40, 19], [32, 17], [24, 19]], P.hair);
-  const b = f.render();
-  eyes(b, 28, false);
-  for (const ex of [25, 34]) { b.line(ex, 26, ex + 5, 26, C.ink); b.line(ex, 31, ex + 5, 31, C.ink); b.line(ex, 26, ex, 31, C.ink); b.line(ex + 5, 26, ex + 5, 31, C.ink); }
-  b.line(31, 28, 33, 28, C.ink);
-  b.line(25, 24, 29, 23, C.stone); b.line(35, 23, 39, 24, C.stone);
-  b.line(32, 30, 33, 33, C.mudL); b.set(31, 34, C.mudL);
-  b.line(29, 37, 35, 37, C.mud); b.set(28, 36, C.mudL); b.set(36, 36, C.mudL);
-  b.set(25, 34, C.mudL); b.set(39, 34, C.mudL);
-  b.line(27, 13, 24, 22, C.boneD); b.line(28, 13, 25, 21, C.boneD);
-  b.rect(31, 46, 3, 3, C.blood); b.set(32, 46, C.bone);
+  // reading desk with open records + candle
+  b.rect(230, 176, 140, 6, C.mudL); b.rect(230, 182, 140, 2, C.ink); b.rect(234, 184, 132, 30, C.mud); b.rect(234, 184, 4, 30, C.mudD); b.rect(362, 184, 4, 30, C.mudD);
+  b.rect(282, 170, 34, 6, C.bone); b.rect(298, 170, 1, 6, C.boneD); for (let y = 171; y < 175; y += 2) { b.rect(284, y, 12, 1, C.mudL); b.rect(301, y, 13, 1, C.mudL); }
+  b.rect(330, 166, 20, 10, C.boneD); b.rect(330, 166, 20, 1, C.ink); b.rect(326, 172, 22, 4, C.mudL);
+  b.rect(250, 166, 5, 10, C.bone); b.rect(248, 175, 9, 2, C.amberD);
+  b.rect(0, 186, 14, 28, C.mudD);
   return b;
 }
-function portraitIvy() {
-  const P = { skin: 0, hair: 1, coat: 2, blouse: 3 };
-  const parts = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.blue, shade: C.blueD, line: true }, { base: C.bone, shade: C.boneD, line: true }];
-  const f = Figure(64, 64, parts);
-  bustBase(f, P);
-  f.poly([[25, 43], [39, 43], [32, 57]], P.blouse);
-  f.ell(32, 24, 14, 13, P.hair); f.rect(18, 24, 28, 15, P.hair);
-  f.ell(32, 28, 10, 11, P.skin);
-  f.poly([[20, 27], [21, 16], [32, 11], [43, 16], [44, 27], [41, 20], [35, 17], [30, 21], [24, 19]], P.hair);
-  const b = f.render();
-  eyes(b, 27, true, C.blueD);
-  b.set(25, 27, C.ink); b.set(39, 27, C.ink);
-  b.line(25, 24, 29, 24, C.mudD); b.line(35, 24, 39, 24, C.mudD); b.set(29, 23, C.mudD); b.set(35, 23, C.mudD);
-  b.line(32, 31, 32, 32, C.mudL);
-  b.line(30, 35, 34, 35, C.blood); b.set(29, 36, C.mudL);
-  b.set(38, 32, C.bone); b.set(39, 33, C.bone); b.set(37, 33, C.bone);
-  b.line(40, 17, 43, 19, C.bone); b.set(41, 17, C.stoneL);
-  b.set(25, 50, C.boneD); b.set(26, 55, C.boneD); b.set(27, 60, C.boneD);
-  return b;
-}
-function portraitLuke() {
-  const P = { skin: 0, beard: 1, cap: 2, coat: 3, knit: 4 };
-  const parts = [{ base: C.mudL, shade: C.mud, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.oliveD, shade: C.ink, line: true }, { base: C.olive, shade: C.oliveD, line: true }, { base: C.mud, shade: C.mudD, line: true }];
-  const f = Figure(64, 64, parts);
-  bustBase(f, P, true);
-  f.poly([[24, 41], [40, 41], [39, 50], [25, 50]], P.knit);
-  f.ell(20.5, 28, 2, 3, P.skin); f.ell(43.5, 28, 2, 3, P.skin);
-  f.ell(32, 27, 11, 12, P.skin);
-  f.poly([[21, 28], [22, 36], [27, 41], [32, 42], [37, 41], [42, 36], [43, 28], [40, 33], [36, 35], [28, 35], [24, 33]], P.beard);
-  f.poly([[19, 22], [21, 13], [32, 10], [43, 13], [46, 20], [44, 22]], P.cap);
-  f.poly([[19, 22], [46, 20], [48, 23], [20, 25]], P.cap);
-  const b = f.render();
-  eyes(b, 27, false);
-  b.line(24, 25, 30, 25, C.ink); b.line(34, 25, 40, 25, C.ink); b.line(25, 24, 29, 24, C.mudD); b.line(35, 24, 39, 24, C.mudD);
-  b.line(32, 28, 33, 31, C.mud); b.set(31, 32, C.mud); b.set(34, 32, C.mud);
-  b.line(28, 35, 36, 35, C.ink); b.line(30, 37, 34, 37, C.mud);
-  b.line(18, 46, 25, 60, C.oliveD); b.line(46, 46, 39, 60, C.oliveD);
-  b.line(41, 54, 45, 57, C.boneD); b.set(46, 58, C.boneD); b.set(43, 55, C.stoneL);
-  b.line(22, 15, 41, 14, C.ink);
-  return b;
-}
+const SHELF = (() => { const b = new Buf(64, 120); b.c.fill(255); const r = rng(23);
+  b.rect(0, 0, 64, 120, C.mudD); b.rect(0, 0, 2, 120, C.ink); b.rect(62, 0, 2, 120, C.ink);
+  for (let y = 4; y < 116; y += 28) { b.rect(0, y + 24, 64, 3, C.mud); b.rect(0, y + 27, 64, 1, C.ink); for (let x = 4; x < 56; x += 7 + (r() * 5 | 0)) { const bh = 12 + (r() * 10 | 0); b.rect(x, y + 24 - bh, 6, bh, [C.boneD, C.mudL, C.blood][r() * 3 | 0]); b.rect(x, y + 24 - bh, 6, 1, C.ink); } }
+  return b; })();
+const STAIRS = (() => { const b = new Buf(W, H); b.c.fill(255);
+  for (let y = 114; y < 214; y++) for (let x = 392; x < 456; x++) { const step = Math.floor((y - 114) / 12); const c = (y - 114) % 12 === 0 ? C.ink : (x < 392 + step * 6 ? C.ink : (step > 5 ? C.tealM : step > 2 ? C.tealD : C.soot)); b.set(x, y, c); }
+  b.rect(392, 114, 64, 2, C.ink); return b; })();
+const ARCH = archive(), HANNA = hannaBody(false), HANNA_R = hannaBody(true);
 
-// ------------------------------------------------ full-body sprites 32x58 (feet at y=56)
-function spriteWoman(ghost) {
-  const { P, parts } = hanna(ghost), f = Figure(32, 58, parts);
-  f.poly([[9, 56], [10, 30], [12, 19], [20, 19], [22, 30], [23, 56]], P.coat);
-  f.poly([[9, 33], [11, 20], [16, 21], [14, 34]], P.shawl); f.poly([[23, 33], [21, 20], [16, 21], [18, 34]], P.shawl);
-  f.rect(14, 17, 4, 3, P.collar);
-  f.ell(16, 4, 2.5, 2, P.hair); f.ell(16, 9, 5, 5, P.hair);
-  f.ell(16, 11, 4, 4.5, P.skin);
-  f.poly([[11, 10], [12, 6], [16, 5], [20, 6], [21, 10], [19, 8], [13, 8]], P.hair);
-  f.rect(13, 34, 2, 3, P.skin); f.rect(18, 34, 2, 3, P.skin);
-  const b = f.render(1, 1);
-  b.set(14, 11, C.ink); b.set(18, 11, C.ink);
-  if (!ghost) { b.set(13, 11, C.ink); b.set(15, 11, C.ink); b.set(17, 11, C.ink); b.set(19, 11, C.ink); b.set(16, 18, C.blood); }
-  b.line(15, 14, 17, 14, ghost ? C.boneD : C.mud);
-  b.rect(11, 56, 4, 1, C.ink); b.rect(17, 56, 4, 1, C.ink);
+// ------------------------------------------------ page 2: chamber
+function chamber() {
+  const b = new Buf(W, H), r = rng(29);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const row = Math.floor(y / 12), off = (row % 2) * 12; let c = (y % 12 === 0 || (x + off) % 24 === 0) ? C.ink : (row % 3 === 0 ? C.stoneD : C.stone);
+    if (y > 200) c = ((x + y) % 9 === 0) ? C.stoneD : C.stoneD + (bay(x, y) < 0.3 ? 1 : 0);
+    b.set(x, y, c);
+  }
+  for (let i = 0; i < 300; i++) b.set(r() * W, r() * 200, r() < 0.5 ? C.ink : C.oliveD);
+  for (let y = 0; y < 40; y++) for (let x = 0; x < W; x++) { const arch = 40 - Math.round(Math.sqrt(Math.max(0, 1 - ((x - 240) / 260) ** 2)) * 40); if (y < arch) b.set(x, y, C.ink); }
+  for (let x = 0; x < W; x++) b.set(x, 200, C.ink);
+  // plinth
+  b.rect(214, 168, 52, 32, C.stoneL); b.rect(214, 168, 52, 2, C.boneD); b.rect(214, 199, 52, 1, C.ink); b.rect(214, 168, 2, 32, C.ink); b.rect(264, 168, 2, 32, C.ink); b.rect(222, 176, 36, 2, C.stoneD);
+  // big lantern on the plinth
+  b.rect(232, 126, 16, 2, C.ink); b.rect(228, 128, 24, 4, C.ink); b.rect(228, 132, 24, 32, C.ink); b.rect(231, 134, 18, 28, C.teal); b.rect(238, 140, 4, 14, C.bone); b.rect(226, 164, 28, 4, C.ink); b.rect(235, 134, 1, 28, C.ink); b.rect(244, 134, 1, 28, C.ink);
+  // the symbols, as residue
+  const SYM = [['..###..', '.#...#.', '#..#..#', '#.###.#', '#..#..#', '.#...#.', '..###..'], ['#.#.#', '.###.', '##.##', '.###.', '#.#.#'], ['.#.', '###', '.#.', '#.#', '#.#']];
+  for (let k = 0; k < 46; k++) { const s = SYM[k % 3], x = 20 + (k * 97) % 440, y = 50 + ((k * 53) % 130); if (Math.abs(x - 240) < 40 && y > 110) continue; s.forEach((row, j) => [...row].forEach((v, i) => { if (v === '#') b.mark(x + i, y + j); })); }
   return b;
 }
-function spriteSister() {
-  const P = { skin: 0, hair: 1, gown: 2, blanket: 3 };
-  const parts = [{ base: C.bone, shade: C.boneD, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.bone, shade: C.boneD, line: true }, { base: C.blood, shade: C.mudD, line: true }];
-  const f = Figure(32, 58, parts);
-  f.poly([[10, 56], [11, 36], [13, 28], [19, 28], [21, 36], [22, 56]], P.gown);
-  f.poly([[9, 44], [10, 31], [14, 27], [18, 27], [22, 31], [23, 44], [19, 40], [13, 40]], P.blanket);
-  f.ell(16, 21, 4.5, 5, P.hair); f.poly([[19, 22], [21, 24], [21, 38], [19, 38]], P.hair);
-  f.ell(16, 22.5, 3.5, 4, P.skin);
-  f.poly([[12, 21], [13, 17], [16, 16], [19, 17], [20, 21], [18, 19], [14, 19]], P.hair);
-  const b = f.render(1, 1);
-  b.set(14, 22, C.ink); b.set(18, 22, C.ink); b.set(14, 23, C.mist); b.set(18, 23, C.mist);
-  b.set(16, 25, C.mudL);
-  b.rect(13, 56, 2, 1, C.boneD); b.rect(17, 56, 2, 1, C.boneD);
-  b.set(21, 30, C.ink); b.set(21, 33, C.ink); b.set(21, 36, C.ink);
-  return b;
-}
+const CH = chamber();
 
-// ------------------------------------------------ show + export hook
-const SPRITES = {
-  'portrait_hanna.png': portraitHanna(), 'portrait_ivy.png': portraitIvy(), 'portrait_luke.png': portraitLuke(),
-  'char_sister.png': spriteSister(), 'char_unknown_woman.png': spriteWoman(true), 'char_hanna_body.png': spriteWoman(false),
-};
-const LABEL = { 'portrait_hanna.png': 'Hanna', 'portrait_ivy.png': 'Ivy', 'portrait_luke.png': 'Luke', 'char_sister.png': 'Sister', 'char_unknown_woman.png': 'Unknown woman', 'char_hanna_body.png': 'Hanna (memory)' };
-for (const [name, b] of Object.entries(SPRITES)) {
-  const row = document.getElementById(name.startsWith('portrait') ? 'busts-row' : 'sprites-row');
-  const fig = document.createElement('figure'); const c = toCanvas(b);
-  c.style.width = (b.w * 5) + 'px'; c.setAttribute('role', 'img'); c.setAttribute('aria-label', LABEL[name] + ' pixel draft');
-  fig.appendChild(c); const cap = document.createElement('figcaption'); cap.textContent = LABEL[name] + ' · ' + b.w + '×' + b.h; fig.appendChild(cap); row.appendChild(fig);
+const fa = new Buf(W, H), fb = new Buf(W, H), LOOP = 9;
+function renderA(t) {
+  const tt = t % LOOP, b = fa; b.copy(ARCH);
+  const open = tt < 4.5 ? 0 : Math.min(1, (tt - 4.5) / 0.8);
+  for (let i = 0; i < STAIRS.c.length; i++) if (open > 0 && STAIRS.c[i] !== 255) { b.c[i] = STAIRS.c[i]; b.f[i] = 1; }
+  const sw = Math.round(64 * (1 - open * 0.75));
+  for (let y = 0; y < 120; y++) for (let x = 0; x < sw; x++) { const v = SHELF.c[y * 64 + Math.floor(x * 64 / sw)]; if (v !== 255) b.set(392 + x, 94 + y + Math.round(open * x * 0.05), open > 0 ? (x > sw - 3 ? C.ink : v) : v); }
+  stamp(b, HANNA, 300 - 40, 156);
+  if (tt > 3 && tt < 4.5) for (let k = 0; k < 20; k++) { const r = rng(k + 70); b.tint(240 + r() * 200, 10 + (tt - 3) * 60 * (0.5 + r()), C.boneD); }
+  lightT(b, 252, 166, 110 + (hash(Math.floor(t * 9)) > 0.5 ? 4 : 0), LITA1, LITA2, 1.0);
+  if (open > 0) light(b, 424, 200, Math.round(40 * open));
+  b.rect(251, 163 - (hash(Math.floor(t * 9)) > 0.5 ? 1 : 0), 3, 3, C.amber); b.set(252, 162, C.bone);
 }
-window.__veyra = { SPRITES, toCanvas };
+function renderB(t) {
+  const tt = t % LOOP, b = fb; b.copy(CH);
+  const pulse = 0.5 + 0.5 * Math.sin(tt * 2.4);
+  for (let i = 0; i < b.f.length; i++) if (b.f[i] & 2) { const x = i % W, y = (i / W) | 0; if (bay(x, y) < 0.35 + pulse * 0.6) b.c[i] = pulse > 0.6 ? C.teal : C.tealM; }
+  stamp(b, FIGURE, 262, 144);
+  stamp(b, HANNA_R, 70, 144);
+  light(b, 240, 148, 150 + Math.round(pulse * 8));
+  b.rect(231, 134, 18, 28, C.teal); b.rect(238, 140, 4, 14, C.bone); b.rect(235, 134, 1, 28, C.ink); b.rect(244, 134, 1, 28, C.ink);
+  if (tt > 5 && tt < 5.3) { const k = Math.floor((tt - 5) * 10); for (let i = 0; i < b.c.length; i++) if (bay(i % W, (i / W) | 0) < 1 - k * 0.3) b.c[i] = k === 0 ? C.bone : C.teal; }
+  else if (tt >= 5.3) { const g = Math.min(1, (tt - 5.3) / 1.2); for (let i = 0; i < b.c.length; i++) { const x = i % W, y = (i / W) | 0; if (bay(x, y) < g) b.c[i] = (hash(y * 3 + Math.floor(tt * 6)) < 0.2) ? C.tealD : C.ink; } }
+}
+const ctxA = document.getElementById('cvA').getContext('2d'), imgA = ctxA.createImageData(W, H);
+const ctxB = document.getElementById('cvB').getContext('2d'), imgB = ctxB.createImageData(W, H);
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let playing = !reduce, t = reduce ? 4.9 : 0, last = performance.now();
+function draw() { renderA(t); blit(fa, imgA); ctxA.putImageData(imgA, 0, 0); renderB(t); blit(fb, imgB); ctxB.putImageData(imgB, 0, 0); }
+function loop(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; if (playing) { t += dt; draw(); } requestAnimationFrame(loop); }
+draw(); requestAnimationFrame(loop);
+const playBtn = document.getElementById('play'); const sync = () => { playBtn.textContent = playing ? 'Pause' : 'Play'; }; sync();
+playBtn.addEventListener('click', () => { playing = !playing; sync(); });
+document.getElementById('replay').addEventListener('click', () => { t = 0; if (!playing) draw(); });
+const RES = new Buf(W, H); RES.c.fill(255); for (let i = 0; i < CH.f.length; i++) if (CH.f[i] & 2) RES.c[i] = C.teal;
+window.__veyra = { toCanvas, SPRITES: { 'bg_archive.png': ARCH, 'prop_shelf_door.png': SHELF, 'bg_archive_stairs.png': STAIRS, 'bg_chamber.png': CH, 'bg_chamber_residue.png': RES, 'char_figure_back.png': FIGURE, 'char_hanna_reach.png': HANNA_R } };
 })();
 </script>
 </body></html>
