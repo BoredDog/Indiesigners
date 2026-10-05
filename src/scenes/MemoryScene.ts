@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { bakePixel } from '../pixel/pixel';
 import {
   Bubble,
   ComicButton,
@@ -88,11 +89,16 @@ export class MemoryScene extends Phaser.Scene {
       .on('pointerup', () => this.page.unfocus());
 
     const frames = gridFrames(PAGE_BOUNDS, def.layout);
+    const px = this.pixelPage(def.witness);
     const pageDef: PageDef = {
       id: `memory_${def.witness}`,
-      background: def.background,
+      background: px?.key ?? def.background,
       bounds: PAGE_BOUNDS,
-      panels: def.panels.map((p, i) => ({ ...p, frame: frames[i] })),
+      panels: def.panels.map((p, i) => {
+        const c = px?.crops[i];
+        // Pixel crops replace the village-era ones; cutouts were placed for the old art, so drop them.
+        return c ? { ...p, src: { x: c[0], y: c[1], w: c[2], h: c[3] }, cutouts: undefined, frame: frames[i] } : { ...p, frame: frames[i] };
+      }),
     };
     this.page = new ComicPage(this, pageDef, { paperKey: 'paper', grey: true });
     this.add.existing(this.page);
@@ -513,4 +519,39 @@ export class MemoryScene extends Phaser.Scene {
     this.toastText = t;
     this.tweens.add({ targets: t, alpha: 0, delay: 2600, duration: 400, onComplete: () => t.destroy() });
   }
+
+  /**
+   * Pixel memory (design/pixel): the witness's scene baked into one ×4 texture the panels crop from,
+   * with panel crops chosen for that art (design chat, story order). Undefined = no pixel art yet.
+   */
+  private pixelPage(w: string): { key: string; crops: [number, number, number, number][] } | undefined {
+    const PAGES: Record<string, { layers: Parameters<typeof bakePixel>[2]; h?: number; glow?: { x: number; y: number; r: number; color: number; alpha: number }; crops: [number, number, number, number][] }> = {
+      // Scene 7: Ivy alone in the schoolhouse at night, lamp lit, the street through the windows.
+      mira: {
+        layers: [{ name: 'bg_ivy_outside' }, { name: 'bg_ivy_room' }, { name: 'char_ivy_body', x: 282, y: 170 }, { name: 'prop_oil_lamp', x: 168, y: 172 }, { name: 'bg_ivy_fg' }],
+        glow: { x: 173, y: 178, r: 60, color: COLORS.amber, alpha: 0.35 },
+        crops: [[560, 600, 740, 340], [760, 120, 560, 460], [1080, 640, 260, 200], [784, 400, 304, 160], [1080, 60, 240, 200], [0, 0, 1920, 1080]],
+      },
+      // Scene 8: Luke at the jetty, the figure on the far bank. The 2:31 watch close-up (×10) is
+      // baked below the scene (y 1080..2160) so panel 6 can crop it from the same texture.
+      arun: {
+        layers: [
+          { name: 'bg_luke_far' },
+          { name: 'bg_luke_water' },
+          { name: 'char_figure_carry', x: 240, y: 141 },
+          { name: 'prop_boat_villagers', x: 300, y: 196 },
+          { name: 'bg_luke_bank' },
+          { name: 'char_luke_body', x: 236, y: 158 },
+          { name: 'bg_watch_close', x: 0, y: 270, scale: 10 },
+        ],
+        h: 540,
+        crops: [[900, 600, 640, 320], [920, 620, 500, 280], [0, 680, 1920, 240], [400, 480, 1100, 260], [300, 240, 240, 220], [0, 1080, 1920, 1080]],
+      },
+    };
+    const def = PAGES[w];
+    if (!def) return undefined;
+    const key = `pxc_memory_${w}`;
+    return bakePixel(this, key, def.layers, { glow: def.glow, h: def.h }) ? { key, crops: def.crops } : undefined;
+  }
+
 }

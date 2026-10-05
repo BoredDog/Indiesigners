@@ -3,6 +3,10 @@ import { COLORS, comicSettings, ComicButton, dur, pageTurn } from '../comic';
 import { story } from '../core/StoryData';
 import { PH } from '../dev/placeholders';
 import { FRAME, SequenceScene, type FrameBuilder } from './sequence/SequenceScene';
+import { PX, PixelStage, hasPixel, lanternLight } from '../pixel/pixel';
+
+const SCENE1 = ['bg_veyra_sky', 'bg_veyra_far', 'bg_veyra_mid', 'bg_veyra_street', 'bg_veyra_fg', 'char_elias_walk'];
+const SCENE2 = ['bg_tower_sky', 'bg_tower', 'prop_bell', 'bg_clockface_close'];
 
 /**
  * Opening (Blueprint F2): six frames, ~50 s, Elias never shown (hands, lantern glow and a
@@ -29,9 +33,12 @@ export class OpeningScene extends SequenceScene {
     return [
       // 1 — Rainy Veyra road, case file and lantern held from off-screen.
       (layer) => {
-        this.panel(layer, PH.village, { x: 0, y: 560, w: 920, h: 518 });
-        this.rain(layer);
-        this.lanternGlow(layer, FRAME.x + FRAME.w - 160, FRAME.y + FRAME.h - 140, 1);
+        if (hasPixel(this, ...SCENE1)) this.pixelEntering(layer);
+        else {
+          this.panel(layer, PH.village, { x: 0, y: 560, w: 920, h: 518 });
+          this.rain(layer);
+          this.lanternGlow(layer, FRAME.x + FRAME.w - 160, FRAME.y + FRAME.h - 140, 1);
+        }
         const { doc } = this.document(layer, FRAME.x + 1200, FRAME.y + 640, 420, 260, 'CASE FILE', 'VEYRA — mass disappearance.\nStatus: unsolved.', false, -6);
         doc.setScale(0.9);
         this.narration(layer, n(0));
@@ -48,8 +55,11 @@ export class OpeningScene extends SequenceScene {
       },
       // 3 — Clock tower close-up frozen at 2:17; the hand twitches but never advances.
       (layer) => {
-        this.panel(layer, PH.village, { x: 643, y: 150, w: 534, h: 300 });
-        this.twitchingHand(layer);
+        if (hasPixel(this, ...SCENE2)) this.pixelTower(layer);
+        else {
+          this.panel(layer, PH.village, { x: 643, y: 150, w: 534, h: 300 });
+          this.twitchingHand(layer);
+        }
         this.narration(layer, n(2));
         this.sfxWord(layer, f[2].sfx, FRAME.x + 1280, FRAME.y + 760, 60);
       },
@@ -93,6 +103,89 @@ export class OpeningScene extends SequenceScene {
 
   protected finish(): void {
     pageTurn(this, () => this.scene.start('Village'));
+  }
+
+  // ------------------------------------------------------------------ pixel art (design/pixel, scenes 1–2)
+
+  /** Runs `fn(ms since start)` every frame until `layer` is destroyed (the frame changes). */
+  private everyFrame(layer: Phaser.GameObjects.Container, fn: (t: number) => void) {
+    const t0 = this.time.now;
+    const tick = () => fn(this.time.now - t0);
+    this.events.on(Phaser.Scenes.Events.UPDATE, tick);
+    layer.once(Phaser.GameObjects.Events.DESTROY, () => this.events.off(Phaser.Scenes.Events.UPDATE, tick));
+    tick();
+  }
+
+  /** Scene 1, entering Veyra: Elias walks in under the lantern; door symbols show only in its light. */
+  private pixelEntering(layer: Phaser.GameObjects.Container) {
+    const st = new PixelStage(this, layer, FRAME);
+    for (const n of ['bg_veyra_sky', 'bg_veyra_far', 'bg_veyra_mid', 'bg_veyra_street']) st.image(n);
+    const FEET = 236;
+    const [X0, X1] = [-20, 196];
+    const T0 = 1000;
+    const T1 = 8500;
+    if (!this.anims.exists('elias_walk')) {
+      this.anims.create({ key: 'elias_walk', frames: this.anims.generateFrameNumbers(PX('char_elias_walk'), { start: 0, end: 3 }), frameRate: 6, repeat: -1 });
+      this.anims.create({ key: 'elias_idle', frames: this.anims.generateFrameNumbers(PX('char_elias_walk'), { start: 4, end: 5 }), frameRate: 2, repeat: -1 });
+    }
+    const elias = st.sprite('char_elias_walk', X0, FEET, 0, 56 / 58).setName('pixel:elias');
+    const lantern = hasPixel(this, 'prop_lantern') ? st.sprite('prop_lantern', X0 + 12, FEET - 52, 0.5, 0) : undefined;
+    st.image('bg_veyra_fg');
+    const instant = comicSettings.reduceMotion;
+    let ex = instant ? X1 : X0;
+    const light = lanternLight(st, () => st.at(ex + 12, FEET - 46), 58, 'bg_veyra_residue');
+    elias.play(instant ? 'elias_idle' : 'elias_walk');
+    let idle = instant;
+    this.everyFrame(layer, (t) => {
+      if (!instant) {
+        const k = Phaser.Math.Clamp((t - T0) / (T1 - T0), 0, 1);
+        ex = Math.round(X0 + (X1 - X0) * k);
+        if (k >= 1 && !idle) {
+          idle = true;
+          elias.play('elias_idle');
+        }
+      }
+      const p = st.at(ex, FEET);
+      elias.setPosition(p.x, p.y);
+      if (lantern) {
+        const q = st.at(ex + 12, FEET - 52 + (idle ? 0 : Math.round(Math.sin(t / 160)))); // swings as he walks
+        lantern.setPosition(q.x, q.y).setFrame(Math.floor(t / 120) % 3);
+      }
+      light(t);
+    });
+  }
+
+  /** Scene 2, the clock tower: the bell swings for two DONGs, then the 2:17 face up close. */
+  private pixelTower(layer: Phaser.GameObjects.Container) {
+    const st = new PixelStage(this, layer, FRAME);
+    st.image('bg_tower_sky');
+    st.image('bg_tower');
+    const bell = st.sprite('prop_bell', 240, 24, 24 / 48, 2 / 40).setName('pixel:bell');
+    const DONGS = [1200, 3400];
+    const angle = (t: number) => DONGS.reduce((a, d) => (t > d ? a + 0.45 * Math.sin(((t - d) / 1000) * 5.5) * Math.exp(-((t - d) / 1000) * 0.9) : a), 0);
+    const rang = new Set<number>();
+    // 2B: the face up close, the dried-blood second hand twitching toward 2:18 and snapping back.
+    const close = this.add.container(0, 0).setVisible(false);
+    layer.add(close);
+    const cst = new PixelStage(this, close, FRAME, 192, 108);
+    cst.image('bg_clockface_close');
+    const c = cst.at(96, 54);
+    const hand = this.add.rectangle(c.x, c.y, cst.scale, 38 * cst.scale, 0x7a1010).setOrigin(0.5, 1);
+    close.add(hand);
+    const CUT = comicSettings.reduceMotion ? 0 : 5000;
+    this.everyFrame(layer, (t) => {
+      if (!comicSettings.reduceMotion) bell.setRotation(angle(t));
+      for (const d of DONGS) {
+        if (t > d && !rang.has(d)) {
+          rang.add(d);
+          if (!comicSettings.reduceMotion && !comicSettings.reduceFlashing) this.cameras.main.shake(350, 0.004);
+        }
+      }
+      if (t >= CUT && !close.visible) close.setVisible(true);
+      // Frozen at :40; every 1.3 s it tries the next tick and snaps straight back.
+      const twitch = !comicSettings.reduceMotion && t % 1300 < 120 ? 6 : 0;
+      hand.setAngle(40 * 6 + twitch);
+    });
   }
 
   // ------------------------------------------------------------------ effects

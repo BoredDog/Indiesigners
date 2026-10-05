@@ -1,0 +1,440 @@
+{
+  "bg_archive": {
+    "file": "assets/pixel/bg_archive.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_archive_stairs": {
+    "file": "assets/pixel/bg_archive_stairs.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_chamber": {
+    "file": "assets/pixel/bg_chamber.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_chamber_residue": {
+    "file": "assets/pixel/bg_chamber_residue.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_clockface_close": {
+    "file": "assets/pixel/bg_clockface_close.png",
+    "w": 192,
+    "h": 108,
+    "final": false
+  },
+  "bg_ivy_fg": {
+    "file": "assets/pixel/bg_ivy_fg.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_ivy_outside": {
+    "file": "assets/pixel/bg_ivy_outside.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_ivy_room": {
+    "file": "assets/pixel/bg_ivy_room.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_luke_bank": {
+    "file": "assets/pixel/bg_luke_bank.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_luke_far": {
+    "file": "assets/pixel/bg_luke_far.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_luke_water": {
+    "file": "assets/pixel/bg_luke_water.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_photo_elias": {
+    "file": "assets/pixel/bg_photo_elias.png",
+    "w": 192,
+    "h": 108,
+    "final": false
+  },
+  "bg_photo_scratched": {
+    "file": "assets/pixel/bg_photo_scratched.png",
+    "w": 192,
+    "h": 108,
+    "final": false
+  },
+  "bg_room": {
+    "file": "assets/pixel/bg_room.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_tower": {
+    "file": "assets/pixel/bg_tower.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_tower_sky": {
+    "file": "assets/pixel/bg_tower_sky.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_tunnel": {
+    "file": "assets/pixel/bg_tunnel.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_far": {
+    "file": "assets/pixel/bg_veyra_far.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_fg": {
+    "file": "assets/pixel/bg_veyra_fg.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_mid": {
+    "file": "assets/pixel/bg_veyra_mid.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_residue": {
+    "file": "assets/pixel/bg_veyra_residue.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_sky": {
+    "file": "assets/pixel/bg_veyra_sky.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_street": {
+    "file": "assets/pixel/bg_veyra_street.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_village": {
+    "file": "assets/pixel/bg_village.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_village_residue": {
+    "file": "assets/pixel/bg_village_residue.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_village_sky": {
+    "file": "assets/pixel/bg_village_sky.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_watch_close": {
+    "file": "assets/pixel/bg_watch_close.png",
+    "w": 192,
+    "h": 108,
+    "final": false
+  },
+  "bg_well_lock": {
+    "file": "assets/pixel/bg_well_lock.png",
+    "w": 192,
+    "h": 108,
+    "final": false
+  },
+  "bg_window_close": {
+    "file": "assets/pixel/bg_window_close.png",
+    "w": 192,
+    "h": 108,
+    "final": false
+  },
+  "char_elias_walk": {
+    "file": "assets/pixel/char_elias_walk.png",
+    "w": 192,
+    "h": 58,
+    "final": false
+  },
+  "char_elias_young": {
+    "file": "assets/pixel/char_elias_young.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_figure_back": {
+    "file": "assets/pixel/char_figure_back.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_figure_carry": {
+    "file": "assets/pixel/char_figure_carry.png",
+    "w": 20,
+    "h": 30,
+    "final": false
+  },
+  "char_hanna_body": {
+    "file": "assets/pixel/char_hanna_body.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_hanna_reach": {
+    "file": "assets/pixel/char_hanna_reach.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_ivy_body": {
+    "file": "assets/pixel/char_ivy_body.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_luke_body": {
+    "file": "assets/pixel/char_luke_body.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_luke_push": {
+    "file": "assets/pixel/char_luke_push.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_sister": {
+    "file": "assets/pixel/char_sister.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_sister_bed": {
+    "file": "assets/pixel/char_sister_bed.png",
+    "w": 56,
+    "h": 24,
+    "final": false
+  },
+  "char_sister_ghost": {
+    "file": "assets/pixel/char_sister_ghost.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_unknown_woman": {
+    "file": "assets/pixel/char_unknown_woman.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_window_figure": {
+    "file": "assets/pixel/char_window_figure.png",
+    "w": 40,
+    "h": 60,
+    "final": false
+  },
+  "char_woman_sitting": {
+    "file": "assets/pixel/char_woman_sitting.png",
+    "w": 32,
+    "h": 44,
+    "final": false
+  },
+  "panel_217": {
+    "file": "assets/pixel/panel_217.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_alone": {
+    "file": "assets/pixel/panel_alone.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_bedside": {
+    "file": "assets/pixel/panel_bedside.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_before": {
+    "file": "assets/pixel/panel_before.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_closed": {
+    "file": "assets/pixel/panel_closed.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_confront": {
+    "file": "assets/pixel/panel_confront.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_erase": {
+    "file": "assets/pixel/panel_erase.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_network": {
+    "file": "assets/pixel/panel_network.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_night": {
+    "file": "assets/pixel/panel_night.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "panel_search": {
+    "file": "assets/pixel/panel_search.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "portrait_elias_young": {
+    "file": "assets/pixel/portrait_elias_young.png",
+    "w": 64,
+    "h": 64,
+    "final": false
+  },
+  "portrait_hanna": {
+    "file": "assets/pixel/portrait_hanna.png",
+    "w": 64,
+    "h": 64,
+    "final": false
+  },
+  "portrait_ivy": {
+    "file": "assets/pixel/portrait_ivy.png",
+    "w": 64,
+    "h": 64,
+    "final": false
+  },
+  "portrait_luke": {
+    "file": "assets/pixel/portrait_luke.png",
+    "w": 64,
+    "h": 64,
+    "final": false
+  },
+  "prop_bell": {
+    "file": "assets/pixel/prop_bell.png",
+    "w": 48,
+    "h": 40,
+    "final": false
+  },
+  "prop_boat_villagers": {
+    "file": "assets/pixel/prop_boat_villagers.png",
+    "w": 64,
+    "h": 24,
+    "final": false
+  },
+  "prop_footprints": {
+    "file": "assets/pixel/prop_footprints.png",
+    "w": 44,
+    "h": 14,
+    "final": false
+  },
+  "prop_key_blood": {
+    "file": "assets/pixel/prop_key_blood.png",
+    "w": 14,
+    "h": 8,
+    "final": false
+  },
+  "prop_key_turn": {
+    "file": "assets/pixel/prop_key_turn.png",
+    "w": 72,
+    "h": 24,
+    "final": false
+  },
+  "prop_lantern": {
+    "file": "assets/pixel/prop_lantern.png",
+    "w": 24,
+    "h": 12,
+    "final": false
+  },
+  "prop_oil_lamp": {
+    "file": "assets/pixel/prop_oil_lamp.png",
+    "w": 10,
+    "h": 16,
+    "final": false
+  },
+  "prop_photo_burned": {
+    "file": "assets/pixel/prop_photo_burned.png",
+    "w": 14,
+    "h": 10,
+    "final": false
+  },
+  "prop_recorder": {
+    "file": "assets/pixel/prop_recorder.png",
+    "w": 22,
+    "h": 18,
+    "final": false
+  },
+  "prop_records_notice": {
+    "file": "assets/pixel/prop_records_notice.png",
+    "w": 18,
+    "h": 24,
+    "final": false
+  },
+  "prop_rocking_chair": {
+    "file": "assets/pixel/prop_rocking_chair.png",
+    "w": 40,
+    "h": 44,
+    "final": false
+  },
+  "prop_shelf_door": {
+    "file": "assets/pixel/prop_shelf_door.png",
+    "w": 64,
+    "h": 120,
+    "final": false
+  },
+  "prop_toy_horse": {
+    "file": "assets/pixel/prop_toy_horse.png",
+    "w": 20,
+    "h": 16,
+    "final": false
+  },
+  "tiles_underground": {
+    "file": "assets/pixel/tiles_underground.png",
+    "w": 128,
+    "h": 64,
+    "final": false
+  },
+  "tiles_underground_residue": {
+    "file": "assets/pixel/tiles_underground_residue.png",
+    "w": 128,
+    "h": 64,
+    "final": false
+  }
+}

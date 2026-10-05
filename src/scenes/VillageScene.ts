@@ -7,6 +7,7 @@ import { H, W, ghost, hasScene, hudIcons, label, popup, witnessStatusText } from
 import { BEAT, makeBeatArt } from '../dev/beatArt';
 import { MET_FLAG } from './UnknownWomanScene';
 import { PHOTO_EVIDENCE, showPhoto } from './beats/photo';
+import { PX, PixelStage, hasPixel } from '../pixel/pixel';
 
 // Hotspot centres on the 1920×1080 village (placeholder art; move when Arya's bg_village lands).
 const SPOTS: Record<WitnessId | 'tower' | 'record' | 'photo', { x: number; y: number; w: number; h: number }> = {
@@ -45,7 +46,8 @@ export class VillageScene extends Phaser.Scene {
 
   create(data: VillageData = {}) {
     this.busy = false;
-    this.add.image(0, 0, PH.village).setOrigin(0).setDisplaySize(W, H);
+    if (hasPixel(this, 'bg_village_sky', 'bg_village')) this.pixelHub();
+    else this.add.image(0, 0, PH.village).setOrigin(0).setDisplaySize(W, H);
     this.hud = hudIcons(this, 'Village');
 
     for (const w of WITNESSES) if (gameState.witnessStatus(w) === 'resolved') this.addResolvedMark(w);
@@ -104,6 +106,25 @@ export class VillageScene extends Phaser.Scene {
     );
   }
 
+  /**
+   * Pixel hub (design/pixel scene 5): sky + village at ×4. There is no lantern on this screen, so
+   * the cursor is the light: the hidden symbols (residue layer) show only around the pointer.
+   */
+  private pixelHub() {
+    const st = new PixelStage(this, this.add.container(0, 0), { x: 0, y: 0, w: W, h: H });
+    st.image('bg_village_sky');
+    st.image('bg_village');
+    if (!hasPixel(this, 'bg_village_residue')) return;
+    const residue = st.image('bg_village_residue');
+    const light = this.make.graphics({}, false);
+    residue.setMask(light.createGeometryMask());
+    const glow = this.add.circle(-999, -999, 150, COLORS.spiritTeal, 0.08).setBlendMode(Phaser.BlendModes.ADD);
+    this.input.on(Phaser.Input.Events.POINTER_MOVE, (p: Phaser.Input.Pointer) => {
+      light.clear().fillStyle(0xffffff).fillCircle(p.x, p.y, 130);
+      glow.setPosition(p.x, p.y);
+    });
+  }
+
   /** Permanent evidence mark for a resolved witness: a soft lantern glow + a pinned, stamped note. */
   private addResolvedMark(w: WitnessId) {
     const s = SPOTS[w];
@@ -138,7 +159,9 @@ export class VillageScene extends Phaser.Scene {
     makeBeatArt(this);
     const s = SPOTS.photo;
     const found = gameState.hasEvidence(PHOTO_EVIDENCE);
-    const img = this.add.image(s.x, s.y - s.h / 2, BEAT.photo).setScale(0.13).setAngle(-14).setName('photoProp');
+    const img = hasPixel(this, 'prop_photo_burned')
+      ? this.add.image(s.x, s.y, PX('prop_photo_burned')).setOrigin(0.5, 1).setScale(4).setName('photoProp')
+      : this.add.image(s.x, s.y - s.h / 2, BEAT.photo).setScale(0.13).setAngle(-14).setName('photoProp');
     if (!found && !comicSettings.reduceMotion && !comicSettings.reduceFlashing) {
       const glint = this.add.circle(s.x + 40, s.y - s.h / 2 - 20, 10, COLORS.spiritTeal, 0.8);
       this.tweens.add({ targets: glint, alpha: 0.1, scale: 1.8, duration: dur(900), yoyo: true, repeat: -1 });
