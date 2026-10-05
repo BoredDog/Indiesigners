@@ -10,6 +10,13 @@ export const PX = (name: string) => `px_${name}`;
 const SHEETS: Record<string, [number, number]> = {
   char_elias_walk: [32, 58], // walk ×4, idle ×2; feet at y = 56, body centre x = 13
   prop_lantern: [8, 12], // 3 flame frames
+  // Witness idles, colour and pre-made ghost: 2 frames each, feet on y = 56.
+  char_ivy_idle: [32, 58],
+  char_ivy_ghost_idle: [32, 58],
+  char_luke_idle: [32, 58],
+  char_luke_ghost_idle: [32, 58],
+  char_hanna_idle: [32, 58],
+  char_hanna_ghost_idle: [32, 58],
   prop_key_turn: [24, 24], // 0° / 45° / 90°
 };
 
