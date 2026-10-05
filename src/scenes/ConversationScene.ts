@@ -119,8 +119,9 @@ export class ConversationScene extends Phaser.Scene {
   private layoutLines() {
     let y = LOG_TOP;
     for (const l of this.lines) {
-      l.setPosition(l.kind === 'narration' ? COL_X + 80 : COL_X, y + l.height / 2);
-      y += l.height + LINE_GAP;
+      // Pixel bubble tails reach past the box: leave room so the newest line is fully in view.
+      l.setPosition(l.kind === 'narration' ? COL_X + 80 : COL_X, y + l.extraAbove + l.height / 2);
+      y += l.extraAbove + l.height + l.extraBelow + LINE_GAP;
     }
     this.contentH = y - LINE_GAP - LOG_TOP;
   }
