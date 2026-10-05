@@ -4,6 +4,8 @@ Design lead for the pixel look: Vansh's design session. Every scene gets a code-
 
 Preview of Scene 1: open `scene1_entering_veyra.html` in a browser. It is live and has layer toggles.
 
+Bhumi's brief (the look, the scenes, her tasks B-1 to B-8): `BHUMI.md`, also posted on issue #50.
+
 ## Rules (every scene)
 
 - **Canvas 480×270**, drawn at exactly **4×** to fill 1920×1080. Close-ups use 192×108 at 10×.
@@ -81,7 +83,3 @@ Fog, wind, leaves and the lantern glow are done in code. Scene 1 beats: 0–1 s 
 The coding session's `feat/village-clues` puts the clue hotspots at these 1920×1080 positions. Divide by 4 for the pixel canvas. The pixel hub keeps the clock tower at (910, 300) → (227.5, 75).
 
 footprints 1040,875 · key 1172,885 · bell 910,228 · tower clock 910,385 · records 1345,770 · symbols 220,770 (+ tower door 868,700, well 1236,700) · recorder 1722,790 · well 1180,760 · burned photo 1040,1000 · witnesses 470,760 / 760,1010 / 1500,790.
-
-## Hub witness ghosts (`art-src/pixel/chars/`, preview `hub_ghosts.html`)
-
-`char_{ivy,luke,hanna}_idle.png` (full colour) and `char_{ivy,luke,hanna}_ghost_idle.png` (pre-made ghosts): each 64×58 = 2 frames of 32×58, feet on y=56. Ghosts are a palette remap (pale ramp, dusk outlines, feet dithered away). Use these instead of tinting in code. Place bottom-centre on the witness hotspot: x = hx/4 − 16, y = hy/4 − 57. Swap frames every 0.6 s, offset each witness, alpha 0.85, ±1 px slow drift.
