@@ -6,12 +6,11 @@ signal chosen(label: String)
 
 
 func build(text: String, buttons: Array, y: float) -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
-	size = Vector2(CoreUi.W, CoreUi.H)
+	set_anchors_preset(Control.PRESET_FULL_RECT)  # fills the screen; the anchors own the size
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var dim := ColorRect.new()
 	dim.color = Color(ComicTheme.INK, 0.45)
-	dim.size = size
+	dim.size = Vector2(CoreUi.W, CoreUi.H)
 	add_child(dim)
 	var box := ComicBubble.make("narration", text, 760.0, 30)
 	add_child(box.place_at(Vector2(CoreUi.W / 2.0, y - 40)))

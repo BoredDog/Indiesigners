@@ -18,7 +18,7 @@
     "test:autoplay": "npm run build && tsx tools/autoplay-full.ts",
     "answer-key": "tsx tools/answer-key.ts",
     "godot:sync": "bash tools/sync-godot-content.sh",
-    "test:godot": "bash tools/sync-godot-content.sh && bash tools/godot.sh --headless --path godot --import && bash tools/godot.sh --headless --path godot res://tests/test_core.tscn && bash tools/godot.sh --headless --path godot res://tests/test_memory.tscn && bash tools/godot.sh --headless --path godot res://tests/test_loop.tscn && bash tools/godot.sh --headless --path godot res://tests/test_casebook.tscn && bash tools/godot.sh --headless --path godot res://tests/test_sequences.tscn && bash tools/godot.sh --headless --path godot res://tests/test_conversation.tscn && bash tools/godot.sh --headless --path godot -s res://tests/test_puzzles.gd && bash tools/godot.sh --headless --path godot res://tests/test_puzzle_scene.tscn"
+    "test:godot": "bash tools/sync-godot-content.sh && bash tools/godot.sh --headless --path godot --import && bash tools/godot.sh --headless --path godot res://tests/test_core.tscn && bash tools/godot.sh --headless --path godot res://tests/test_memory.tscn && bash tools/godot.sh --headless --path godot res://tests/test_loop.tscn && bash tools/godot.sh --headless --path godot res://tests/test_casebook.tscn && bash tools/godot.sh --headless --path godot res://tests/test_sequences.tscn && bash tools/godot.sh --headless --path godot res://tests/test_conversation.tscn && bash tools/godot.sh --headless --path godot res://tests/test_accusation.tscn && bash tools/godot.sh --headless --path godot -s res://tests/test_puzzles.gd && bash tools/godot.sh --headless --path godot res://tests/test_puzzle_scene.tscn"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

@@ -1,9 +1,10 @@
 extends Control
 ## Hidden Archive (port of src/scenes/ArchiveScene.ts): opens after 9/9 deductions. A short beat,
-## then the collapse escape (Echo Path pz_archive), then the Finale.
+## then the collapse escape (Echo Path pz_archive), then the Accusation (A2, once), then the Finale.
 
 const PuzzleScene := preload("res://scenes/puzzle.gd")
 const SELF := "res://scenes/archive.tscn"
+const ACCUSATION := "res://scenes/accusation.tscn"
 const FINALE := "res://scenes/finale.tscn"
 
 const TEXT := {
@@ -107,9 +108,18 @@ func _escaped(fresh: bool) -> void:
 	var cue: Dictionary = StoryData.ui.get("popups", {}).get("finalReconstruction", {})
 	_box(cue.get("text", "The evidence fits. Reconstruct the night."), Vector2(520, 680), 30)
 	var label: String = (cue.get("buttons", ["CONTINUE"]) as Array)[0]
-	_button(label, func():
-		var router := get_node_or_null("/root/Router")
-		if router and router.has_scene("finale"):
-			router.goto("finale")
-		else:
-			get_tree().change_scene_to_file(FINALE if ResourceLoader.exists(FINALE) else "res://scenes/boot.tscn"))
+	_button(label, _go_finale)
+
+
+## A2: name who did it first (once, flag "accused"); the Finale then plays as the confirmation.
+func _go_finale() -> void:
+	var accuse := ResourceLoader.exists(ACCUSATION) and not GameState.flag("accused")
+	var router := get_node_or_null("/root/Router")
+	if router and accuse:
+		router.goto("accusation")
+	elif router and router.has_scene("finale"):
+		router.goto("finale")
+	elif accuse:
+		get_tree().change_scene_to_file(ACCUSATION)
+	else:
+		get_tree().change_scene_to_file(FINALE if ResourceLoader.exists(FINALE) else "res://scenes/boot.tscn")
