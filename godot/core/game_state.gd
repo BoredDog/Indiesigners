@@ -32,6 +32,13 @@ func _ready() -> void:
 	var saved := _read()
 	if saved.has("settings"):
 		d.settings = _merged(DEFAULT_SETTINGS, saved.settings)
+	_apply_settings()
+
+
+## Settings that change how the comic layer renders (Reduce Motion / Flashing).
+func _apply_settings() -> void:
+	ComicTheme.reduce_motion = bool(d.settings.get("reduceMotion", false))
+	ComicTheme.reduce_flashing = bool(d.settings.get("reduceFlashing", false))
 
 
 func _fresh(settings: Dictionary) -> Dictionary:
@@ -318,5 +325,6 @@ func settings() -> Dictionary:
 
 func set_setting(key: String, value) -> void:
 	d.settings[key] = value
+	_apply_settings()
 	settings_changed.emit(d.settings)
 	_commit()

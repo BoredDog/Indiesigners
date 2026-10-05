@@ -22,7 +22,7 @@ func _ready() -> void:
 	add_child(bg)
 
 	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://content/pages/mira.json"))
-	var tex: Texture2D = load("res://art/placeholders/%s.png" % data.background)
+	var tex: Texture2D = ComicTheme.art(data.background)
 	page = ComicPage.make(tex, data, BOUNDS, true)
 	page.panel_clicked.connect(func(p: ComicPanel):
 		if page.focused == p:

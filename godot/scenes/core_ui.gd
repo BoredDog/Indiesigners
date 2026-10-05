@@ -41,7 +41,7 @@ static func button(parent: Node, pos: Vector2, text: String, on_click: Callable,
 ## Village placeholder art behind conversations / pages, optionally dimmed.
 static func backdrop(parent: Node, dim := 0.55) -> void:
 	var img := TextureRect.new()
-	img.texture = load("res://art/placeholders/ph_village.png")
+	img.texture = ComicTheme.art("ph_village")
 	img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	img.stretch_mode = TextureRect.STRETCH_SCALE
 	img.size = Vector2(W, H)
@@ -58,17 +58,21 @@ static func backdrop(parent: Node, dim := 0.55) -> void:
 const GHOST_TINT := {"mira": Color.WHITE, "arun": Color("c9d39a"), "leela": Color("d7c6f0")}
 
 
-## Placeholder ghost of a witness (pale, slow float). Only Mira has placeholder art; Arun and
-## Leela reuse it tinted until Bhumi's art lands. `feet` = bottom-centre.
+const GHOST_PALE := Color("dde6f2")  # a cold wash over real witness art: still a ghost
+
+
+## Ghost of a witness (pale, slow float): their own art (char_<w>) once it exists, else Mira's
+## stand-in tinted per witness. `feet` = bottom-centre.
 static func ghost(parent: Node, w: String, feet: Vector2, scale := 1.0) -> TextureRect:
-	var tex: Texture2D = load("res://art/placeholders/ph_mira.png")
+	var own := ComicTheme.has_art("ph_" + w)
+	var tex: Texture2D = ComicTheme.art("ph_" + w) if own else ComicTheme.art("ph_mira")
 	var g := TextureRect.new()
 	g.texture = tex
 	g.size = tex.get_size() * scale
 	g.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	g.stretch_mode = TextureRect.STRETCH_SCALE
 	g.position = feet - Vector2(g.size.x / 2.0, g.size.y)
-	g.modulate = Color(GHOST_TINT[w], 0.88)
+	g.modulate = Color(GHOST_PALE if own else GHOST_TINT[w], 0.88)
 	g.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(g)
 	if not ComicTheme.reduce_motion:

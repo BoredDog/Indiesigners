@@ -309,6 +309,7 @@ That's ~25 working hours plus one 5-hour sleep. With 30 hours instead of 40, the
 1. **Install Node.js 20 LTS** on all three dev machines (`winget install OpenJS.NodeJS.LTS`) and set git identity (`git config --global user.name/user.email`).
 2. **Confirm Phaser 3** as the engine (or say otherwise in the first 30 minutes; switching later is expensive).
 3. **Does the jam allow AI-generated assets** (e.g. the Outlander CC0 backgrounds, which are AI-made)? If unsure, Arya paints over them, or we draw backgrounds ourselves.
+   **Decided 5 Oct (Garv): yes, AI-assisted art is allowed.** Disclose it in CREDITS.md (Claude Code's vector drafts are listed there).
 4. **itch.io page owner: Garv.** For automated uploads, create an itch API key and keep it locally — never commit it.
 5. ✅ Repo is public at `Gravity006/Indiesigners`, all 4 teammates are collaborators. Garv enables Pages + branch protection.
 6. Lock the art style by **Mon 12:00** (Bhumi posts one Elias + one Mira sample; all 5 approve).

@@ -13,6 +13,7 @@ var page: ComicPage
 var words := {}
 var fragments: Array = []
 var counter: Label
+var hint: Label
 var reconstruct_btn: ComicButton
 var leave_btn: ComicButton
 var _toast: Label
@@ -32,7 +33,7 @@ func _ready() -> void:
 			page.unfocus())
 	add_child(bg)
 
-	var tex: Texture2D = load("res://art/placeholders/%s.png" % page_def.background)
+	var tex: Texture2D = ComicTheme.art(page_def.background)
 	page = ComicPage.make(tex, page_def, PAGE_BOUNDS, true)
 	page.panel_clicked.connect(func(p: ComicPanel):
 		if page.focused == p:
@@ -147,6 +148,29 @@ func _build_rail(title: String) -> void:
 	cb.pressed.connect(_open_casebook)
 	add_child(cb.place_at(Vector2(RAIL_X, 300)))
 
+	var menu := ComicButton.make("MENU", 220, 28)
+	menu.name = "btn_MENU"
+	menu.pressed.connect(func(): CoreUi.open_pause(self))
+	add_child(menu.place_at(Vector2(RAIL_X, 380)))
+	# Always a way out: progress is saved, the player can come back any time (no dead ends).
+	var back := ComicButton.make("← VILLAGE", 220, 28)
+	back.name = "btn_VILLAGE"
+	back.pressed.connect(_to_village)
+	add_child(back.place_at(Vector2(RAIL_X, 460)))
+
+	# "What next" hint so a half-finished page never leaves the player guessing.
+	hint = Label.new()
+	hint.name = "Hint"
+	hint.add_theme_font_override("font", ComicTheme.font("narration"))
+	hint.add_theme_font_size_override("font_size", 22)
+	hint.add_theme_color_override("font_color", ComicTheme.PAPER)
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD
+	hint.size = Vector2(250, 200)
+	hint.position = Vector2(RAIL_X - 125, 520)
+	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(hint)
+
 	reconstruct_btn = ComicButton.make("RECONSTRUCT", 230, 30, ComicTheme.SPIRIT_TEAL)
 	reconstruct_btn.pressed.connect(_reconstruct)
 	add_child(reconstruct_btn.place_at(Vector2(RAIL_X, 860)))
@@ -161,7 +185,24 @@ func _refresh_hud() -> void:
 	counter.text = "EVIDENCE %d/%d" % [p.found, p.total]
 	var resolved := GameState.witness_status(witness) == "resolved"
 	reconstruct_btn.visible = not Deductions.available(witness).is_empty() and not resolved
-	leave_btn.visible = GameState.deductions_confirmed(witness) == StoryData.deductions_of(witness).size() or resolved
+	var total := StoryData.deductions_of(witness).size()
+	var confirmed := GameState.deductions_confirmed(witness)
+	var all_done := confirmed == total or resolved
+	leave_btn.visible = all_done
+	var locked_left := false
+	for e in fragments:
+		if e.get("core", false) and e.get("puzzle") != null and not GameState.has_evidence(e.id):
+			locked_left = true
+	if all_done:
+		hint.text = "All three deductions confirmed.
+LEAVE MEMORY when ready."
+	elif reconstruct_btn.visible:
+		hint.text = "Evidence complete.
+RECONSTRUCT what happened."
+	else:
+		hint.text = "Deductions %d/%d.
+Find more evidence: click the loud words.%s" % [confirmed, total, "
+◆ = behind an Echo Path: click it to enter." if locked_left else ""]
 
 
 # ---------------------------------------------------------------- navigation
@@ -187,6 +228,10 @@ func _leave() -> void:
 		Router.goto("village")
 	else:
 		Router.goto("memory", {"witness": witness})
+
+
+func _to_village() -> void:
+	Router.goto("village" if Router.has_scene("village") else "memory", {"witness": witness})
 
 
 func _open_casebook() -> void:
