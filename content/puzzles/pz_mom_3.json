@@ -1,19 +1,19 @@
 {
   "id": "pz_mom_3",
   "title": "WHOOM! Every Node at Once",
-  "tip": "A node, an echo and the clock. Not every clock wants to be touched.",
+  "tip": "Two nodes, an echo and the clock. Time every step.",
   "reward": "ev_leela_whoom",
-  "light": "N",
+  "light": "W",
   "shadow": 2,
   "par": 20,
   "tiles": [
-    ".......",
-    "_b____.",
-    "..._...",
-    "..._.MD",
-    "..._.S.",
-    "..#_..#",
-    ".G._.#."
+    ".....D.",
+    "..#G_..",
+    "...._#.",
+    "...._..",
+    "...._..",
+    "__b___.",
+    "S.M._.."
   ],
   "legend": {
     "b": "gate:g2:open",
@@ -23,7 +23,7 @@
     {
       "path": [
         [
-          2,
+          0,
           3
         ],
         [
@@ -31,7 +31,7 @@
           3
         ],
         [
-          0,
+          2,
           3
         ]
       ]
