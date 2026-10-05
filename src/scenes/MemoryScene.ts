@@ -38,6 +38,7 @@ export class MemoryScene extends Phaser.Scene {
   private counter!: Phaser.GameObjects.Text;
   private reconstructBtn!: ComicButton;
   private leaveBtn!: ComicButton;
+  private hint!: Phaser.GameObjects.Text;
   private toastText?: Phaser.GameObjects.Text;
 
   constructor() {
@@ -99,7 +100,8 @@ export class MemoryScene extends Phaser.Scene {
     if (!this.anyEvidenceFound() && !deps.seen('tip_evidence')) this.showTip();
     if (data.justFound) this.time.delayedCall(350, () => this.words.get(data.justFound!)?.pop());
 
-    this.input.keyboard?.on('keydown-ESC', () => this.page.unfocus());
+    // Esc closes a zoomed panel first; otherwise it opens the pause menu like every other screen.
+    this.input.keyboard?.on('keydown-ESC', () => (this.page.focused ? this.page.unfocus() : this.openMenu()));
     this.input.keyboard?.on('keydown-C', () => this.openCasebook());
     (window as unknown as { __memory: MemoryScene }).__memory = this;
   }
@@ -189,6 +191,28 @@ export class MemoryScene extends Phaser.Scene {
         this.openCasebook(),
       ),
     );
+    this.add.existing(
+      new ComicButton(this, RAIL_X, 380, { label: 'MENU', width: 220, fontSize: 28 }).on('click', () => this.openMenu()),
+    );
+    // Always a way out: progress is saved, the player can come back any time (no dead ends).
+    this.add.existing(
+      new ComicButton(this, RAIL_X, 460, { label: '← VILLAGE', width: 220, fontSize: 28 })
+        .setName('btn:VILLAGE')
+        .on('click', () => this.toVillage()),
+    );
+
+    // "What next" hint so a half-finished page never leaves the player guessing.
+    this.hint = this.add
+      .text(RAIL_X, 540, '', {
+        fontFamily: `"${FONTS.narration}"`,
+        fontSize: '22px',
+        color: COLORS.paperCss,
+        align: 'center',
+        wordWrap: { width: 240 },
+        lineSpacing: 4,
+        resolution: TEXT_RESOLUTION,
+      })
+      .setOrigin(0.5, 0);
 
     this.reconstructBtn = new ComicButton(this, RAIL_X, 860, {
       label: 'RECONSTRUCT',
@@ -205,7 +229,7 @@ export class MemoryScene extends Phaser.Scene {
 
     if (readOnly) {
       this.add
-        .text(RAIL_X, 420, 'READ-ONLY\nMEMORY', {
+        .text(RAIL_X, 760, 'READ-ONLY\nMEMORY', {
           fontFamily: `"${FONTS.narration}"`,
           fontSize: '22px',
           color: COLORS.paperCss,
@@ -227,6 +251,16 @@ export class MemoryScene extends Phaser.Scene {
     this.reconstructBtn.setVisible(!!ready && !deps.isResolved(this.witness));
     const allConfirmed = deductions.length > 0 && deductions.every((d) => d.confirmed);
     this.leaveBtn.setVisible(allConfirmed || deps.isResolved(this.witness));
+
+    const confirmed = deductions.filter((d) => d.confirmed).length;
+    const lockedLeft = def.fragments.some((f) => f.core && f.puzzle && !deps.hasEvidence(f.evidence));
+    this.hint.setText(
+      allConfirmed || deps.isResolved(this.witness)
+        ? 'All three deductions confirmed.\nLEAVE MEMORY when ready.'
+        : ready
+          ? 'Evidence complete.\nRECONSTRUCT what happened.'
+          : `Deductions ${confirmed}/${deductions.length}.\nFind more evidence: click the loud words.${lockedLeft ? '\n◆ = behind an Echo Path: click it to enter.' : ''}`,
+    );
   }
 
   /** First deduction whose required evidence is all known and that isn't confirmed yet. */
@@ -259,6 +293,17 @@ export class MemoryScene extends Phaser.Scene {
       else if (this.scene.manager.keys['Village']) this.scene.start('Village');
       else this.scene.restart({ witness });
     });
+  }
+
+  private toVillage() {
+    const target = this.scene.manager.keys['Village'] ? 'Village' : 'Memory';
+    pageTurn(this, () => this.scene.start(target, { witness: this.witness }));
+  }
+
+  private openMenu() {
+    if (!this.scene.manager.keys['Pause'] || this.scene.isActive('Pause')) return;
+    this.scene.pause();
+    this.scene.launch('Pause', { returnTo: 'Memory' });
   }
 
   private openCasebook() {

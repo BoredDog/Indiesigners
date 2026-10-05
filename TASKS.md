@@ -32,7 +32,7 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | G11 | itch.io upload + fresh-browser test + submit | Plays on Chrome/Firefox/Edge from itch | Tue 15:00 | todo |
 | G12 | Review, play-test and merge every PR | Each PR merged within ~1 h of opening, or feedback given | ongoing | doing |
 
-## Nav — gameplay core
+## Nav — gameplay core  *(N6–N9 reassigned to Vansh, 5 Oct)*
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
 | N1 | `GameState` + `SaveManager` (localStorage autosave, Continue/New Game) | Close tab → Continue restores evidence, deductions and witness states | Mon 13:00 | done |
@@ -40,10 +40,10 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | N3 | `StoryData` loader + `DeductionController` | Unit test: right cards + conclusion confirms; wrong set returns "does not support" | Mon 15:00 | done |
 | N4 | Boot → Title → Village hub (hotspots, hover status, NEW EVIDENCE shimmer) | Title Continue/New Game work; witnesses clickable | Mon 17:00 | done |
 | N5 | Conversation scene (evidence-gated questions, ENTER MEMORY) + Deduction screen + Aftermath page | Mira loop works end to end with G6 | Mon 19:00 | done |
-| N6 | Arun + Leela wiring, all 9 deductions + 6 threads, THE RECORD unlock, witness resolution beats | All 9 confirmable; archive opens at 9/9 | Tue 01:00 | todo |
-| N7 | Pause/Settings (text size, Reduce Motion, fullscreen) → writes `comicSettings` | Settings persist in the save | Tue 01:00 | todo |
-| N8 | Autoplay test (Playwright, all 6 witness orders to the credits) | `npm run test:autoplay` passes | Tue 02:30 | todo |
-| N9 | Core bug fixes, cross-browser check | No open `bug` issues in core | Tue 12:00 | todo |
+| N6 | Arun + Leela wiring, all 9 deductions + 6 threads, THE RECORD unlock, witness resolution beats | All 9 confirmable; archive opens at 9/9 | Tue 01:00 | todo → **Vansh** (reassigned 5 Oct) |
+| N7 | Pause/Settings (text size, Reduce Motion, fullscreen) → writes `comicSettings` | Settings persist in the save | Tue 01:00 | todo → **Vansh** (reassigned 5 Oct) |
+| N8 | Autoplay test (Playwright, all 6 witness orders to the credits) | `npm run test:autoplay` passes | Tue 02:30 | todo → **Vansh** (reassigned 5 Oct) |
+| N9 | Core bug fixes, cross-browser check | No open `bug` issues in core | Tue 12:00 | todo → **Vansh** (reassigned 5 Oct) |
 
 ## Vansh — puzzles
 | ID | Task | Done when | Due | Status |
