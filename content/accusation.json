@@ -1,0 +1,35 @@
+{
+  "_source": "A2 (PLAN.md proposals, approved by Garv 5 Oct): the final accusation after the Archive escape, before the Finale. The player names who caused the incident and backs it with one clue from each witness; the Archive's handwriting match is shown automatically. Every slot accepts core evidence, so anyone who reached 9/9 can answer. Wrong answers get a nudge (B1 style), no penalty.",
+  "title": "THE ACCUSATION",
+  "question": "Who caused the incident?",
+  "intro": "Three memories. One record. Name who did this.",
+  "archiveClue": {
+    "title": "FROM THE ARCHIVE",
+    "text": "The unsigned case request and the apprentice log are in the same hand."
+  },
+  "slots": [
+    { "witness": "mira", "label": "MIRA SAW", "accept": ["ev_mira_staff", "ev_mira_erased_entry"] },
+    { "witness": "arun", "label": "ARUN SAW", "accept": ["ev_arun_cloth", "ev_arun_hiss"] },
+    { "witness": "leela", "label": "LEELA RECORDED", "accept": ["ev_leela_click", "ev_leela_ash", "ev_leela_paper"] }
+  ],
+  "conclusions": [
+    { "id": "elias_out", "text": "Elias Vane, the apprentice. Still out there somewhere." },
+    { "id": "leela", "text": "Leela, keeper of the lantern records." },
+    { "id": "me", "text": "The investigator. Me.", "correct": true },
+    { "id": "lantern", "text": "The Echo Lantern itself." },
+    { "id": "accident", "text": "No one. It was an accident." }
+  ],
+  "reactions": {
+    "me": "My staff. My initials. My hand on the case request.\nI was Elias Vane. I still am.",
+    "elias_out": "Elias Vane, yes. But no one left Veyra after 2:17.\nWhose hand wrote the case request?",
+    "leela": "Leela kept the records.\nShe never opened the network.",
+    "lantern": "A lantern doesn't choose.\nSomeone was holding it.",
+    "accident": "An accident doesn't erase its own name."
+  },
+  "feedback": {
+    "pickFirst": "Pick one clue from each memory, then name who did it.",
+    "rightButUnproven": "Say it, then prove it:\n{n} of your clues {verb} nothing yet.",
+    "andCluesOff": "\n({n} of your clues {verb} nothing either.)"
+  },
+  "buttons": { "accuse": "ACCUSE", "retry": "LOOK AGAIN", "continue": "CONTINUE" }
+}

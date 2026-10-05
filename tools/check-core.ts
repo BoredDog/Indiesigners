@@ -3,6 +3,7 @@
 import { gameState } from '../src/core/GameState';
 import { SaveManager } from '../src/core/SaveManager';
 import { DeductionController, UNSUPPORTED } from '../src/core/DeductionController';
+import { Accusation } from '../src/core/Accusation';
 import { DEDUCTION_IDS, deduction, story, validateStory, WITNESSES } from '../src/core/StoryData';
 import { comicSettings } from '../src/comic/settings';
 
@@ -42,11 +43,23 @@ ok(DeductionController.available('mira').some((d) => d.id === 'sis_1'), 'availab
 
 // Wrong conclusion, wrong cards, partial cards -> unsupported, no state change
 const req = deduction('sis_1').requiredEvidence;
+const msg = (r: ReturnType<typeof DeductionController.attempt>) => (r.ok ? '' : r.message);
+const cl = story.ui.closeness;
 const wrong = DeductionController.attempt('sis_1', req, 'wrong_0');
-ok(!wrong.ok && wrong.message === UNSUPPORTED, 'wrong conclusion -> "does not support"');
-ok(!DeductionController.attempt('sis_1', req.slice(1), 'correct').ok, 'missing a card -> unsupported');
+ok(!wrong.ok && msg(wrong) === cl.cardsFitConclusionWrong, 'B1: right cards, wrong conclusion -> "The evidence fits. Your conclusion doesn\'t."');
+const missingOne = DeductionController.attempt('sis_1', req.slice(1), 'correct');
+ok(!missingOne.ok && msg(missingOne).includes('1 clue is missing'), `B1: right conclusion, one card short -> ${JSON.stringify(msg(missingOne))}`);
 gameState.addEvidence('ev_arun_splash');
-ok(!DeductionController.attempt('sis_1', [...req, 'ev_arun_splash'], 'correct').ok, 'irrelevant extra card -> unsupported');
+const extraOne = DeductionController.attempt('sis_1', [...req, 'ev_arun_splash'], 'correct');
+ok(!extraOne.ok && msg(extraOne).includes("1 card doesn't belong"), `B1: right conclusion, an irrelevant card -> ${JSON.stringify(msg(extraOne))}`);
+const someFit = DeductionController.attempt('sis_1', [req[0], 'ev_arun_splash'], 'wrong_1');
+ok(!someFit.ok && msg(someFit).startsWith('1 of your clues fits'), `B1: wrong conclusion, one card fits -> ${JSON.stringify(msg(someFit))}`);
+const noneFit = DeductionController.attempt('sis_1', ['ev_arun_splash'], 'wrong_1');
+ok(!noneFit.ok && msg(noneFit) === UNSUPPORTED, 'B1: nothing fits -> "does not support"');
+ok(DeductionController.closeness('sis_1', [], undefined) === cl.nothingYet, 'B1: nothing picked -> pick first');
+for (const r of [wrong, missingOne, extraOne, someFit]) {
+  ok(!/ev_|wrong_|correct/.test(msg(r)), 'B1 feedback never names a card or option');
+}
 ok(gameState.deductionState('sis_1') === 'open', 'failed attempts do not confirm');
 
 // Right cards + conclusion -> confirmed, unlocks applied, no recursion into other deductions
@@ -107,6 +120,27 @@ for (const order of orders) {
   ok(gameState.finale === 'ready', `${order.join('>')}: finale ready`);
 }
 ok(WITNESSES.every((w) => gameState.witnessStatus(w) === 'resolved'), 'all resolved');
+
+// A2 final accusation: with only core evidence (9/9), every slot can be answered.
+{
+  const a = story.accusation;
+  const coreOnly = Object.fromEntries(a.slots.map((s) => [s.witness, s.accept.find((e) => story.evidence.find((x) => x.id === e)?.core)!]));
+  ok(a.slots.every((s) => Accusation.cards(s.witness).includes(coreOnly[s.witness])), 'A2: a core clue is pickable in every slot after 9/9');
+  const right = a.conclusions.find((c) => c.correct)!.id;
+  const wrongs = a.conclusions.filter((c) => !c.correct).map((c) => c.id);
+  ok(!Accusation.check({}, right).ok, 'A2: no picks -> pick first');
+  ok(!Accusation.check(coreOnly, undefined).ok, 'A2: no conclusion -> pick first');
+  for (const id of wrongs) {
+    const r = Accusation.check(coreOnly, id);
+    ok(!r.ok && r.message.startsWith(a.reactions[id]), `A2: "${id}" -> its own nudge`);
+  }
+  const offClue = { ...coreOnly, mira: 'ev_mira_bell' };
+  const unproven = Accusation.check(offClue, right);
+  ok(!unproven.ok && unproven.message.includes('1 of your clues proves nothing'), 'A2: right answer, one clue off -> prove it');
+  ok(!gameState.flag('accused'), 'A2: failed attempts change nothing');
+  const done = Accusation.accuse(coreOnly, right);
+  ok(done.ok && gameState.flag('accused'), 'A2: right clues + "Me." -> accused flag set');
+}
 
 console.log(failed ? `${failed} check(s) failed` : 'All core checks passed.');
 process.exit(failed ? 1 : 0);

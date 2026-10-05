@@ -275,9 +275,14 @@
     },
     {
       "evidence": "ev_leela_paper",
+      "light": true,
       "panel": "P6",
       "x": 451,
       "y": 143
     }
+  ],
+  "residue": [
+    {"panel": "P4", "fx": 0.78, "fy": 0.24, "text": "E.V.", "size": 54, "angle": -6},
+    {"panel": "P2", "fx": 0.7, "fy": 0.8, "text": "32 + 1 anchors", "size": 34, "angle": 4}
   ]
 }

@@ -80,7 +80,8 @@ export class ArchiveScene extends Phaser.Scene {
   }
 
   private goFinale() {
-    const next = hasScene(this, 'Finale') ? 'Finale' : 'Village';
+    // A2: name who did it first (once); the Finale then plays as the confirmation.
+    const next = hasScene(this, 'Accusation') && !gameState.flag('accused') ? 'Accusation' : hasScene(this, 'Finale') ? 'Finale' : 'Village';
     pageTurn(this, () => this.scene.start(next));
   }
 }

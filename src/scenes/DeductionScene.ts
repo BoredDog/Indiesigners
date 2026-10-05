@@ -16,7 +16,7 @@ const CARD_H = 124;
 
 /**
  * Deduction / RECONSTRUCT screen (Blueprint D1, E, M): pick the supporting evidence cards and one
- * conclusion. Wrong → "The evidence does not support this conclusion yet." with no penalty (A5).
+ * conclusion. Wrong → closeness feedback (B1: what's off, never which card) with no penalty (A5).
  * Right → CONFIRMED stamp, Elias's reaction, autosave, then back to the Memory page or Village.
  */
 export class DeductionScene extends Phaser.Scene {
@@ -146,7 +146,7 @@ export class DeductionScene extends Phaser.Scene {
     const d = deduction(this.args.deductionId);
     const ui = story.ui.popups;
     if (!this.conclusion || this.selected.size === 0) {
-      await this.modal(ui.unsupported.text, ui.unsupported.buttons);
+      await this.modal(story.ui.closeness.nothingYet, ui.unsupported.buttons);
       return this.nudge();
     }
     // Hypothesis prompt (Blueprint M): list the chosen clues and the conclusion, CONFIRM / BACK.

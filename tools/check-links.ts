@@ -1,6 +1,6 @@
 // Puzzle ↔ evidence link check: every puzzle-locked fragment on every memory page opens its real
 // Puzzle (no ?autosolve), the puzzle is solved via the test hook, and the evidence must come back
-// to the Memory page revealed + saved in GameState. Also: tower → Village, Archive → Finale.
+// to the Memory page revealed + saved in GameState. Also: tower → Village, Archive → Accusation.
 // Usage: npm run build && npx tsx tools/check-links.ts   (exit 1 on any failure)
 import { chromium } from '@playwright/test';
 import { preview } from 'vite';
@@ -65,12 +65,12 @@ for (let i = 0; i < 10 && !(await p.evaluate(() => (window as any).__echoes.game
 await p.waitForTimeout(1500);
 check(await p.evaluate(() => (window as any).__echoes.game.scene.isActive('Puzzle')), 'Archive opens pz_archive');
 await g(`__puzzle.solve()`);
-// After the escape the Archive shows CONTINUE at (960, 900) → Finale.
-for (let i = 0; i < 12 && !(await p.evaluate(() => (window as any).__echoes.game.scene.isActive('Finale'))); i++) {
+// After the escape the Archive shows CONTINUE at (960, 900) → Accusation (A2) → Finale.
+for (let i = 0; i < 12 && !(await p.evaluate(() => (window as any).__echoes.game.scene.isActive('Accusation'))); i++) {
   await p.waitForTimeout(1500);
   await p.mouse.click(960, 900);
 }
-check(await p.evaluate(() => (window as any).__echoes.game.scene.isActive('Finale')), 'Archive escape → Finale');
+check(await p.evaluate(() => (window as any).__echoes.game.scene.isActive('Accusation')), 'Archive escape → Accusation');
 
 console.log(errs.length ? `CONSOLE ERRORS:\n${errs.join('\n')}` : 'No console errors.');
 await b.close();

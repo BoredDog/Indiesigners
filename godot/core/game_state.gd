@@ -32,6 +32,7 @@ func _ready() -> void:
 	var saved := _read()
 	if saved.has("settings"):
 		d.settings = _merged(DEFAULT_SETTINGS, saved.settings)
+		d.settings.textSize = int(d.settings.textSize)  # JSON numbers come back as floats
 	_apply_settings()
 
 
