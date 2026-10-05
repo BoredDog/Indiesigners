@@ -1,35 +1,41 @@
 {
-  "_source": "A2 (PLAN.md proposals, approved by Garv 5 Oct): the final accusation after the Archive escape, before the Finale. The player names who caused the incident and backs it with one clue from each witness; the Archive's handwriting match is shown automatically. Every slot accepts core evidence, so anyone who reached 9/9 can answer. Wrong answers get a nudge (B1 style), no penalty.",
-  "title": "THE ACCUSATION",
+  "_source": "Script v2 (design/script_v2.md d9; applied 5 Oct 2026). A2 (PLAN.md proposals, approved by Garv 5 Oct): the final accusation after the Archive escape, before the Finale. One card per witness, then name who caused the incident. The Archive's three documents (case request, apprentice log, the player's own casebook) are shown automatically. Every slot accepts core evidence, so anyone who reached 9/9 can answer. Feedback: slots are judged first ({n} of 3 hold); the conclusion is judged only once all three hold. No penalty, nothing locks.",
+  "title": "WHO CAUSED THE INCIDENT?",
   "question": "Who caused the incident?",
-  "intro": "Three memories. One record. Name who did this.",
+  "intro": "One card from each witness. Then name them.",
   "archiveClue": {
-    "title": "FROM THE ARCHIVE",
-    "text": "The unsigned case request and the apprentice log are in the same hand."
+    "title": "THE ARCHIVE",
+    "text": "The case request, the apprentice log and this casebook: one hand.",
+    "documents": [
+      { "title": "CASE REQUEST", "text": "Veyra stopped at 2:17. Someone has to remember it." },
+      { "title": "APPRENTICE LOG", "text": "Anchors bind in fourteen minutes.\n- E. Vane" },
+      { "title": "MY CASEBOOK", "text": "The rope never moved. The bell rang anyway." }
+    ],
+    "stamp": "SAME HAND"
   },
   "slots": [
-    { "witness": "mira", "label": "MIRA SAW", "accept": ["ev_mira_staff", "ev_mira_erased_entry"] },
-    { "witness": "arun", "label": "ARUN SAW", "accept": ["ev_arun_cloth", "ev_arun_hiss"] },
-    { "witness": "leela", "label": "LEELA RECORDED", "accept": ["ev_leela_click", "ev_leela_ash", "ev_leela_paper"] }
+    { "witness": "mira", "label": "MIRA SAW...", "accept": ["ev_mira_staff", "ev_mira_erased_entry"] },
+    { "witness": "arun", "label": "ARUN SAW...", "accept": ["ev_arun_cloth", "ev_arun_hiss"] },
+    { "witness": "leela", "label": "LEELA RECORDED...", "accept": ["ev_leela_click", "ev_leela_paper", "ev_leela_ash", "ev_leela_rule"] }
   ],
   "conclusions": [
-    { "id": "elias_out", "text": "Elias Vane, the apprentice. Still out there somewhere." },
+    { "id": "elias_out", "text": "Elias Vane, the apprentice, still out there somewhere." },
     { "id": "leela", "text": "Leela, keeper of the lantern records." },
     { "id": "me", "text": "The investigator. Me.", "correct": true },
     { "id": "lantern", "text": "The Echo Lantern itself." },
     { "id": "accident", "text": "No one. It was an accident." }
   ],
   "reactions": {
-    "me": "My staff. My initials. My hand on the case request.\nI was Elias Vane. I still am.",
-    "elias_out": "Elias Vane, yes. But no one left Veyra after 2:17.\nWhose hand wrote the case request?",
-    "leela": "Leela kept the records.\nShe never opened the network.",
-    "lantern": "A lantern doesn't choose.\nSomeone was holding it.",
-    "accident": "An accident doesn't erase its own name."
+    "me": "Every card pointed at the one witness I never questioned.",
+    "elias_out": "The name is right. Look whose hand wrote these notes.",
+    "leela": "Leela said stop. The log says who didn't.",
+    "lantern": "The lantern did what it was told. Who told it?",
+    "accident": "Accidents don't ignore a warning, then erase themselves."
   },
   "feedback": {
-    "pickFirst": "Pick one clue from each memory, then name who did it.",
-    "rightButUnproven": "Say it, then prove it:\n{n} of your clues {verb} nothing yet.",
-    "andCluesOff": "\n({n} of your clues {verb} nothing either.)"
+    "pickFirst": "Pick one card from each witness, then name who did it.",
+    "slotsHold": "{n} of 3 witness cards hold. Look again at what they saw."
   },
+  "stamp": "CONFIRMED",
   "buttons": { "accuse": "ACCUSE", "retry": "LOOK AGAIN", "continue": "CONTINUE" }
 }

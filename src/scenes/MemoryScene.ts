@@ -12,6 +12,7 @@ import {
   TEXT_RESOLUTION,
   type PageDef,
 } from '../comic';
+import { fmt, story } from '../core/StoryData';
 import { makePlaceholders } from '../dev/placeholders';
 import { MEMORY_PAGES, type FragmentDef, type ResidueDef, type Witness } from './memory/MemoryData';
 import { memoryDeps } from './memory/MemoryDeps';
@@ -45,7 +46,8 @@ export class MemoryScene extends Phaser.Scene {
   private lightHeld = false;
   private lightGlow?: Phaser.GameObjects.Image;
   private lanternBtn?: ComicButton;
-  private residue: Phaser.GameObjects.Text[] = [];
+  private residue: (Phaser.GameObjects.Text | Phaser.GameObjects.Graphics)[] = [];
+  private firstLightShown = false;
   private lightWords = new Map<string, SfxWord>();
 
   constructor() {
@@ -68,6 +70,7 @@ export class MemoryScene extends Phaser.Scene {
     this.residue = [];
     this.lightOn = false;
     this.lightHeld = false;
+    this.firstLightShown = false;
     const def = MEMORY_PAGES[this.witness];
     if (!def) {
       this.toast(`No memory page for ${this.witness} yet.`);
@@ -149,7 +152,7 @@ export class MemoryScene extends Phaser.Scene {
     else if (f.first && !f.light) word.pulse();
 
     word.on('reveal', () => {
-      this.lightWords.delete(f.evidence);
+      if (this.lightWords.delete(f.evidence)) this.toast(fmt(story.ui.popups.spiritLightFound.text, { evidence: f.text }));
       word.setAlpha(1);
       deps.addEvidence(f.evidence);
       this.refreshPanelsColour(true);
@@ -164,6 +167,16 @@ export class MemoryScene extends Phaser.Scene {
   private addResidue(list: ResidueDef[]) {
     for (const r of list) {
       const panel = this.page.panel(r.panel);
+      if (r.shape) {
+        const g = this.residueShape(r.shape, r.size ?? 60)
+          .setPosition(r.fx * panel.frameW, r.fy * panel.frameH)
+          .setAngle(r.angle ?? 0)
+          .setAlpha(0)
+          .setName(`residue:${r.shape}`);
+        panel.overlay.add(g);
+        this.residue.push(g);
+        continue;
+      }
       const t = this.add
         .text(r.fx * panel.frameW, r.fy * panel.frameH, r.text, {
           fontFamily: `"${FONTS.hand}"`,
@@ -181,6 +194,40 @@ export class MemoryScene extends Phaser.Scene {
       panel.overlay.add(t);
       this.residue.push(t);
     }
+  }
+
+  /** A teal handprint or a trail of footprints, centred on its own origin so the light finds it. */
+  private residueShape(shape: 'hand' | 'steps', size: number): Phaser.GameObjects.Graphics {
+    const g = this.add.graphics();
+    g.fillStyle(COLORS.spiritTeal, 0.85).lineStyle(3, COLORS.ink, 0.9);
+    const k = size / 60;
+    if (shape === 'hand') {
+      g.fillEllipse(0, 10 * k, 40 * k, 46 * k).strokeEllipse(0, 10 * k, 40 * k, 46 * k);
+      const fingers = [
+        [-17, -22, -0.35],
+        [-7, -30, -0.1],
+        [4, -31, 0.05],
+        [14, -26, 0.25],
+        [24, 2, 0.9],
+      ];
+      for (const [fx, fy, a] of fingers) {
+        g.save();
+        g.translateCanvas(fx * k, fy * k);
+        g.rotateCanvas(a);
+        g.fillEllipse(0, 0, 10 * k, 26 * k).strokeEllipse(0, 0, 10 * k, 26 * k);
+        g.restore();
+      }
+    } else {
+      const n = 6;
+      const step = 46 * k;
+      for (let i = 0; i < n; i++) {
+        const x = (i - (n - 1) / 2) * step;
+        const y = i % 2 ? -9 * k : 9 * k;
+        g.fillEllipse(x, y, 22 * k, 12 * k).strokeEllipse(x, y, 22 * k, 12 * k);
+        g.fillCircle(x + 14 * k, y, 5 * k).strokeCircle(x + 14 * k, y, 5 * k);
+      }
+    }
+    return g;
   }
 
   get lit(): boolean {
@@ -219,7 +266,7 @@ export class MemoryScene extends Phaser.Scene {
     if (lit) glow.setPosition(p.worldX, p.worldY);
     // Full strength within ~half the radius, fading out to the edge of the light.
     const R = 200;
-    const reveal = (o: Phaser.GameObjects.Text | Phaser.GameObjects.Container) => {
+    const reveal = (o: Phaser.GameObjects.Text | Phaser.GameObjects.Graphics | Phaser.GameObjects.Container) => {
       if (!lit) return o.setAlpha(0);
       const m = o.getWorldTransformMatrix();
       const d = Phaser.Math.Distance.Between(m.tx, m.ty, p.worldX, p.worldY);
@@ -227,6 +274,20 @@ export class MemoryScene extends Phaser.Scene {
     };
     for (const t of this.residue) reveal(t);
     for (const w of this.lightWords.values()) reveal(w);
+    if (lit && !this.firstLightShown && this.residue.some((t) => t.alpha > 0.6)) this.showFirstLight();
+  }
+
+  /** A1: the page's first-light line, once per save, the first time the light finds its residue. */
+  private showFirstLight() {
+    this.firstLightShown = true;
+    const text = MEMORY_PAGES[this.witness]?.firstLight;
+    const key = `firstlight_${this.witness}`;
+    if (!text || memoryDeps().seen(key)) return;
+    memoryDeps().markSeen(key);
+    const box = new Bubble(this, PAGE_BOUNDS.x + PAGE_BOUNDS.w / 2, 70, { kind: 'narration', text, maxWidth: 820, fontSize: 28 });
+    box.setDepth(45).setName('firstLight');
+    this.add.existing(box.appear(0));
+    this.tweens.add({ targets: box, alpha: 0, delay: 5000, duration: 600, onComplete: () => box.destroy() });
   }
 
   private openPuzzle(f: FragmentDef) {
@@ -421,11 +482,13 @@ export class MemoryScene extends Phaser.Scene {
   private showTip() {
     const layer = this.add.container(0, 0).setDepth(500);
     const dim = this.add.rectangle(0, 0, 1920, 1080, 0x000000, 0.45).setOrigin(0).setInteractive();
-    const box = new Bubble(this, 960, 500, {
+    // Evidence tip, then the spirit-light tip (script v2 d2), in one box.
+    const tips = story.ui.popups;
+    const box = new Bubble(this, 960, 470, {
       kind: 'narration',
-      text: 'Tip: Inspect loud words and strange objects to uncover evidence.',
-      maxWidth: 520,
-      fontSize: 30,
+      text: `${tips.evidenceTip.text}\n${tips.spiritLightTip.text}`,
+      maxWidth: 620,
+      fontSize: 28,
     });
     const ok = new ComicButton(this, 960, 620, { label: 'GOT IT', fontSize: 30 });
     layer.add([dim, box, ok]);

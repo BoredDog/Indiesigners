@@ -1,8 +1,8 @@
 {
   "id": "pz_mom_3",
-  "title": "WHOOM! Every Node at Once",
+  "title": "PAPER! The Self-Purge",
   "tip": "Nodes, echoes and the clock: one wrong step wakes the network.",
-  "reward": "ev_leela_whoom",
+  "reward": "ev_leela_paper",
   "light": "N",
   "shadow": 2,
   "par": 18,

@@ -97,13 +97,13 @@
       }
     }
   ],
-  "openingNarration": "The river should have carried me away from the tower.",
-  "closingNarration": "The time on my watch was the time they erased.",
+  "openingNarration": "A ferryman remembers water. Arun remembered it leaving.",
+  "closingNarration": "The time on his watch was the time they erased.",
   "bubbles": [
     {
       "panel": "P1",
       "kind": "narration",
-      "text": "I remember the water because it was the last ordinary thing.",
+      "text": "The water was the last ordinary thing he remembered.",
       "x": 161,
       "y": 62,
       "maxWidth": 275
@@ -143,7 +143,7 @@
     {
       "panel": "P3",
       "kind": "narration",
-      "text": "The river did not vanish. It was diverted.",
+      "text": "No drought leaves a riverbed this clean.",
       "x": 161,
       "y": 62,
       "maxWidth": 275
@@ -163,7 +163,7 @@
     {
       "panel": "P4",
       "kind": "narration",
-      "text": "The figure moved after 2:17.",
+      "text": "He walked where the river should have been.",
       "x": 184,
       "y": 62,
       "maxWidth": 320
@@ -171,7 +171,7 @@
     {
       "panel": "P4",
       "kind": "speech",
-      "text": "I saw someone carrying her.",
+      "text": "Someone was carrying Nia.",
       "x": 780,
       "y": 70,
       "tail": {
@@ -183,7 +183,7 @@
     {
       "panel": "P5",
       "kind": "narration",
-      "text": "I had seen that case before.",
+      "text": "That case. I had seen one like it.",
       "x": 184,
       "y": 62,
       "maxWidth": 320
@@ -255,8 +255,8 @@
       "y": 143
     }
   ],
+  "firstLight": "Teal footprints. Whoever walked here carried a lit lantern.",
   "residue": [
-    {"panel": "P4", "fx": 0.8, "fy": 0.78, "text": "E.V.", "size": 54, "angle": 7},
-    {"panel": "P6", "fx": 0.7, "fy": 0.3, "text": "NIA", "size": 46, "angle": -5}
+    {"panel": "P4", "fx": 0.1, "fy": 0.9, "text": "", "shape": "steps", "size": 34, "angle": -4}
   ]
 }
