@@ -4,6 +4,8 @@ Design lead for the pixel look: Vansh's design session. Every scene gets a code-
 
 Preview of Scene 1: open `scene1_entering_veyra.html` in a browser. It is live and has layer toggles.
 
+Bhumi's brief (the look, the scenes, her tasks B-1 to B-8): `BHUMI.md`, also posted on issue #50.
+
 ## Rules (every scene)
 
 - **Canvas 480×270**, drawn at exactly **4×** to fill 1920×1080. Close-ups use 192×108 at 10×.
