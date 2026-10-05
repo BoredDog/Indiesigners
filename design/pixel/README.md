@@ -35,7 +35,7 @@ Draft order (design chat):
 2. sister + unknown woman (**done**; also `char_hanna_body.png`, the same outline in colour)
 3. scene 7 (**done** · `art-src/pixel/scene7/` + `chars/char_ivy_body.png`, preview `scene7_ivy_memory.html`)
 4. scene 5 hub + props (**done** · `art-src/pixel/scene5/`, preview `scene5_village_square.html` with a hotspot overlay)
-5. scene 8
+5. scene 8 (**done** · `art-src/pixel/scene8/` + `chars/char_luke_body.png`, `char_luke_push.png`, preview `scene8_luke_memory.html`)
 6. scene 2 (**done**) + scene 6
 7. scene 9
 8. scene 10 tileset
