@@ -68,8 +68,14 @@ export class OpeningScene extends SequenceScene {
         this.narration(layer, n(2));
         this.sfxWord(layer, f[2].sfx, FRAME.x + 1280, FRAME.y + 760, 60);
       },
-      // 4 — Mira appears by the schoolhouse.
+      // 4 — Ivy's ghost in the street by the schoolhouse; she looks straight through him.
       (layer) => {
+        if (hasPixel(this, 'opening_4_ivy')) {
+          new PixelStage(this, layer, FRAME).image('opening_4_ivy').setName('pixel:opening_4_ivy');
+          this.narration(layer, n(3));
+          this.sfxWord(layer, f[3].sfx, FRAME.x + 300, FRAME.y + 700, 64);
+          return;
+        }
         this.panel(layer, PH.village, { x: 60, y: 380, w: 640, h: 360 });
         const mira = this.add.image(FRAME.x + 1150, FRAME.y + FRAME.h - 20, PH.mira).setOrigin(0.5, 1).setScale(1.25).setAlpha(0);
         layer.add(mira);

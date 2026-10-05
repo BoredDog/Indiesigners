@@ -15,7 +15,7 @@ const CARD_W = 330;
 const CARD_H = 180;
 const COLS: Record<Witness, number> = { mira: 300, arun: 730, leela: 1160 };
 const ROW_Y = [370, 590, 810];
-const NAMES: Record<Witness, string> = { mira: 'MIRA', arun: 'ARUN', leela: 'LEELA' };
+const NAMES: Record<Witness, string> = { mira: 'IVY', arun: 'LUKE', leela: 'HANNA' };
 const THREAD_STYLE: Record<CaseThread['type'], { color: number; label: string }> = {
   corroborates: { color: 0x2f6f4f, label: 'CORROBORATES' },
   contradicts: { color: 0xb3261e, label: 'CONTRADICTS' },

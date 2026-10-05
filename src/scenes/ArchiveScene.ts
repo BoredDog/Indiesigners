@@ -19,7 +19,7 @@ const TEXT = {
   well: "The key wasn't meant for a door above ground.\nIt was meant for what was underneath.", // final script §9
   wellSfx: 'CLICK.',
   intro: 'My feet knew the way down. I told myself it was instinct.',
-  console: "Beneath the well, Leela's hidden archive. The master console was still warm.",
+  console: "Beneath the well, Hanna's hidden archive. The master console was still warm.",
   collapse: 'Then the archive began to fall in on itself.',
   escape: 'ESCAPE WITH THE RECORD',
   escaped: 'I got out with the record. The archive did not.',

@@ -38,9 +38,9 @@ export class FinaleScene extends SequenceScene {
       // 1 — Three witness panels slide into one investigation board.
       (layer) => {
         const crops = [
-          { x: 780, y: 90, w: 470, h: 340, who: 'MIRA', clue: 'The bell rang with no hand on the rope.' },
-          { x: 0, y: 760, w: 600, h: 320, who: 'ARUN', clue: 'The watch kept going: 2:31.' },
-          { x: 1100, y: 430, w: 520, h: 400, who: 'LEELA', clue: 'The lantern binds minds as anchors.' },
+          { x: 780, y: 90, w: 470, h: 340, who: 'IVY', clue: 'The bell rang with no hand on the rope.' },
+          { x: 0, y: 760, w: 600, h: 320, who: 'LUKE', clue: 'The watch kept going: 2:31.' },
+          { x: 1100, y: 430, w: 520, h: 400, who: 'HANNA', clue: 'The lantern binds minds as anchors.' },
         ];
         crops.forEach((c, i) => {
           const frame = { x: 0, y: FRAME.y + 220, w: 480, h: 360 };
@@ -63,7 +63,7 @@ export class FinaleScene extends SequenceScene {
         this.narration(layer, n(0), FRAME.x + 300, FRAME.y + 80);
         this.sfxWord(layer, f[0].sfx, FRAME.x + 1300, FRAME.y + 820, 46, 600, '#b3261e');
       },
-      // 2 — 2:17 clocks overlaid with Arun's 2:31 watch; the 2:31 hand keeps moving.
+      // 2 — 2:17 clocks overlaid with Luke's 2:31 watch; the 2:31 hand keeps moving.
       (layer) => {
         this.panel(layer, PH.village, { x: 643, y: 150, w: 534, h: 300 });
         const wx = FRAME.x + 1250;
@@ -126,7 +126,7 @@ export class FinaleScene extends SequenceScene {
         layer.add(g);
         const nodes: { x: number; y: number }[] = [];
         for (let i = 0; i < 32; i++) {
-          // 32 village anchor points (Leela's HUM! clue), scattered deterministically.
+          // 32 village anchor points (Hanna's HUM! clue), scattered deterministically.
           const a = i * 2.39996;
           const r = 140 + ((i * 97) % 300);
           nodes.push({ x: cx + Math.cos(a) * r * 1.9, y: cy + Math.sin(a) * r * 0.85 });
