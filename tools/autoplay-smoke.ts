@@ -85,7 +85,10 @@ try {
   await click('btn:NEW GAME');
   // New Game plays the Opening first (6 frames); click through it into the Village.
   await scene('Opening');
-  for (let i = 0; i < 6; i++) {
+  // Advance until the Village is up. A fixed 6 presses flaked on slow machines: the Opening
+  // ignores input while a frame slides in, so a press can land during the slide and be dropped.
+  const inVillage = () => page.evaluate(() => (window as any).__echoes.game.scene.isActive('Village'));
+  for (let i = 0; i < 20 && !(await inVillage()); i++) {
     await page.keyboard.press('Space');
     await wait(700);
   }
