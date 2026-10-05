@@ -17,6 +17,40 @@ Bhumi's brief (the look, the scenes, her tasks B-1 to B-8): `BHUMI.md`, also pos
 - **Export:** PNG at 1×. Use one transparent layer per file, all on the same 480×270 canvas so they line up. Skip trimming and lossy WebP for these files.
 - **In Phaser:** `pixelArt: true`, `roundPixels: true`, integer scale 4.
 
+## Check a file before you post it
+
+```bash
+npm run check:pixel            # every layer
+npm run check:pixel scene7     # one scene
+```
+
+Holds every layer to the rules above: the 480×270 canvas (192×108 for a close-up), the 27 colours
+of `veyra.hex` and nothing else, alpha 0 or 255, cut-out panes on a room that has an `_outside`
+layer behind it, character sprites standing on y = 56, portraits 64×64, and a final matching its
+draft's canvas. `npm run pixel` already guarantees the file is copied losslessly; this is the part
+that catches a stray colour, a soft edge or a sprite that drifted off its baseline.
+
+It runs inside `npm run build`, so CI catches a slip on every PR, and `art-src/pixel/itch/` is
+skipped (those are store exports at final size, not game layers).
+
+A problem that is known and accepted lives in `KNOWN` at the top of `tools/check-pixel.ts` with a
+reason and an owner, so the build stays green while anything **new** still fails. Delete the line
+when it is fixed and the rule starts enforcing again.
+
+### Baselines found by it (6 Oct)
+
+Every character sprite should stand on **y = 56**, so solid and ghost versions line up and nobody
+jumps a pixel on a swap. Four were off and are fixed here (shifted down one row, no pixel lost):
+`char_figure_back` and all three `char_*_ghost_idle`, which were each sitting a pixel **above**
+their solid counterpart.
+
+Still open, in `KNOWN`: all three Elias sprites (`char_elias_look`, `char_elias_raise`,
+`scene1/char_elias_walk`) stand on **57** — consistent with each other, one pixel below everyone
+else. Their content fills rows 0–57, so none can be nudged up without clipping: it needs a
+one-pixel redraw, or the scenes offset Elias by −1. `scene3/char_window_figure` is 40×60 with feet
+on 59, which is probably deliberate (seen through a window, not standing) — confirm and delete the
+line if not.
+
 ## Plan: 6 hours, ~01:50 → ~07:50 (Team HQ #3, comment 6002330795)
 
 Vansh's coding chat does V20–V24 and all wiring. The design chat drafts every scene in the order below, and the humans paint over the drafts. Anything not painted by 07:50 ships as its draft.
