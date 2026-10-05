@@ -30,6 +30,8 @@ export interface Settings {
   textSpeed: 'instant' | 'typewriter';
   reduceMotion: boolean;
   reduceFlashing: boolean;
+  /** V19: Echo Paths board drawn flat (2d) or as an isometric diorama (3d). Same rules either way. */
+  puzzleView: '2d' | '3d';
 }
 
 export interface SaveData {
@@ -66,6 +68,7 @@ const DEFAULT_SETTINGS: Settings = {
   textSpeed: 'instant',
   reduceMotion: false,
   reduceFlashing: false,
+  puzzleView: '2d',
 };
 
 function fresh(settings: Settings = { ...DEFAULT_SETTINGS }): SaveData {

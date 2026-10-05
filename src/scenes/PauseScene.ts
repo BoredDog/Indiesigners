@@ -41,13 +41,18 @@ export class PauseScene extends Phaser.Scene {
         next: () => gameState.setSetting('reduceFlashing', !gameState.settings.reduceFlashing),
       },
       {
+        name: 'PUZZLE VIEW',
+        value: () => gameState.settings.puzzleView.toUpperCase(),
+        next: () => gameState.setSetting('puzzleView', gameState.settings.puzzleView === '3d' ? '2d' : '3d'),
+      },
+      {
         name: 'FULLSCREEN',
         value: () => (this.scale.isFullscreen ? 'ON' : 'OFF'),
         next: () => (this.scale.isFullscreen ? this.scale.stopFullscreen() : this.scale.startFullscreen()),
       },
     ];
     rows.forEach((r, i) => {
-      const y = 330 + i * 100;
+      const y = 310 + i * 88;
       const b = button(this, W / 2, y, `${r.name}: ${r.value()}`, () => {
         r.next();
         // Fullscreen changes asynchronously; refresh on the next tick.

@@ -7,7 +7,8 @@ import { initialState, inkTiles, neighbour, sentinelAt, step, xy, gateOpen, wate
 import { solve } from '../puzzle/Solver';
 import { DIR_ORDER, type Dir, type Level, type State, type StepResult } from '../puzzle/types';
 import { MEMORY_PAGES, type Witness } from './memory/MemoryData';
-import { button, popup } from './coreUi';
+import { button, openPause, popup } from './coreUi';
+import { IsoGeom, prism } from './puzzle/iso';
 
 /** Contract (Team HQ): callers start 'Puzzle' with this; on win we start `returnTo` with {witness, justFound}. */
 export interface PuzzleSceneData {
@@ -15,6 +16,8 @@ export interface PuzzleSceneData {
   evidenceId?: string;
   witness?: Witness;
   returnTo?: string;
+  /** Internal: board progress carried over when the PUZZLE VIEW setting changes mid-puzzle. */
+  resume?: { state: State; history: State[]; fails: number };
 }
 
 const PANEL = { x: 60, y: 24, w: 1580, h: 1032 };
@@ -62,12 +65,22 @@ export class PuzzleScene extends Phaser.Scene {
   private skipBtn!: Phaser.GameObjects.Container;
   private toastText?: Phaser.GameObjects.Text;
 
+  // V19 "3D" view: set when the PUZZLE VIEW setting is 3D. The flat drawing goes into `top` (turned
+  // 45° and squashed), raised blocks are drawn per tile and depth-sorted with the pieces.
+  iso?: IsoGeom;
+  private top?: Phaser.GameObjects.Container;
+  private slabs?: Phaser.GameObjects.Graphics;
+  private blocks: Phaser.GameObjects.Graphics[] = [];
+  private lift = 0;
+  private viewDirty = false;
+
   constructor() {
     super('Puzzle');
   }
 
   create(data: PuzzleSceneData = {}) {
-    this.data0 = { ...data, returnTo: data.returnTo ?? (data.witness ? 'Memory' : 'Village') };
+    const { resume, ...rest } = data;
+    this.data0 = { ...rest, returnTo: data.returnTo ?? (data.witness ? 'Memory' : 'Village') };
     this.history = [];
     this.fails = 0;
     this.busy = false;
@@ -79,6 +92,12 @@ export class PuzzleScene extends Phaser.Scene {
     this.sentinels = [];
     this.dialHands = [];
     this.hintLabels = [];
+    this.iso = undefined;
+    this.top = undefined;
+    this.slabs = undefined;
+    this.blocks = [];
+    this.lift = 0;
+    this.viewDirty = false;
 
     const level = getLevel(data.puzzleId);
     const autosolve = new URLSearchParams(location.search).get('autosolve') === '1';
@@ -89,29 +108,50 @@ export class PuzzleScene extends Phaser.Scene {
     }
     this.level = level;
     this.state = initialState(level);
+    if (resume) {
+      this.state = resume.state;
+      this.history = [...resume.history];
+      this.fails = resume.fails;
+    }
     makePlaceholders(this);
 
     this.drawBackdrop();
-    const maxW = PANEL.w - 160;
-    const maxH = PANEL.h - 300;
-    this.tile = Math.min(150, Math.floor(Math.min(maxW / level.w, maxH / level.h)));
-    this.ox = Math.round(PANEL.x + PANEL.w / 2 - (level.w * this.tile) / 2);
-    this.oy = Math.round(590 - (level.h * this.tile) / 2);
-
-    this.add
-      .rectangle(this.ox - 14, this.oy - 14, level.w * this.tile + 28, level.h * this.tile + 28, COLORS.ink)
-      .setOrigin(0)
-      .setStrokeStyle(6, COLORS.paper);
-    this.terrain = this.add.graphics();
-    this.ink = this.add.graphics();
-    this.overlay = this.add.graphics();
-    this.hoverG = this.add.graphics().setDepth(15);
+    if (gameState.settings.puzzleView === '3d') {
+      // Flat drawing in board-local coordinates; the `top` container projects it onto the diamond.
+      const iso = IsoGeom.fit(level.w, level.h, { cx: PANEL.x + PANEL.w / 2, cy: 600, w: PANEL.w - 200, h: PANEL.h - 250 });
+      this.iso = iso;
+      this.tile = iso.flat;
+      this.ox = 0;
+      this.oy = 0;
+      this.lift = iso.th * 0.42;
+      const b = iso.bounds();
+      this.add.ellipse(b.x + b.w / 2, b.y + b.h / 2 + iso.slab + 18, b.w + 60, b.h + 40, COLORS.ink, 0.55);
+      this.slabs = this.add.graphics().setDepth(9);
+      const outer = this.add.container(iso.x0, iso.y0).setScale(1, 0.5).setDepth(10);
+      this.top = this.add.container(0, 0).setRotation(Math.PI / 4);
+      outer.add(this.top);
+    } else {
+      const maxW = PANEL.w - 160;
+      const maxH = PANEL.h - 300;
+      this.tile = Math.min(150, Math.floor(Math.min(maxW / level.w, maxH / level.h)));
+      this.ox = Math.round(PANEL.x + PANEL.w / 2 - (level.w * this.tile) / 2);
+      this.oy = Math.round(590 - (level.h * this.tile) / 2);
+      this.add
+        .rectangle(this.ox - 14, this.oy - 14, level.w * this.tile + 28, level.h * this.tile + 28, COLORS.ink)
+        .setOrigin(0)
+        .setStrokeStyle(6, COLORS.paper);
+    }
+    this.terrain = this.onBoard(this.add.graphics());
+    this.ink = this.onBoard(this.add.graphics());
+    this.overlay = this.onBoard(this.add.graphics());
+    this.hoverG = this.onBoard(this.add.graphics().setDepth(15));
     this.buildGoal();
     this.buildEntities();
-    this.moveSentinels(0, 0);
+    this.moveSentinels(this.state.t, 0);
     this.buildLightGlyph();
     this.buildRail();
     this.buildInput();
+    if (this.iso) this.buildCompass();
     this.redraw(false);
 
     if (level.tip) {
@@ -134,6 +174,17 @@ export class PuzzleScene extends Phaser.Scene {
       })
       .setOrigin(0.5, 0)
       .setAlpha(0.75);
+
+    // Switching PUZZLE VIEW in the pause menu redraws the board on resume, keeping the progress.
+    const onSettings = () => {
+      this.viewDirty = (gameState.settings.puzzleView === '3d') !== !!this.iso;
+    };
+    gameState.on('settings-changed', onSettings);
+    this.events.on(Phaser.Scenes.Events.RESUME, () => {
+      if (!this.viewDirty || this.done) return;
+      this.scene.restart({ ...this.data0, resume: { state: this.state, history: this.history, fails: this.fails } });
+    });
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => gameState.off('settings-changed', onSettings));
 
     this.cameras.main.fadeIn(dur(200), 0, 0, 0);
     (window as unknown as { __puzzle: PuzzleScene }).__puzzle = this;
@@ -193,11 +244,48 @@ export class PuzzleScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------ geometry
 
-  private cx(i: number) {
+  /** Screen centre of tile i (on the top face in the 3D view). */
+  cx(i: number) {
+    return this.iso ? this.iso.centre(i).x : this.lcx(i);
+  }
+  cy(i: number) {
+    return this.iso ? this.iso.centre(i).y : this.lcy(i);
+  }
+  /** Tile centre in board-drawing coordinates (the same as the screen in 2D). */
+  private lcx(i: number) {
     return this.ox + (i % this.level.w) * this.tile + this.tile / 2;
   }
-  private cy(i: number) {
+  private lcy(i: number) {
     return this.oy + Math.floor(i / this.level.w) * this.tile + this.tile / 2;
+  }
+  /** Size the pieces are drawn at: one flat tile in 2D, a little over half a diamond in 3D. */
+  private get unit() {
+    return this.iso ? this.iso.tw * 0.55 : this.tile;
+  }
+  /** Screen vector for a grid direction (up/right/down/left in 2D, the diamond's diagonals in 3D). */
+  private vec(d: Dir): [number, number] {
+    if (this.iso) return this.iso.dir(d);
+    const v = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] }[d];
+    return [v[0], v[1]];
+  }
+  /** Screen rectangle of the board. */
+  private bounds() {
+    if (this.iso) return this.iso.bounds();
+    return { x: this.ox, y: this.oy, w: this.level.w * this.tile, h: this.level.h * this.tile };
+  }
+  /** In the 3D view, flat board drawing lives in the projected `top` container. */
+  private onBoard<T extends Phaser.GameObjects.GameObject>(o: T): T {
+    this.top?.add(o);
+    return o;
+  }
+
+  /** 3D view: keep pieces in painter's order as they move (rows further down draw in front). */
+  update() {
+    const iso = this.iso;
+    if (!iso || !this.wisp?.active) return;
+    this.wisp.setDepth(iso.depthAt(this.wisp.y) + 0.004);
+    for (const b of this.crates.values()) b.setDepth(iso.depthAt(b.y) + 0.002);
+    for (const g of this.sentinels) g.setDepth(iso.depthAt(g.y) + 0.003);
   }
 
   // ------------------------------------------------------------------ backdrop
@@ -329,7 +417,7 @@ export class PuzzleScene extends Phaser.Scene {
             );
           }
           // The hand points at the light's side; it turns when the light does.
-          const hand = this.add.graphics({ x: x + t / 2, y: y + t / 2 });
+          const hand = this.onBoard(this.add.graphics({ x: x + t / 2, y: y + t / 2 }));
           hand.lineStyle(6, COLORS.amber, 1).lineBetween(0, 0, 0, -r * 0.8);
           hand.fillStyle(COLORS.ink, 1).fillCircle(0, 0, 6);
           hand.setRotation((s.light * Math.PI) / 2);
@@ -337,14 +425,16 @@ export class PuzzleScene extends Phaser.Scene {
           // Each quarter turn moves the frozen clock on 14 minutes: 2:17 → 2:31 (Arun's watch) → … (PLAN §12 C4).
           const turns = (s.light - this.level.light + 4) % 4;
           const mins = 17 + turns * 14;
-          const label = this.add
-            .text(x + t / 2, y + t / 2 + r * 0.42, `2:${String(mins).padStart(2, '0')}`, {
-              fontFamily: `"${FONTS.narration}"`,
-              fontSize: `${Math.round(t * 0.12)}px`,
-              color: COLORS.inkCss,
-              resolution: TEXT_RESOLUTION,
-            })
-            .setOrigin(0.5);
+          const label = this.onBoard(
+            this.add
+              .text(x + t / 2, y + t / 2 + r * 0.42, `2:${String(mins).padStart(2, '0')}`, {
+                fontFamily: `"${FONTS.narration}"`,
+                fontSize: `${Math.round(t * 0.12)}px`,
+                color: COLORS.inkCss,
+                resolution: TEXT_RESOLUTION,
+              })
+              .setOrigin(0.5),
+          );
           this.dialHands.push(label);
           return;
         }
@@ -426,6 +516,49 @@ export class PuzzleScene extends Phaser.Scene {
           return floor();
       }
     });
+    if (this.iso) this.drawBlocks();
+  }
+
+  /**
+   * 3D view: slab sides under every floor tile, and raised blocks for pillars and closed gates.
+   * Blocks are one Graphics each so they depth-sort against the pieces.
+   */
+  private drawBlocks() {
+    const iso = this.iso!;
+    const s = this.state;
+    this.blocks.forEach((b) => b.destroy());
+    this.blocks = [];
+    const sl = this.slabs!.clear();
+    const diag = (i: number) => (i % iso.w) + Math.floor(i / iso.w);
+    const order = this.level.cells.map((_, i) => i).sort((a, b) => diag(a) - diag(b));
+    for (const i of order) {
+      const c = this.level.cells[i];
+      const col = i % iso.w;
+      const row = Math.floor(i / iso.w);
+      if (c.k === 'void' || s.collapsed.includes(i)) continue;
+      const wet = c.k === 'water' && !waterDry(c, s);
+      prism(sl, iso, col, row, 0, -iso.slab, 0, wet ? { left: 0x3f5a6e, right: 0x56738a } : { left: 0x8f8268, right: 0xb3a586 });
+      const block = (inset: number, height: number, top: number, left: number, right: number) => {
+        const g = this.add.graphics().setDepth(iso.depthAt(iso.centre(i).y) + 0.001);
+        prism(g, iso, col, row, inset, 0, height, { top, left, right });
+        this.blocks.push(g);
+        return g;
+      };
+      if (c.k === 'pillar') block(0.12, iso.pillar, 0x4a4a52, 0x24242a, 0x34343c);
+      else if (c.k === 'gate' && !gateOpen(c, s)) {
+        const g = block(0.1, iso.gate, COLORS.charcoal, 0x2a2a30, 0x38383f);
+        // Bars in the group colour on both faces, plus the group's shape on the front corner (V10).
+        g.lineStyle(Math.max(3, iso.tw * 0.03), this.groupColor(c.group), 1);
+        for (let k = 1; k <= 3; k++) {
+          const f = 0.1 + (0.8 * k) / 4;
+          const a = iso.pt(col + f, row + 0.9);
+          const b = iso.pt(col + 0.9, row + 1 - f);
+          g.lineBetween(a.x, a.y - 4, a.x, a.y - iso.gate + 4).lineBetween(b.x, b.y - 4, b.x, b.y - iso.gate + 4);
+        }
+        const front = iso.pt(col + 0.9, row + 0.9);
+        this.mark(g, c.group, front.x, front.y - iso.gate / 2, iso.tw * 0.045);
+      }
+    }
   }
 
   /** Ink = the erased memory: ragged black blots over every shadowed tile. Cross-fades on change. */
@@ -433,7 +566,10 @@ export class PuzzleScene extends Phaser.Scene {
     const old = this.ink;
     const g = this.add.graphics();
     g.setDepth(old.depth);
-    this.children.moveAbove(g, old);
+    if (this.top) {
+      this.top.add(g);
+      this.top.moveAbove(g, old);
+    } else this.children.moveAbove(g, old);
     const t = this.tile;
     for (const i of inkTiles(this.level, this.state)) {
       if (this.level.cells[i].k === 'void' || this.state.collapsed.includes(i)) continue; // ink over a pit reads as noise
@@ -479,13 +615,13 @@ export class PuzzleScene extends Phaser.Scene {
     hint.forEach((d, k) => {
       p = neighbour(this.level, p, d);
       if (p < 0) return;
-      g.fillStyle(COLORS.spiritTeal, 0.85).fillCircle(this.cx(p), this.cy(p), t * 0.2);
-      g.lineStyle(4, COLORS.ink, 1).strokeCircle(this.cx(p), this.cy(p), t * 0.2);
+      g.fillStyle(COLORS.spiritTeal, 0.85).fillCircle(this.lcx(p), this.lcy(p), t * 0.2);
+      g.lineStyle(4, COLORS.ink, 1).strokeCircle(this.lcx(p), this.lcy(p), t * 0.2);
       this.hintLabels.push(
         this.add
           .text(this.cx(p), this.cy(p), String(k + 1), {
             fontFamily: `"${FONTS.sfx}"`,
-            fontSize: `${Math.round(t * 0.3)}px`,
+            fontSize: `${Math.round(this.unit * 0.3)}px`,
             color: COLORS.inkCss,
             resolution: TEXT_RESOLUTION,
           })
@@ -501,9 +637,9 @@ export class PuzzleScene extends Phaser.Scene {
     const sfx = this.goalSfx();
     const i = this.level.goal;
     this.goalWord = this.add
-      .text(this.cx(i), this.cy(i), sfx, {
+      .text(this.cx(i), this.cy(i) - this.lift, sfx, {
         fontFamily: `"${FONTS.sfx}"`,
-        fontSize: `${Math.round(this.tile * (sfx.length > 6 ? 0.24 : 0.34))}px`,
+        fontSize: `${Math.round(this.unit * (sfx.length > 6 ? 0.24 : 0.34))}px`,
         color: COLORS.amberCss,
         stroke: COLORS.inkCss,
         strokeThickness: 8,
@@ -511,7 +647,7 @@ export class PuzzleScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setAngle(-8)
-      .setDepth(20);
+      .setDepth(this.iso ? this.iso.depthAt(this.cy(i)) + 0.001 : 20);
     if (!comicSettings.reduceMotion) {
       this.tweens.add({ targets: this.goalWord, scale: 1.12, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     }
@@ -526,23 +662,27 @@ export class PuzzleScene extends Phaser.Scene {
   }
 
   private buildEntities() {
-    const t = this.tile;
+    const t = this.unit;
+    const lift = this.lift;
     for (const c of this.state.crates) {
       const box = this.add.container(this.cx(c), this.cy(c)).setDepth(30);
-      const s = t * 0.74;
-      box.add([
-        this.add.rectangle(6, 8, s, s, COLORS.ink, 0.4),
-        this.add.rectangle(0, 0, s, s, 0xa0703a).setStrokeStyle(5, COLORS.ink),
-        this.add.line(0, 0, -s / 2 + 6, -s / 2 + 6, s / 2 - 6, s / 2 - 6, COLORS.ink).setLineWidth(4).setOrigin(0),
-        this.add.line(0, 0, s / 2 - 6, -s / 2 + 6, -s / 2 + 6, s / 2 - 6, COLORS.ink).setLineWidth(4).setOrigin(0),
-      ]);
+      if (this.iso) box.add(this.isoCrate());
+      else {
+        const s = t * 0.74;
+        box.add([
+          this.add.rectangle(6, 8, s, s, COLORS.ink, 0.4),
+          this.add.rectangle(0, 0, s, s, 0xa0703a).setStrokeStyle(5, COLORS.ink),
+          this.add.line(0, 0, -s / 2 + 6, -s / 2 + 6, s / 2 - 6, s / 2 - 6, COLORS.ink).setLineWidth(4).setOrigin(0),
+          this.add.line(0, 0, s / 2 - 6, -s / 2 + 6, -s / 2 + 6, s / 2 - 6, COLORS.ink).setLineWidth(4).setOrigin(0),
+        ]);
+      }
       this.crates.set(c, box);
     }
     this.level.sentinels.forEach((_, n) => {
       const a = sentinelAt(this.level, n, 0);
       const ghost = this.add.container(this.cx(a.pos), this.cy(a.pos)).setDepth(35);
       const r = t * 0.3;
-      const body = this.add.graphics();
+      const body = this.add.graphics({ y: -lift });
       body.fillStyle(0xe8f4f2, 0.88);
       body.fillCircle(0, -r * 0.2, r);
       body.fillRect(-r, -r * 0.2, r * 2, r * 1.1);
@@ -550,20 +690,44 @@ export class PuzzleScene extends Phaser.Scene {
       body.lineStyle(4, COLORS.ink, 1).strokeCircle(0, -r * 0.2, r);
       body.fillStyle(COLORS.ink, 1).fillCircle(-r * 0.35, -r * 0.3, 6).fillCircle(r * 0.35, -r * 0.3, 6);
       const arrow = this.add.triangle(0, 0, 0, -12, 24, 0, 0, 12, 0xc0392b).setStrokeStyle(3, COLORS.ink).setName('arrow');
+      if (this.iso) ghost.add(this.add.ellipse(0, 0, r * 1.6, r * 0.6, COLORS.ink, 0.45));
       ghost.add([body, arrow]);
-      if (!comicSettings.reduceMotion) this.tweens.add({ targets: body, y: -5, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+      if (!comicSettings.reduceMotion) this.tweens.add({ targets: body, y: -lift - 5, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
       this.sentinels.push(ghost);
     });
 
     const w = this.add.container(this.cx(this.state.pos), this.cy(this.state.pos)).setDepth(40);
-    const glow = this.add.circle(0, 0, t * 0.42, COLORS.spiritTeal, 0.3);
-    const ring = this.add.circle(0, 0, t * 0.22, COLORS.spiritTeal, 0.9).setStrokeStyle(4, COLORS.ink);
-    const core = this.add.circle(0, 0, t * 0.1, 0xffffff, 1);
+    const glow = this.add.circle(0, -lift, t * 0.42, COLORS.spiritTeal, 0.3);
+    const ring = this.add.circle(0, -lift, t * 0.22, COLORS.spiritTeal, 0.9).setStrokeStyle(4, COLORS.ink);
+    const core = this.add.circle(0, -lift, t * 0.1, 0xffffff, 1);
+    if (this.iso) w.add(this.add.ellipse(0, 0, t * 0.5, t * 0.2, COLORS.spiritTeal, 0.35)); // light pooled on the floor
     w.add([glow, ring, core]);
     if (!comicSettings.reduceMotion && !comicSettings.reduceFlashing) {
       this.tweens.add({ targets: glow, scale: 1.18, alpha: 0.18, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     }
     this.wisp = w;
+  }
+
+  /** 3D view: a wooden crate as a cube standing on the tile centre. */
+  private isoCrate(): Phaser.GameObjects.Graphics {
+    const iso = this.iso!;
+    const g = this.add.graphics();
+    const hw = iso.tw * 0.3;
+    const hh = iso.th * 0.3;
+    const h = iso.tw * 0.36;
+    const V = (x: number, y: number) => new Phaser.Math.Vector2(x, y);
+    const left = [V(-hw, -h), V(0, hh - h), V(0, hh), V(-hw, 0)];
+    const right = [V(0, hh - h), V(hw, -h), V(hw, 0), V(0, hh)];
+    const lid = [V(0, -hh - h), V(hw, -h), V(0, hh - h), V(-hw, -h)];
+    g.fillStyle(COLORS.ink, 0.4).fillEllipse(6, 6, hw * 2.2, hh * 2.2);
+    g.fillStyle(0x7d5528, 1).fillPoints(left, true);
+    g.fillStyle(0x94663a, 1).fillPoints(right, true);
+    g.fillStyle(0xb5824a, 1).fillPoints(lid, true);
+    g.lineStyle(4, COLORS.ink, 1).strokePoints(left, true).strokePoints(right, true).strokePoints(lid, true);
+    g.lineStyle(3, COLORS.ink, 1);
+    g.lineBetween(-hw, -h, 0, hh).lineBetween(-hw, 0, 0, hh - h); // the X brace on each face
+    g.lineBetween(0, hh - h, hw, 0).lineBetween(0, hh, hw, -h);
+    return g;
   }
 
   /** Lantern glyph outside the board on the side the light comes from. */
@@ -599,15 +763,26 @@ export class PuzzleScene extends Phaser.Scene {
     const bh = this.level.h * this.tile;
     const d = DIR_ORDER[this.state.light];
     const pad = 72;
-    const pos = {
+    let pos = {
       N: [this.ox + bw / 2, this.oy - pad],
       S: [this.ox + bw / 2, this.oy + bh + 56],
       E: [this.ox + bw + pad, this.oy + bh / 2],
       W: [this.ox - pad, this.oy + bh / 2],
     }[d];
+    if (this.iso) {
+      // Middle of the lit edge, pushed out along the light's direction and raised to lantern height.
+      const { w, h } = this.level;
+      const [gc, gr] = { N: [w / 2, 0], E: [w, h / 2], S: [w / 2, h], W: [0, h / 2] }[d];
+      const e = this.iso.pt(gc, gr);
+      const [vx, vy] = this.vec(d);
+      // Back edges (N, W) sit behind the board: raise the lantern there so it reads over the blocks.
+      const raise = d === 'N' || d === 'W' ? this.iso.pillar * 0.6 : 0;
+      pos = [e.x + vx * 130, e.y + vy * 130 - raise];
+    }
     // Label sits outside the glyph, away from the board.
     const label = this.lightGlyph.getByName('label') as Phaser.GameObjects.Text;
-    if (d === 'W') label.setOrigin(1, 0.5).setX(-64);
+    const b = this.bounds();
+    if (pos[0] < b.x + b.w / 2 - 1) label.setOrigin(1, 0.5).setX(-64);
     else label.setOrigin(0, 0.5).setX(64);
     if (animate && !comicSettings.reduceMotion) {
       this.tweens.add({ targets: this.lightGlyph, x: pos[0], y: pos[1], duration: 320, ease: 'Back.Out' });
@@ -657,12 +832,13 @@ export class PuzzleScene extends Phaser.Scene {
   // ------------------------------------------------------------------ input
 
   private buildInput() {
-    const bw = this.level.w * this.tile;
-    const bh = this.level.h * this.tile;
-    const zone = this.add.zone(this.ox, this.oy, bw, bh).setOrigin(0).setInteractive({ useHandCursor: true }).setName('board');
+    const b = this.bounds();
+    const zone = this.add.zone(b.x, b.y, b.w, b.h).setOrigin(0).setInteractive({ useHandCursor: true }).setName('board');
     const dirAt = (p: Phaser.Input.Pointer): Dir | undefined => {
-      const tx = Math.floor((p.x - this.ox) / this.tile);
-      const ty = Math.floor((p.y - this.oy) / this.tile);
+      const [tx, ty] = this.iso
+        ? this.iso.tileAt(p.x, p.y)
+        : [Math.floor((p.x - this.ox) / this.tile), Math.floor((p.y - this.oy) / this.tile)];
+      if (tx < 0 || ty < 0 || tx >= this.level.w || ty >= this.level.h) return undefined;
       const [wx, wy] = xy(this.level, this.state.pos);
       const dx = tx - wx;
       const dy = ty - wy;
@@ -694,6 +870,37 @@ export class PuzzleScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-BACKSPACE', () => this.undo());
     this.input.keyboard?.on('keydown-R', () => this.reset());
     this.input.keyboard?.on('keydown-H', () => this.fails >= HINT_AFTER && this.hint());
+    // Pause/Settings from the board (PUZZLE VIEW can be switched here; the board keeps its progress).
+    this.input.keyboard?.on('keydown-ESC', () => !this.busy && !this.done && openPause(this, 'Puzzle'));
+  }
+
+  /** 3D view: the keys run along the diamond's diagonals, so show which key goes where. */
+  private buildCompass() {
+    const x = PANEL.x + PANEL.w - 150;
+    const y = PANEL.y + PANEL.h - 130;
+    const c = this.add.container(x, y).setDepth(46).setName('compass');
+    const g = this.add.graphics();
+    g.fillStyle(COLORS.ink, 0.6).fillCircle(0, 0, 92);
+    c.add(g);
+    const keys: Record<Dir, string> = { N: 'W', E: 'D', S: 'S', W: 'A' };
+    for (const d of DIR_ORDER) {
+      const [vx, vy] = this.vec(d);
+      const ang = Math.atan2(vy, vx);
+      g.lineStyle(5, COLORS.paper, 1).lineBetween(vx * 18, vy * 18, vx * 52, vy * 52);
+      c.add(this.add.triangle(vx * 56, vy * 56, 0, -9, 16, 0, 0, 9, COLORS.paper).setRotation(ang));
+      c.add(
+        this.add
+          .text(vx * 76, vy * 76, keys[d], {
+            fontFamily: `"${FONTS.sfx}"`,
+            fontSize: '24px',
+            color: COLORS.amberCss,
+            stroke: COLORS.inkCss,
+            strokeThickness: 5,
+            resolution: TEXT_RESOLUTION,
+          })
+          .setOrigin(0.5),
+      );
+    }
   }
 
   // ------------------------------------------------------------------ turns
@@ -754,14 +961,14 @@ export class PuzzleScene extends Phaser.Scene {
       const a = sentinelAt(this.level, n, t);
       this.tweens.add({ targets: ghost, x: this.cx(a.pos), y: this.cy(a.pos), duration: ms, ease: 'Quad.Out' });
       const arrow = ghost.getByName('arrow') as Phaser.GameObjects.Triangle;
-      const ang = { N: -90, E: 0, S: 90, W: 180 }[a.dir];
-      arrow.setAngle(ang).setPosition(Math.cos((ang * Math.PI) / 180) * this.tile * 0.36, Math.sin((ang * Math.PI) / 180) * this.tile * 0.36);
+      const [vx, vy] = this.vec(a.dir);
+      arrow.setRotation(Math.atan2(vy, vx)).setPosition(vx * this.unit * 0.36, vy * this.unit * 0.36 - this.lift);
     });
   }
 
   private bump(d: Dir) {
     if (comicSettings.reduceMotion || this.busy) return;
-    const [dx, dy] = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] }[d];
+    const [dx, dy] = this.vec(d);
     const x = this.cx(this.state.pos);
     const y = this.cy(this.state.pos);
     this.busy = true;
@@ -826,14 +1033,28 @@ export class PuzzleScene extends Phaser.Scene {
   /** Cracked floor gives way: the tile drops and spins into the dark, dust puffs, the room rumbles. */
   private crumble(i: number) {
     if (comicSettings.reduceMotion) return;
-    const t = this.tile;
+    const t = this.unit;
     const slab = this.add.container(this.cx(i), this.cy(i)).setDepth(25);
-    slab.add([
-      this.add.rectangle(0, 0, t - 6, t - 6, COLORS.paper).setStrokeStyle(3, COLORS.ink),
-      this.add.line(0, 0, -t * 0.3, -t * 0.25, t * 0.1, t * 0.05, COLORS.ink).setLineWidth(3).setOrigin(0),
-      this.add.line(0, 0, t * 0.1, t * 0.05, t * 0.3, t * 0.3, COLORS.ink).setLineWidth(3).setOrigin(0),
-    ]);
-    this.tweens.add({ targets: slab, scale: 0.15, angle: 35, alpha: 0, y: slab.y + t * 0.25, duration: 420, ease: 'Quad.In', onComplete: () => slab.destroy() });
+    if (this.iso) {
+      // The slab drops out of the floor: top diamond + its two sides.
+      const { tw, th, slab: sh } = this.iso;
+      const V = (x: number, y: number) => new Phaser.Math.Vector2(x, y);
+      const lid = [V(0, -th / 2), V(tw / 2, 0), V(0, th / 2), V(-tw / 2, 0)];
+      const g = this.add.graphics();
+      g.fillStyle(0x8f8268, 1).fillPoints([V(-tw / 2, 0), V(0, th / 2), V(0, th / 2 + sh), V(-tw / 2, sh)], true);
+      g.fillStyle(0xb3a586, 1).fillPoints([V(0, th / 2), V(tw / 2, 0), V(tw / 2, sh), V(0, th / 2 + sh)], true);
+      g.fillStyle(COLORS.paper, 1).fillPoints(lid, true);
+      g.lineStyle(3, COLORS.ink, 1).strokePoints(lid, true);
+      slab.add(g);
+    } else {
+      slab.add([
+        this.add.rectangle(0, 0, t - 6, t - 6, COLORS.paper).setStrokeStyle(3, COLORS.ink),
+        this.add.line(0, 0, -t * 0.3, -t * 0.25, t * 0.1, t * 0.05, COLORS.ink).setLineWidth(3).setOrigin(0),
+        this.add.line(0, 0, t * 0.1, t * 0.05, t * 0.3, t * 0.3, COLORS.ink).setLineWidth(3).setOrigin(0),
+      ]);
+    }
+    const fall = this.iso ? t * 1.2 : t * 0.25;
+    this.tweens.add({ targets: slab, scale: 0.15, angle: this.iso ? 0 : 35, alpha: 0, y: slab.y + fall, duration: 420, ease: 'Quad.In', onComplete: () => slab.destroy() });
     for (let k = 0; k < 6; k++) {
       const puff = this.add.circle(this.cx(i) + Phaser.Math.Between(-t / 2, t / 2), this.cy(i) + Phaser.Math.Between(-t / 3, t / 2), Phaser.Math.Between(6, 12), 0x9a958a, 0.7).setDepth(26);
       this.tweens.add({ targets: puff, y: puff.y - Phaser.Math.Between(10, 30), alpha: 0, scale: 1.8, duration: 500 + k * 60, onComplete: () => puff.destroy() });
@@ -844,13 +1065,13 @@ export class PuzzleScene extends Phaser.Scene {
   /** Archive collapse ambience: grit falling across the board (boards with cracked floor only). */
   private startDust() {
     if (comicSettings.reduceMotion || !this.level.cells.some((c) => c.k === 'collapse')) return;
-    const bw = this.level.w * this.tile;
+    const b = this.bounds();
     this.time.addEvent({
       delay: 260,
       loop: true,
       callback: () => {
-        const grit = this.add.rectangle(this.ox + Math.random() * bw, this.oy - 20, 4, 4 + Math.random() * 6, 0xb8b2a4, 0.8).setDepth(48);
-        this.tweens.add({ targets: grit, y: this.oy + this.level.h * this.tile + 20, alpha: 0.2, duration: 1400 + Math.random() * 900, onComplete: () => grit.destroy() });
+        const grit = this.add.rectangle(b.x + Math.random() * b.w, b.y - 20, 4, 4 + Math.random() * 6, 0xb8b2a4, 0.8).setDepth(48);
+        this.tweens.add({ targets: grit, y: b.y + b.h + 20, alpha: 0.2, duration: 1400 + Math.random() * 900, onComplete: () => grit.destroy() });
       },
     });
   }
@@ -866,12 +1087,12 @@ export class PuzzleScene extends Phaser.Scene {
     };
     if (comicSettings.reduceMotion) return back();
     const color = kind === 'slip' ? COLORS.ink : 0xc0392b;
-    const splat = this.add.graphics().setDepth(60).setPosition(this.wisp.x, this.wisp.y);
-    splat.fillStyle(color, 0.95).fillCircle(0, 0, this.tile * 0.34);
+    const splat = this.add.graphics().setDepth(60).setPosition(this.wisp.x, this.wisp.y - this.lift);
+    splat.fillStyle(color, 0.95).fillCircle(0, 0, this.unit * 0.34);
     for (let k = 0; k < 9; k++) {
       const a = (k / 9) * Math.PI * 2 + Math.sin(k * 3.7);
-      const d = this.tile * (0.3 + 0.18 * ((k * 7) % 5) / 4);
-      splat.fillCircle(Math.cos(a) * d, Math.sin(a) * d, this.tile * (0.07 + 0.05 * (k % 3)));
+      const d = this.unit * (0.3 + 0.18 * ((k * 7) % 5) / 4);
+      splat.fillCircle(Math.cos(a) * d, Math.sin(a) * d, this.unit * (0.07 + 0.05 * (k % 3)));
     }
     splat.setScale(0.15);
     this.tweens.add({ targets: this.wisp, scale: 0.4, alpha: 0.4, duration: 200 });
@@ -957,10 +1178,10 @@ export class PuzzleScene extends Phaser.Scene {
     this.tweens.killTweensOf(this.goalWord);
     this.tweens.add({ targets: this.goalWord, scale: 1.8, angle: 0, duration: dur(260), ease: 'Back.Out' });
     this.tweens.add({ targets: this.goalWord, alpha: 0, delay: dur(500), duration: dur(300) });
-    const ring = this.add.circle(this.goalWord.x, this.goalWord.y, this.tile * 0.4).setStrokeStyle(8, COLORS.spiritTeal).setDepth(55);
+    const ring = this.add.circle(this.goalWord.x, this.goalWord.y, this.unit * 0.4).setStrokeStyle(8, COLORS.spiritTeal).setDepth(55);
     this.tweens.add({ targets: ring, scale: 4, alpha: 0, duration: dur(700), onComplete: () => ring.destroy() });
     const banner = this.add
-      .text(PANEL.x + PANEL.w / 2, this.oy + (this.level.h * this.tile) / 2, T.solved, {
+      .text(PANEL.x + PANEL.w / 2, this.bounds().y + this.bounds().h / 2, T.solved, {
         fontFamily: `"${FONTS.sfx}"`,
         fontSize: '84px',
         color: COLORS.spiritTealCss,
