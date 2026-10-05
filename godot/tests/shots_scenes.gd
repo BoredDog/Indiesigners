@@ -48,6 +48,14 @@ func _start() -> void:
 	await _shot("casebook", {"returnTo": "village"}, "07-casebook")
 	await _shot("memory", {"witness": "arun"}, "08-memory-arun-half")
 	await _shot("village", {}, "09-pause", func(s): CoreUi.open_pause(s))
+	await _shot("memory", {"witness": "arun"}, "10-memory-lantern", func(s):
+		s.set_light(true)
+		s.pointer = s.words["ev_arun_hiss"].get_global_rect().get_center() + Vector2(30, 10))
+	for d in StoryData.DEDUCTION_IDS:
+		for e in StoryData.deduction(d).requiredEvidence:
+			GameState.add_evidence(e)
+		Deductions.attempt(d, StoryData.deduction(d).requiredEvidence, "correct")
+	await _shot("accusation", {}, "11-accusation")
 	get_tree().quit(0)
 
 

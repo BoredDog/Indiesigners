@@ -87,14 +87,14 @@ func _run() -> void:
 	var mres := PuzzleScene.take_result()
 	ok(mres.get("justFound") == "ev_mira_bell", "missing level hands the fragment straight back")
 
-	# Archive: escaped result -> flag set, CONTINUE offered (Finale hand-off).
+	# Archive: escaped result -> flag set, CONTINUE offered (Accusation / Finale hand-off).
 	GameState.save_path = "user://test_puzzle_save.json"
 	GameState.new_game()
 	PuzzleScene.result = {"solved": "pz_archive", "justFound": "", "witness": ""}
 	var arc: Node = load("res://scenes/archive.tscn").instantiate()
 	add_child(arc)
 	ok(GameState.flag("archiveEscaped"), "archive escape recorded")
-	ok(arc.find_child("btn_CONTINUE", true, false) != null, "archive offers CONTINUE to the Finale")
+	ok(arc.find_child("btn_CONTINUE", true, false) != null, "archive offers CONTINUE (to the Accusation, then the Finale)")
 	arc.queue_free()
 
 	print("%d puzzle scene check(s) failed" % failed if failed else "All Godot puzzle scene checks passed.")

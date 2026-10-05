@@ -2,6 +2,7 @@
 // Usage: npx tsx tools/check-puzzle.ts   (exits 1 on failure)
 import { initialState, inkTiles, parseLevel, sentinelAt, step } from '../src/puzzle/Rules';
 import { solve } from '../src/puzzle/Solver';
+import { analyse, deadEnds } from '../src/puzzle/Analysis';
 import type { Dir, LevelFile, State } from '../src/puzzle/types';
 
 let failed = 0;
@@ -128,6 +129,27 @@ function play(level: ReturnType<typeof lvl>, moves: string, from?: State) {
   ok(r.event === 'blocked' && r.r?.reason === 'void', 'collapsed tile is a pit');
   ok(play(l, 'EES').event === 'moved', 'can cross collapse tiles once');
   ok(play(l, 'EESS').event === 'win', 'collapse path to goal');
+}
+
+// V15 analysis: unused pieces and dead ends
+{
+  // A crate nowhere near the path is unused.
+  const spare = lvl(['S...G', '.....', 'C....'], { light: 'S' });
+  ok(analyse(spare).unused.map((p) => p.kind).join() === 'crate', 'idle crate reported as unused');
+  // A lever whose gate blocks the only way is needed (and so is the gate).
+  const gated = lvl(['S_G', '.A.', 'L__'], { legend: { A: 'gate:g1', L: 'lever:g1' }, light: 'S' });
+  ok(analyse(gated).unused.length === 0, 'lever + gate on the only route are both used');
+  // An echo that forces a detour counts as used even though the solution never touches it.
+  const echo = lvl(['S...', '....', '...G'], { sentinels: [{ path: [[1, 1], [2, 1], [3, 1]] }], light: 'S' });
+  const a = analyse(echo);
+  const without = solve(lvl(['S...', '....', '...G'], { light: 'S' }))!.moves.length;
+  ok(a.par > without ? a.unused.length === 0 : a.unused.some((p) => p.kind === 'sentinel'), 'sentinel judged by whether it changes the optimum');
+  // Dead ends: in a corridor, pushing the crate up against the goal strands the wisp.
+  const trap = lvl(['SC.G'], { light: 'S' });
+  ok(deadEnds(trap).deadEnds >= 1, 'crate pushed against the goal is a dead end');
+  ok(deadEnds(lvl(['S..G'], { light: 'S' })).deadEnds === 0, 'an open corridor has no dead ends');
+  const corner = lvl(['S.C', '..G', '...'], { light: 'S' });
+  ok(deadEnds(corner).reachable > 0, 'dead-end search explores the board');
 }
 
 // Authoring errors are caught

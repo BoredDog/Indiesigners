@@ -4,9 +4,17 @@ extends Control
 ##   justFound evidence id returned by the Puzzle scene (plays its reveal)
 ## Layout comes from res://content/pages/<witness>.json; fragment text / SFX / puzzle from
 ## StoryData (evidence.json). All state is in GameState, so the page rebuilds on every visit.
+## A1 spirit-light: the LANTERN rail button (or hold L) shows a teal light that follows the
+## pointer and reveals the page's `residue` and its `"light": true` fragments.
 
 const PAGE_BOUNDS := Rect2(60, 24, 1580, 1032)
 const RAIL_X := 1780.0
+## Spirit-light reach (px): full strength within half of it, fading out to the edge.
+const LIGHT_RADIUS := 200.0
+const LIGHT_GLOW_SIZE := 440
+const LANTERN_OFF := "LANTERN (L)"
+const LANTERN_ON := "LANTERN: ON"
+const LANTERN_HINT := "\n✦ Something hides here. Raise the LANTERN."
 
 var witness := "mira"
 var page: ComicPage
@@ -17,6 +25,20 @@ var hint: Label
 var reconstruct_btn: ComicButton
 var leave_btn: ComicButton
 var _toast: Label
+
+## A1: lantern toggled on (rail button) / L held down.
+var light_on := false
+var light_held := false
+## Pointer in scene coordinates (mouse motion updates it; tests may set it).
+var pointer := Vector2(-10000, -10000)
+var glow: TextureRect
+var lantern_btn: ComicButton
+## Hidden teal writing on the panels (Labels in the panel overlays).
+var residue: Array[Label] = []
+## evidence id → SfxWord still hidden until the light finds it (removed once revealed).
+var light_words := {}
+var _light_ids: Array[String] = []
+static var _hand_bold: FontVariation
 
 
 func _ready() -> void:
@@ -50,8 +72,10 @@ func _ready() -> void:
 
 	for f in page_def.fragments:
 		_add_fragment(f, just_found)
+	_add_residue(page_def.get("residue", []))
 	_refresh_colours(false)
 	_build_rail(StoryData.memory[witness].title)
+	_build_glow()
 	_refresh_hud()
 
 	if not _any_found() and not GameState.flag("tip_evidence"):
@@ -83,11 +107,22 @@ func _add_fragment(f: Dictionary, just_found: String) -> void:
 	panel.overlay.add_child(w.place_at(Vector2(f.x, f.y)))
 	words[e.id] = w
 	fragments.append(e)
+	var light: bool = f.get("light", false)
+	if light:
+		_light_ids.append(e.id)
+	# A1: a light-only clue stays invisible until the spirit-light finds it. A Control with
+	# modulate.a = 0 still takes clicks, so it also ignores the mouse until lit (_process).
+	if light and not known:
+		w.modulate.a = 0.0
+		w.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		light_words[e.id] = w
 	if known:
 		w.pop(true)
-	elif f.get("first", false):
+	elif f.get("first", false) and not light:
 		w.pulse()
 	w.revealed.connect(func(_w):
+		light_words.erase(e.id)
+		w.modulate.a = 1.0
 		GameState.add_evidence(e.id)
 		_refresh_colours(true)
 		_refresh_hud())
@@ -113,6 +148,115 @@ func _refresh_colours(animate: bool) -> void:
 		var done := not frs.is_empty() and frs.all(func(e): return GameState.has_evidence(e.id))
 		if done and p.colour() < 1.0:
 			p.set_colour(1.0, ComicTheme.COLOUR_FILL if animate else 0.0)
+
+
+# ---------------------------------------------------------------- A1 spirit-light
+
+## Caveat at its bold weight (the Phaser build draws residue in bold Caveat).
+static func hand_bold() -> Font:
+	if _hand_bold == null:
+		_hand_bold = FontVariation.new()
+		_hand_bold.base_font = ComicTheme.font("hand")
+		_hand_bold.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 700}
+	return _hand_bold
+
+
+## Teal residue written on the panels (page JSON `residue`: panel, fx/fy = fraction of the
+## panel, text, size, angle): invisible until the spirit-light passes over it.
+func _add_residue(list: Array) -> void:
+	for r in list:
+		var panel := page.panel(r.panel)
+		if panel == null:
+			continue
+		var font_size := int(r.get("size", 48))
+		var ls := LabelSettings.new()
+		ls.font = hand_bold()
+		ls.font_size = font_size
+		ls.font_color = ComicTheme.SPIRIT_TEAL
+		ls.outline_size = 4
+		ls.outline_color = ComicTheme.INK
+		var t := Label.new()
+		t.name = "Residue_%d" % residue.size()
+		t.text = r.text
+		t.label_settings = ls
+		t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var sz := ls.font.get_string_size(r.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size) + Vector2(8, 4)
+		t.size = sz
+		t.pivot_offset = sz / 2.0
+		t.position = Vector2(r.fx * panel.size.x, r.fy * panel.size.y) - sz / 2.0
+		t.rotation_degrees = r.get("angle", 0.0)
+		t.modulate.a = 0.0
+		panel.overlay.add_child(t)
+		residue.append(t)
+
+
+## The teal glow that follows the pointer while the light is on (additive, above the page).
+func _build_glow() -> void:
+	var g := Gradient.new()
+	g.set_offset(0, 0.0)
+	g.set_color(0, Color(ComicTheme.SPIRIT_TEAL, 0.42))
+	g.set_offset(1, 1.0)
+	g.set_color(1, Color(ComicTheme.SPIRIT_TEAL, 0.0))
+	g.add_point(0.55, Color(ComicTheme.SPIRIT_TEAL, 0.16))
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = LIGHT_GLOW_SIZE
+	tex.height = LIGHT_GLOW_SIZE
+	glow = TextureRect.new()
+	glow.name = "SpiritGlow"
+	glow.texture = tex
+	glow.size = Vector2(LIGHT_GLOW_SIZE, LIGHT_GLOW_SIZE)
+	glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	glow.material = mat
+	glow.visible = false
+	add_child(glow)
+
+
+## The light is on: lantern toggled or L held.
+func lit() -> bool:
+	return light_on or light_held
+
+
+## Toggle the lantern (the rail button; holding L does the same while pressed). Used by tests.
+func set_light(on: bool) -> void:
+	light_on = on
+	if lantern_btn:
+		lantern_btn.text = LANTERN_ON if on else LANTERN_OFF
+
+
+func _input(e: InputEvent) -> void:
+	if e is InputEventMouse:
+		pointer = get_canvas_transform().affine_inverse() * (e as InputEventMouse).position
+
+
+func _process(_delta: float) -> void:
+	if page == null or glow == null:
+		return
+	var on := lit()
+	glow.visible = on
+	if on:
+		glow.position = pointer - glow.size / 2.0
+	for t in residue:
+		_reveal(t, on)
+	for id in light_words:
+		var w: SfxWord = light_words[id]
+		_reveal(w, on)
+		# Only clickable while the light actually shows it.
+		w.mouse_filter = Control.MOUSE_FILTER_STOP if w.modulate.a > 0.05 else Control.MOUSE_FILTER_IGNORE
+
+
+## Alpha by distance from the pointer to the item's centre: full within half the radius.
+func _reveal(o: Control, on: bool) -> void:
+	if not on:
+		o.modulate.a = 0.0
+		return
+	var centre := o.get_global_transform() * (o.size / 2.0)
+	o.modulate.a = clampf((LIGHT_RADIUS - centre.distance_to(pointer)) / (LIGHT_RADIUS * 0.5), 0.0, 1.0)
 
 
 # ---------------------------------------------------------------- HUD rail
@@ -143,6 +287,12 @@ func _build_rail(title: String) -> void:
 	counter.size = Vector2(240, 50)
 	counter.position = Vector2(RAIL_X - 120, 130)
 	add_child(counter)
+
+	# A1 spirit-light: toggle here, or hold L. Under the light, hidden residue and clues appear.
+	lantern_btn = ComicButton.make(LANTERN_OFF, 220, 26, ComicTheme.SPIRIT_TEAL)
+	lantern_btn.name = "btn_LANTERN"
+	lantern_btn.pressed.connect(func(): set_light(not light_on))
+	add_child(lantern_btn.place_at(Vector2(RAIL_X, 225)))
 
 	var cb := ComicButton.make("CASEBOOK", 220, 28)
 	cb.pressed.connect(_open_casebook)
@@ -203,6 +353,9 @@ RECONSTRUCT what happened."
 		hint.text = "Deductions %d/%d.
 Find more evidence: click the loud words.%s" % [confirmed, total, "
 ◆ = behind an Echo Path: click it to enter." if locked_left else ""]
+	# A1: point at the lantern while a light-only clue on this page is still hidden.
+	if _light_ids.any(func(id): return not GameState.has_evidence(id)):
+		hint.text += LANTERN_HINT
 
 
 # ---------------------------------------------------------------- navigation
@@ -242,6 +395,9 @@ func _open_casebook() -> void:
 
 
 func _unhandled_key_input(e: InputEvent) -> void:
+	if e is InputEventKey and e.keycode == KEY_L and not e.echo:
+		light_held = e.pressed  # hold L: spirit-light while pressed
+		return
 	if e is InputEventKey and e.pressed:
 		if e.keycode == KEY_ESCAPE:
 			page.unfocus()
