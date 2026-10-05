@@ -284,7 +284,7 @@ export class MemoryScene extends Phaser.Scene {
     const key = `firstlight_${this.witness}`;
     if (!text || memoryDeps().seen(key)) return;
     memoryDeps().markSeen(key);
-    const box = new Bubble(this, PAGE_BOUNDS.x + PAGE_BOUNDS.w / 2, 70, { kind: 'narration', text, maxWidth: 820, fontSize: 28 });
+    const box = new Bubble(this, PAGE_BOUNDS.x + PAGE_BOUNDS.w / 2, PAGE_BOUNDS.y + PAGE_BOUNDS.h - 50, { kind: 'narration', text, maxWidth: 820, fontSize: 28 });
     box.setDepth(45).setName('firstLight');
     this.add.existing(box.appear(0));
     this.tweens.add({ targets: box, alpha: 0, delay: 5000, duration: 600, onComplete: () => box.destroy() });

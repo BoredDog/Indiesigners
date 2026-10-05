@@ -224,7 +224,11 @@
       "panel": "P2",
       "x": 360,
       "y": 230,
-      "angle": 5
+      "angle": 5,
+      "card": {
+        "x": 600,
+        "y": 95
+      }
     },
     {
       "evidence": "ev_mira_resonance",

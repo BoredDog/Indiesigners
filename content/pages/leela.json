@@ -241,7 +241,11 @@
       "evidence": "ev_leela_hum",
       "panel": "P2",
       "x": 126,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 148,
+        "y": 250
+      }
     },
     {
       "evidence": "ev_leela_rule",
@@ -252,8 +256,8 @@
       "size": 50,
       "angle": -4,
       "card": {
-        "x": 420,
-        "y": 170
+        "x": 424,
+        "y": 160
       }
     },
     {
@@ -272,30 +276,46 @@
       "evidence": "ev_leela_whoom",
       "panel": "P5",
       "x": 165,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 160,
+        "y": 225
+      }
     },
     {
       "evidence": "ev_leela_crack",
       "panel": "P5",
       "x": 451,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 500,
+        "y": 225
+      }
     },
     {
       "evidence": "ev_leela_ash",
       "panel": "P6",
       "x": 165,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 170,
+        "y": 110
+      }
     },
     {
       "evidence": "ev_leela_paper",
       "panel": "P6",
       "x": 451,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 520,
+        "y": 110
+      }
     }
   ],
   "firstLight": "Pencil notes in the margins. The capitals slanted like mine. Plenty of hands slant.",
   "residue": [
     {"panel": "P1", "fx": 0.55, "fy": 0.8, "text": "E.V.", "size": 50, "angle": -6},
-    {"panel": "P2", "fx": 0.5, "fy": 0.56, "text": "ALL 32 AT ONCE?", "size": 28, "angle": -5}
+    {"panel": "P2", "fx": 0.56, "fy": 0.63, "text": "ALL 32 AT ONCE?", "size": 26, "angle": -5}
   ]
 }

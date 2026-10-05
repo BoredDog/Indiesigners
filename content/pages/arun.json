@@ -227,13 +227,21 @@
       "evidence": "ev_arun_clank",
       "panel": "P3",
       "x": 126,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 200,
+        "y": 250
+      }
     },
     {
       "evidence": "ev_arun_footsteps",
       "panel": "P4",
       "x": 205,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 205,
+        "y": 250
+      }
     },
     {
       "evidence": "ev_arun_cloth",
@@ -257,6 +265,6 @@
   ],
   "firstLight": "Teal footprints. Whoever walked here carried a lit lantern.",
   "residue": [
-    {"panel": "P4", "fx": 0.1, "fy": 0.9, "text": "", "shape": "steps", "size": 34, "angle": -4}
+    {"panel": "P4", "fx": 0.3, "fy": 0.88, "text": "", "shape": "steps", "size": 60, "angle": -4}
   ]
 }
