@@ -56,13 +56,21 @@ export function backdrop(scene: Phaser.Scene, dim = 0.55): void {
 }
 
 const GHOST_TINT: Record<WitnessId, number> = { mira: 0xffffff, arun: 0xc9d39a, leela: 0xd7c6f0 };
+const GHOST_PALE = 0xdde6f2; // a cold wash over real witness art: still a ghost
 
 /**
  * Placeholder ghost of a witness (pale, translucent, slow float: Blueprint C/N).
  * Only Mira has placeholder art; Arun/Leela reuse it tinted until Bhumi's art lands.
  */
 export function ghost(scene: Phaser.Scene, w: WitnessId, x: number, y: number, scale = 1): Phaser.GameObjects.Image {
-  const img = scene.add.image(x, y, PH.mira).setOrigin(0.5, 1).setScale(scale).setTint(GHOST_TINT[w]).setAlpha(0.88);
+  // Own art (char_<w>) once it exists; until then Mira's stand-in, tinted per witness.
+  const own = scene.textures.exists(`ph_${w}`);
+  const img = scene.add
+    .image(x, y, own ? `ph_${w}` : PH.mira)
+    .setOrigin(0.5, 1)
+    .setScale(scale)
+    .setTint(own ? GHOST_PALE : GHOST_TINT[w])
+    .setAlpha(0.88);
   if (dur(1) > 0) {
     scene.tweens.add({ targets: img, y: y - 4, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
   }

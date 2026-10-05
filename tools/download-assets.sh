@@ -45,6 +45,11 @@ for id in Paper001 Paper002 Paper003 Cork001 Wood049 Concrete034; do
   fi
 done
 
+echo "== Grime textures for tools/draft-art.ts (ambientCG, CC0; stay in assets-raw) =="
+for id in PaintedPlaster017 Leaking006; do
+  fetch "https://ambientcg.com/get?file=${id}_1K-JPG.zip" "$RAW/ambientcg/${id}_1K-JPG.zip"
+done
+
 echo "== Kenney packs (CC0) =="
 for pack in cursor-pack game-icons board-game-icons particle-pack; do
   dir="$RAW/kenney/$pack"
