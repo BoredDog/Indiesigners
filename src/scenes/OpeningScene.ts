@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, comicSettings, ComicButton, dur, pageTurn } from '../comic';
+import { Bubble, COLORS, comicSettings, ComicButton, dur, pageTurn } from '../comic';
 import { story } from '../core/StoryData';
 import { PH } from '../dev/placeholders';
 import { FRAME, SequenceScene, type FrameBuilder } from './sequence/SequenceScene';
@@ -12,8 +12,8 @@ const WINDOW = ['bg_window_close', 'char_window_figure'];
 
 /**
  * Opening (Blueprint F2): six frames, ~50 s, Elias never shown (hands, lantern glow and a
- * reflection only). Text comes from content/opening.json; visuals are placeholder crops of the
- * village until final art lands. Ends with a page turn into the Village hub.
+ * reflection only), plus the five "Ten years ago" panels before the last one when the pixel art
+ * is built. Text comes from content/opening.json. Ends with a page turn into the Village hub.
  */
 export class OpeningScene extends SequenceScene {
   constructor() {
@@ -68,8 +68,14 @@ export class OpeningScene extends SequenceScene {
         this.narration(layer, n(2));
         this.sfxWord(layer, f[2].sfx, FRAME.x + 1280, FRAME.y + 760, 60);
       },
-      // 4 — Mira appears by the schoolhouse.
+      // 4 — Ivy's ghost in the street by the schoolhouse; she looks straight through him.
       (layer) => {
+        if (hasPixel(this, 'opening_4_ivy')) {
+          new PixelStage(this, layer, FRAME).image('opening_4_ivy').setName('pixel:opening_4_ivy');
+          this.narration(layer, n(3));
+          this.sfxWord(layer, f[3].sfx, FRAME.x + 300, FRAME.y + 700, 64);
+          return;
+        }
         this.panel(layer, PH.village, { x: 60, y: 380, w: 640, h: 360 });
         const mira = this.add.image(FRAME.x + 1150, FRAME.y + FRAME.h - 20, PH.mira).setOrigin(0.5, 1).setScale(1.25).setAlpha(0);
         layer.add(mira);
@@ -103,6 +109,10 @@ export class OpeningScene extends SequenceScene {
         this.narration(layer, n(4));
         this.sfxWord(layer, f[4].sfx, FRAME.x + 1250, FRAME.y + 740, 64, 900);
       },
+      // Ten years ago (final script §3, pixel scene 4): five sepia panels, only with the pixel art.
+      ...story.opening.history
+        .filter((h) => hasPixel(this, h.panel))
+        .map((h): FrameBuilder => (layer) => this.pixelHistory(layer, h.panel, h.narration)),
       // 6 — Village hub, three witnesses, clock tower; the comic page turns into the hub.
       (layer) => {
         this.panel(layer, PH.village, { x: 0, y: 0, w: 1920, h: 1080 });
@@ -237,9 +247,28 @@ export class OpeningScene extends SequenceScene {
     });
   }
 
+  /**
+   * Scene 4, ten years ago: one sepia panel. Rain and lightning on the night panel are code
+   * (design/pixel/scene3_4_ten_years_ago.html); the rest is the panel as drawn.
+   */
+  private pixelHistory(layer: Phaser.GameObjects.Container, panel: string, text: string) {
+    const st = new PixelStage(this, layer, FRAME);
+    st.image(panel).setName(`pixel:${panel}`);
+    if (panel === 'panel_night') {
+      this.rain(layer, { x: st.x, y: st.y, w: st.w * st.scale, h: st.h * st.scale });
+      if (!comicSettings.reduceFlashing) {
+        const flash = this.add.rectangle(st.x, st.y, st.w * st.scale, st.h * st.scale, COLORS.paper).setOrigin(0).setAlpha(0);
+        layer.add(flash);
+        this.everyFrame(layer, (t) => flash.setAlpha(t % 4000 > 1200 && t % 4000 < 1320 ? 0.35 : 0)); // one blink every 4 s
+      }
+    }
+    // Wider than the default caption so the four-line panels stay inside the frame.
+    layer.add(new Bubble(this, FRAME.x + 440, FRAME.y + 160, { kind: 'narration', text, maxWidth: 800, fontSize: 30 }).appear(250));
+  }
+
   // ------------------------------------------------------------------ effects
 
-  private rain(layer: Phaser.GameObjects.Container) {
+  private rain(layer: Phaser.GameObjects.Container, area: { x: number; y: number; w: number; h: number } = FRAME) {
     if (!this.textures.exists('fx_rain')) {
       const g = this.make.graphics({}, false);
       g.fillStyle(0xbfd6e6, 0.55).fillRect(0, 0, 2, 22);
@@ -248,8 +277,8 @@ export class OpeningScene extends SequenceScene {
     }
     const quantity = comicSettings.reduceMotion ? 1 : 3;
     const rain = this.add.particles(0, 0, 'fx_rain', {
-      x: { min: FRAME.x, max: FRAME.x + FRAME.w },
-      y: FRAME.y,
+      x: { min: area.x, max: area.x + area.w },
+      y: area.y,
       speedY: { min: 900, max: 1200 },
       speedX: -120,
       angle: 0,
@@ -260,7 +289,7 @@ export class OpeningScene extends SequenceScene {
       alpha: { start: 0.8, end: 0.2 },
     });
     // Keep the drops inside the panel.
-    const mask = this.make.graphics({}, false).fillRect(FRAME.x, FRAME.y, FRAME.w, FRAME.h);
+    const mask = this.make.graphics({}, false).fillRect(area.x, area.y, area.w, area.h);
     rain.setMask(mask.createGeometryMask());
     layer.add(rain);
   }

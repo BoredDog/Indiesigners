@@ -14,13 +14,13 @@
     "stamp": "SAME HAND"
   },
   "slots": [
-    { "witness": "mira", "label": "MIRA SAW...", "accept": ["ev_mira_staff", "ev_mira_erased_entry"] },
-    { "witness": "arun", "label": "ARUN SAW...", "accept": ["ev_arun_cloth", "ev_arun_hiss"] },
-    { "witness": "leela", "label": "LEELA RECORDED...", "accept": ["ev_leela_click", "ev_leela_paper", "ev_leela_ash", "ev_leela_rule"] }
+    { "witness": "mira", "label": "IVY SAW...", "accept": ["ev_mira_staff", "ev_mira_erased_entry"] },
+    { "witness": "arun", "label": "LUKE SAW...", "accept": ["ev_arun_cloth", "ev_arun_hiss"] },
+    { "witness": "leela", "label": "HANNA RECORDED...", "accept": ["ev_leela_click", "ev_leela_paper", "ev_leela_ash", "ev_leela_rule"] }
   ],
   "conclusions": [
     { "id": "elias_out", "text": "Elias Vane, the apprentice, still out there somewhere." },
-    { "id": "leela", "text": "Leela, keeper of the lantern records." },
+    { "id": "leela", "text": "Hanna, keeper of the lantern records." },
     { "id": "me", "text": "The investigator. Me.", "correct": true },
     { "id": "lantern", "text": "The Echo Lantern itself." },
     { "id": "accident", "text": "No one. It was an accident." }
@@ -28,7 +28,7 @@
   "reactions": {
     "me": "Every card pointed at the one witness I never questioned.",
     "elias_out": "The name is right. Look whose hand wrote these notes.",
-    "leela": "Leela said stop. The log says who didn't.",
+    "leela": "Hanna said stop. The log says who didn't.",
     "lantern": "The lantern did what it was told. Who told it?",
     "accident": "Accidents don't ignore a warning, then erase themselves."
   },
