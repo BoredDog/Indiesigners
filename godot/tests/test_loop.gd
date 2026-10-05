@@ -7,6 +7,7 @@ extends Node
 ## This node moves itself under /root so it survives scene changes.
 
 var failed := 0
+var _reached_end := false
 
 
 func ok(cond: bool, msg: String) -> void:
@@ -30,6 +31,7 @@ func _start() -> void:
 	holder.remove_child(self)
 	root.add_child(self)
 	await _run()
+	ok(_reached_end, "test reached its last check (no script error mid-run)")
 	print("%d check(s) failed" % failed if failed else "All Godot loop checks passed.")
 	get_tree().quit(1 if failed else 0)
 
@@ -94,6 +96,17 @@ func _run() -> void:
 	ok(title.get_node_or_null("btn_" + String(StoryData.ui.title["continue"]).validate_node_name()) == null, "no Continue without a save")
 	title.new_game()
 
+	# New Game plays the Opening (GD6) first; click through it.
+	var op := await _scene("Opening")
+	ok(op != null, "New Game plays the Opening")
+	for i in 20:
+		var cur := get_tree().current_scene
+		if cur and cur.name == "Village":
+			break
+		if cur and cur.has_method("next"):
+			cur.next()
+		for k in 4:
+			await get_tree().process_frame
 	var village := await _scene("Village")
 	ok(GameState.has_save(), "New Game saves")
 	_click(village.get_node("Spot_mira"))
@@ -179,3 +192,4 @@ func _run() -> void:
 	await _scene("Village")
 	ok(GameState.all_deductions_confirmed() and GameState.witness_status("mira") == "resolved", "Continue restores progress")
 	ok(JSON.stringify(GameState.snapshot()).length() == snap.length(), "restored save matches")
+	_reached_end = true
