@@ -15,7 +15,7 @@ Source of truth for story/text: `Echoes_of_Sorrow_Investigation_Thriller_Bluepri
 | **Engine** | **Phaser 3 + TypeScript + Vite** (browser build → itch.io HTML5 zip) |
 | **Dimension** | 2D now. All story/puzzle data is engine-agnostic JSON, so a 3D port later only replaces rendering. |
 | **Core new mechanic** | **Echo Paths**: memory fragments are retrieved through turn-based grid puzzles (Lara Croft GO movement + Felix the Reaper light/shadow rotation). |
-| **Who codes** | Nav, Vansh, Garv (Claude Code) |
+| **Who codes** | Nav, Vansh, Garv (Claude Code); Bhumi wires her own art with Claude Code (from 5 Oct) |
 | **Who makes art/content** | Bhumi (characters + key panels), Arya (backgrounds, props, licenses, QA, itch page) |
 | **Must ship** | Title → Opening → Village → 3 witnesses (talk → memory page + puzzles → deduction) → Hidden Archive → Finale reveal → Ending → Credits, with save/continue. |
 | **Not now (cut for 30 h)** | Soundtrack/SFX audio, 3D, investigation-location side scenes, hidden epilogue, 3 of the 11 puzzles (stretch only), settings beyond text size / Reduce Motion / fullscreen |
@@ -155,7 +155,7 @@ Panels are **not** drawn 18 times. Each memory page = **1 wide background scene 
 | **Garv** (Gravity006, **repo owner / lead**) | ✅ | **Lead, comic UI, build & release** | Repo admin, Team HQ issue, status updates, **reviews, play-tests and merges every PR**. `src/comic/`, Memory / Casebook / Opening / Finale / Ending scenes, `src/main.ts`, build config, CI + GitHub Pages, art import (`npm run art`), `CREDITS.md`, itch.io release |
 | **Nav** (BoredDog) | ✅ | **Gameplay core** | `src/core/` (GameState, SaveManager, StoryData, DeductionController), `content/*.json` + `design/script_review.html`, Boot / Title / Village / Conversation / Deduction / Aftermath / Pause scenes, autoplay test |
 | **Vansh** (VaNsH-IIIT) | ✅ | **Puzzles** | `src/puzzle/`, `content/puzzles/`, Puzzle + Archive scenes, `tools/solve-puzzles.ts`: Echo Paths engine, 8 core levels (+3 stretch), hint/undo/reset/skip, archive escape |
-| **Bhumi** (Bhumi-Chaudhari) | ❌ | **Character & key art** | `art/incoming/bhumi/`: Elias silhouette, young Elias, Mira, Arun, Leela, Nia, title cover, finale/ending panels |
+| **Bhumi** (Bhumi-Chaudhari) | ✅ (from 5 Oct) | **Character & key art** | `art/incoming/bhumi/`, `art-src/` (her `.kra`): Elias silhouette, young Elias, Mira, Arun, Leela, Nia, title cover, finale/ending panels. Her Claude imports and wires them (TASKS.md B7–B8) |
 | **Arya** (arya2707) | ❌ | **Environment art, assets, QA** | `art/incoming/arya/`: backgrounds (paint-over), props, asset license checks, `CREDITS.md` entries, text proofreading, bug reports, playtests, itch.io page text |
 
 **Nobody edits another area's files.** Need a change in someone else's area? Ask in Team HQ or open an issue for them.
@@ -165,10 +165,11 @@ Panels are **not** drawn 18 times. Each memory page = **1 wide background scene 
 - **`main` is protected:** changes only through pull requests, and the automatic build must pass. Garv plays every PR before merging so `main` is always playable.
 - Devs: branch `feat/<area>` → PR → Garv tests and merges. Merge at every sync point; don't sit on a branch longer than ~4 h. Garv's own PRs get a quick look from Nav.
 - **Team communication: the pinned "Team HQ" issue.** Bugs = a new issue with the `bug` label. Anyone can do both from the GitHub website.
-- Bhumi & Arya: upload via GitHub web ("Add file → Upload files") straight into `art/incoming/<your-name>/`. Garv's Claude moves the files into place. The website will offer to "create a new branch and start a pull request" because `main` is protected; accept it, and Garv merges it. This gives you real commits from your own accounts.
+- Bhumi (Claude Code from 5 Oct): branch `feat/art-bhumi` → put art in `art/incoming/bhumi/` → `npm run art` → PR, like the devs. Garv tests and merges.
+- Arya: upload via GitHub web ("Add file → Upload files") straight into `art/incoming/<your-name>/`. Garv's Claude moves the files into place. The website will offer to "create a new branch and start a pull request" because `main` is protected; accept it, and Garv merges it. This gives you real commits from your own accounts.
 
-### Bhumi & Arya: no-AI workflow
-Nothing in Bhumi's or Arya's tasks needs an AI subscription. Everything they do is drawing, picking, checking or playing, using free tools only:
+### Arya: no-AI workflow (Bhumi until 5 Oct)
+Nothing in Arya's tasks needs an AI subscription. Everything she does is drawing, picking, checking or playing, using free tools only:
 
 | Need | Free tool |
 |---|---|
@@ -182,9 +183,9 @@ Nothing in Bhumi's or Arya's tasks needs an AI subscription. Everything they do 
 | Playing test builds | The GitHub Pages link pinned in Team HQ (any browser) |
 
 **Buddy system:** anything technical goes to a dev, whose Claude handles it.
-- **Bhumi ↔ Garv**: Bhumi uploads raw PNG/KRA at any size. Garv's Claude resizes, trims, converts to WebP and places the art in the scenes, then sends Bhumi a screenshot to approve.
+- **Bhumi ↔ Garv**: from 5 Oct Bhumi's own Claude does the import (`npm run art`), crops, wiring and screenshot checks, and opens the PR. Garv plays and merges it. Drawing stays hers: her Claude never draws or redraws the characters.
 - **Arya ↔ Nav**: Nav's Claude applies `text` issues to `content/*.json` and generates a readable `design/script_review.html` (all game text as a script), so Arya never has to read JSON. Garv merges Arya's `CREDITS.md` PRs.
-- Neither of them is ever blocked waiting on AI output. If a dev is asleep or busy, they keep drawing or testing from their own list.
+- Arya is never blocked waiting on AI output. If a dev is asleep or busy, they keep drawing or testing from their own list.
 - File names: lowercase snake_case (`mira_neutral.png`, `bg_river_road.webp`). Transparent PNG for cutouts, WebP/PNG for backgrounds, master size 1920×1080. Keep Krita `.kra` sources in `art-src/` (proof of authorship).
 
 ---
@@ -289,13 +290,13 @@ That's ~25 working hours plus one 5-hour sleep. With 30 hours instead of 40, the
 - Download CC0 packs/fonts, wire them in, draft `CREDITS.md` entries.
 - **Automated playthrough tests** (Playwright plays all 6 witness orders to the ending, checks for console errors).
 - Screenshots/cover captures, README, LICENSE, AI-disclosure section, GitHub Pages deploy, itch.io upload script (butler).
-- **Do the technical side of Bhumi's and Arya's work:** process their art (resize/trim/WebP/place), apply their `text` issues, merge their `CREDITS.md` PRs, and generate the readable script for proofreading.
+- **Do the technical side of Arya's work** (Bhumi's Claude now does hers): process her art (resize/trim/WebP/place), apply her `text` issues, merge her `CREDITS.md` PRs, and generate the readable script for proofreading.
 - Watch the repo and pull new commits/uploads locally (already running in Garv's session).
 
 ### 🧑 Needs a human
 | Task | Who |
 |---|---|
-| Character and key-panel art (style, silhouette consistency) | Bhumi |
+| Character and key-panel art (style, silhouette consistency), drawn by hand; her Claude only imports, wires and checks | Bhumi |
 | Background paint-over, art direction checks | Arya (+Bhumi) |
 | **License verification on the actual source page** for every downloaded asset | Arya |
 | Judging whether puzzles feel fun, if the twist lands, if the text reads well | Everyone, + 2 external testers |
@@ -329,6 +330,9 @@ Paste these into Claude Code at the start of each block (each dev in their own c
 **Garv:**
 > (Comic layer, art pipeline and project setup are done.) Read PLAN.md and TASKS.md. Build the Memory, Casebook, Opening, Finale and Ending scenes from content/*.json with src/comic, then review, play-test and merge open PRs.
 
+**Bhumi (character & key art, from 5 Oct):**
+> Read PLAN.md §4.3 and §5, and the Bhumi section and "Art reference" in TASKS.md. I draw the art myself in Krita; you never draw or redraw characters. Your job: take my files from art/incoming/bhumi/ (same file names and canvas sizes as the drafts in art/incoming/claude/), run `npm run art`, check them in the game with the shots-* tools and show me the screenshots, check that char_figure and char_elias_young have the same outline, then wire the art that has no slot yet (reaction expressions, title cover, finale reveal, ending panels) as TASKS.md B8 says. Work on branch feat/art-bhumi, run `npm test` and check its exit code before every PR, and update my rows in TASKS.md.
+
 ---
 
 ## 10. Definition of done (submission checklist)
@@ -348,7 +352,7 @@ Paste these into Claude Code at the start of each block (each dev in their own c
 
 Everything below has been tested on Windows 11. Run **PowerShell** commands in Windows Terminal → PowerShell, and **bash** commands in Git Bash.
 
-### 11.1 Tools — devs (Nav, Vansh, Garv)
+### 11.1 Tools — devs (Nav, Vansh, Garv) and Bhumi
 PowerShell, once per machine:
 ```powershell
 winget install --id Git.Git -e
@@ -368,6 +372,7 @@ npm install -g @anthropic-ai/claude-code
 ```
 
 ### 11.2 Tools — artists (Bhumi, Arya). Free, no AI subscription needed
+Bhumi also does §11.1 and §11.3 (she has Claude Code from 5 Oct). Arya needs only this section.
 ```powershell
 winget install --id KDE.Krita -e
 winget install --id GIMP.GIMP.3 -e      # optional; Photopea (https://www.photopea.com) works in the browser with no install
@@ -381,13 +386,14 @@ git clone https://github.com/Gravity006/Indiesigners.git
 cd Indiesigners
 ```
 **Project setup:** already done by Garv (Phaser 3.90 + TS + Vite). Nothing to scaffold.
-**Nav and Vansh, before starting:**
+**Nav, Vansh and Bhumi, before starting:**
 ```bash
 git pull
 npm install
 npx playwright install chromium
 git checkout -b feat/core          # Nav
 git checkout -b feat/puzzle        # Vansh
+git checkout -b feat/art-bhumi     # Bhumi
 npm run dev                        # opens the game at http://localhost:5173
 ```
 
