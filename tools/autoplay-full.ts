@@ -96,7 +96,7 @@ class Run {
     await this.page.waitForFunction(
       (k) => (window as any).__echoes?.game.scene.getScenes(true).some((s: any) => s.scene.key === k),
       key,
-      { timeout },
+      { polling: 250, timeout },
     );
     await this.wait(300);
   }
@@ -120,7 +120,7 @@ class Run {
     await this.page.waitForFunction(
       () => (window as any).__echoes.game.scene.getScenes(true).some((s: any) => s.children.list.some((o: any) => o.name === 'popup' && o.alpha > 0)),
       undefined,
-      { timeout },
+      { polling: 250, timeout },
     );
     await this.click(key, 400, timeout);
   }
@@ -128,7 +128,7 @@ class Run {
   /** Puzzle scene: dismiss first-time captions, then play the solution through the input path. */
   async puzzle(back: string) {
     await this.scene('Puzzle');
-    await this.page.waitForFunction(() => (window as any).__puzzle?.level, undefined, { timeout: 20_000 });
+    await this.page.waitForFunction(() => (window as any).__puzzle?.level, undefined, { polling: 250, timeout: 20_000 });
     const id: string = await this.page.evaluate(() => (window as any).__puzzle.level.id);
     for (let k = 0; k < 60; k++) {
       const st = await this.page.evaluate(() => {
@@ -141,13 +141,13 @@ class Run {
       await this.wait(250);
     }
     await this.page.evaluate((m) => (window as any).__puzzle.play(m), SOLUTIONS.get(id)!);
-    await this.scene(back, 30_000);
+    await this.scene(back, 60_000); // the solution plays move by move; slow machines need the headroom
     this.check(true, `${id} played to the end (${SOLUTIONS.get(id)!.length} moves)`);
   }
 
   async memory(w: Witness) {
     await this.scene('Memory');
-    await this.page.waitForFunction(() => (window as any).__memory?.page, undefined, { timeout: 20_000 });
+    await this.page.waitForFunction(() => (window as any).__memory?.page, undefined, { polling: 250, timeout: 20_000 });
     // First memory page shows the evidence tip (GOT IT).
     if (await this.find('GOT IT')) await this.click('GOT IT');
     const ids: string[] = await this.page.evaluate(() => [...(window as any).__memory.words.keys()]);
@@ -166,10 +166,10 @@ class Run {
       await this.page.mouse.click(p.x, p.y);
       if (st === 'locked') {
         await this.puzzle('Memory');
-        await this.page.waitForFunction(() => (window as any).__memory?.page, undefined, { timeout: 20_000 });
+        await this.page.waitForFunction(() => (window as any).__memory?.page, undefined, { polling: 250, timeout: 20_000 });
       }
       await this.page
-        .waitForFunction((e) => (window as any).__echoes.gameState.hasEvidence(e), id, { timeout: 15_000 })
+        .waitForFunction((e) => (window as any).__echoes.gameState.hasEvidence(e), id, { polling: 250, timeout: 15_000 })
         .catch(() => {});
       this.check(await this.gs<boolean>(`gs.hasEvidence('${id}')`), `${w}: ${id} recovered${st === 'locked' ? ' via puzzle' : ''}`);
     }

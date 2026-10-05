@@ -14,7 +14,7 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 |---|---|---|---|---|
 | M0 | Team setup | Repo protected, CI + Pages live, Team HQ pinned, comic layer merged | Mon 10:00 | done |
 | M1 | Mira vertical slice | On the Pages link: talk to Mira → memory page → 2 puzzles → 3 deductions → back to village | Mon 19:00 | done (5 Oct early; with real puzzles) |
-| M2 | Content complete | Game playable start → credits on the Pages link; autoplay test passes for all 6 witness orders | Tue 02:30 | doing: playable start → credits on Pages; N8 6-order autoplay pending |
+| M2 | Content complete | Game playable start → credits on the Pages link; autoplay test passes for all 6 witness orders | Tue 02:30 | done: playable start → credits on Pages; 6/6 orders reach the summary (N8, #27) |
 | M3 | Feature freeze | Final art in, playtested by 2 outsiders, only bug fixes after this | Tue 12:00 | todo |
 | M4 | Submitted | itch.io page plays in a fresh browser; form + Discord done | Tue 15:00 | todo |
 
@@ -44,7 +44,7 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | N5 | Conversation scene (evidence-gated questions, ENTER MEMORY) + Deduction screen + Aftermath page | Mira loop works end to end with G6 | Mon 19:00 | done |
 | N6 | Arun + Leela wiring, all 9 deductions + 6 threads, THE RECORD unlock, witness resolution beats | All 9 confirmable; archive opens at 9/9 | Tue 01:00 | todo → **Vansh** (reassigned 5 Oct) |
 | N7 | Pause/Settings (text size, Reduce Motion, fullscreen) → writes `comicSettings` | Settings persist in the save | Tue 01:00 | todo → **Vansh** (reassigned 5 Oct) |
-| N8 | Autoplay test (Playwright, all 6 witness orders to the credits) | `npm run test:autoplay` passes | Tue 02:30 | todo → **Vansh** (reassigned 5 Oct) |
+| N8 | Autoplay test (Playwright, all 6 witness orders to the credits) | `npm run test:autoplay` passes | Tue 02:30 | done (Vansh, #27) |
 | N9 | Core bug fixes, cross-browser check | No open `bug` issues in core | Tue 12:00 | todo → **Vansh** (reassigned 5 Oct) |
 
 ## Vansh — puzzles
