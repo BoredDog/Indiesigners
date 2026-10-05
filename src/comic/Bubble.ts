@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { RichText } from './RichText';
 import { COLORS, FONTS, TIMING } from './theme';
-import { dur } from './settings';
+import { comicSettings, dur } from './settings';
 
 export type BubbleKind = 'speech' | 'thought' | 'shout' | 'narration' | 'evidence';
 
@@ -12,6 +12,8 @@ export interface BubbleOptions {
   /** Where the tail points, relative to the bubble centre. Ignored for narration/evidence boxes. */
   tail?: { x: number; y: number };
   fontSize?: number;
+  /** Upper limit for the text-size setting on this bubble (lettering placed on panel art, fixed cards). */
+  scaleCap?: number;
 }
 
 const OUTLINE = 4;
@@ -31,8 +33,10 @@ export class Bubble extends Phaser.GameObjects.Container {
     this.homeY = y;
 
     const isBox = opts.kind === 'narration' || opts.kind === 'evidence';
-    const fontSize = opts.fontSize ?? (isBox ? 24 : 28);
-    const maxWidth = opts.maxWidth ?? (isBox ? 380 : 320);
+    // Text size setting: bigger letters, and proportionally wider boxes so line counts stay similar.
+    const scale = Math.min(comicSettings.textScale, opts.scaleCap ?? 2);
+    const fontSize = Math.round((opts.fontSize ?? (isBox ? 24 : 28)) * scale);
+    const maxWidth = Math.min(1500, Math.round((opts.maxWidth ?? (isBox ? 380 : 320)) * scale));
     this.content = new RichText(scene, 0, 0, opts.text, {
       fontFamily: isBox ? FONTS.narration : FONTS.speech,
       fontSize,
