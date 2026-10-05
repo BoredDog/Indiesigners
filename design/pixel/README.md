@@ -7,7 +7,7 @@ Preview of Scene 1: open `scene1_entering_veyra.html` in a browser. It is live a
 ## Rules (every scene)
 
 - **Canvas 480×270**, drawn at exactly **4×** to fill 1920×1080. Close-ups use 192×108 at 10×.
-- **Palette:** `veyra.hex` (23 colours, built from the 8 tokens in `design/art_direction.md`). Load it into the editor and pick no colours by eye.
+- **Palette:** `veyra.hex` (27 colours: 23 base + dusty blue/violet witness accents with shades, built from the 8 tokens in `design/art_direction.md`). Load it into the editor and pick no colours by eye.
 - **Two colours glow.** Amber is the living present and appears only on Elias's scarf in the present day. Teal is the Echo Lantern. Elias is the only thing that carries both.
 - **No face** for Elias until the final memory: back or three-quarter view, a wide hat brim, a high collar.
 - **No gradients.** Use hard colour steps. Dither (4×4 Bayer) only for sky, fog and light falloff.
@@ -15,35 +15,38 @@ Preview of Scene 1: open `scene1_entering_veyra.html` in a browser. It is live a
 - **Export:** PNG at 1×. Use one transparent layer per file, all on the same 480×270 canvas so they line up. Skip trimming and lossy WebP for these files.
 - **In Phaser:** `pixelArt: true`, `roundPixels: true`, integer scale 4.
 
-## Scenes and owners
+## Plan: 6 hours, ~01:50 → ~07:50 (Team HQ #3, comment 6002330795)
 
-Even split agreed in Team HQ (issue #3, comment 6002314625). Each person owns whole scenes. All wiring is Vansh's and is not counted in the hours.
+Vansh's coding chat does V20–V24 and all wiring. The design chat drafts every scene in the order below, and the humans paint over the drafts. Anything not painted by 07:50 ships as its draft.
 
-| # | Scene (script_final) | Mockup + drafts | Owner (final art) |
-|---|---|---|---|
-| 1 | Opening: entering Veyra | **done** · `art-src/pixel/scene1/` | Vansh |
-| 2 | Opening: clock tower 2:17, DONG DONG | **done** · `art-src/pixel/scene2/` | Vansh |
-| 3 | Opening: toy rolls · figure in the window | todo | Vansh |
-| 4 | Ten years ago: 5 comic panels | next | Bhumi |
-| 5 | Present-day village hub + 7 clues | todo | Vansh |
-| 6 | Unknown woman: room, rocking chair, woman, burned photo ×2 | todo | Vansh |
-| 7 | Ivy memory: schoolhouse at night | todo | Bhumi |
-| 8 | Luke memory: river, boats, watch 2:31 | todo | Bhumi |
-| 9 | Hanna memory: archive, hidden entrance | todo | Bhumi |
-| 10 | Well, tunnels, lantern archive | todo | Vansh |
-| 11 | Deepest chamber + finale (young Elias, sister) | todo | Bhumi |
-| 12 | Title, Casebook, end screens (UI) | todo | Vansh |
+| Hour | Vansh | Bhumi |
+|---|---|---|
+| 1 | Scene 1 entering Veyra + Elias walk/idle sheet | Portraits 64×64: **Hanna first**, Ivy, Luke |
+| 2 | Scene 5 village hub background | Sister + unknown woman sprites (woman = pale Hanna) |
+| 3 | Scene 5: 7 clue props + well | Scene 7 Ivy memory: schoolhouse at night |
+| 4 | Scene 2 clock tower + scene 6 room / rocking chair / photo ×2 | Scene 8 Luke memory: river, boats, watch 2:31 |
+| 5 | Scene 10 well + tunnels: one tileset (reused for archive + chamber) | Scene 9 Hanna memory: archive, hidden entrance |
+| 6 | Young Elias (same outline) + review fixes | Scene 11 finale panels: young Elias + sister |
 
-Characters: **Vansh** owns the Elias walk/idle sheet, with young Elias on the same outline. **Bhumi** owns the Ivy, Luke, Hanna and sister sprites and portraits.
+Cut or simplified (ship as drafts): **scene 3** reuses the scene 1 street plus a figure silhouette. **Scene 4** is five silhouette panels. **Scene 12 UI** is recoloured in code, so it needs no art.
 
-Totals: Vansh ≈ 19 h (1, 2, 3, 5, 6, 10, 12 + Elias sheet). Bhumi ≈ 18.5 h (4, 7, 8, 9, 11 + witness/sister sprites and portraits).
+Draft order (design chat):
+1. portraits Hanna/Ivy/Luke (**done** · `art-src/pixel/chars/`, preview `chars_cast.html`)
+2. sister + unknown woman (**done**; also `char_hanna_body.png`, the same outline in colour)
+3. scene 7
+4. scene 5 hub + props
+5. scene 8
+6. scene 2 (**done**) + scene 6
+7. scene 9
+8. scene 10 tileset
+9. scene 11
+10. young Elias
 
-Order:
-- **Bhumi:** portraits (Hanna first) → 4 → 7 → 8 → 9 → 11.
-- **Vansh:** art starts after V20–V24.
-- **Design mockups:** Bhumi's scenes first, so she can start now.
+Scene 1 is **done**. Scenes 3 and 4 follow.
 
-Files: drafts go in `art-src/pixel/scene<N>/`. Finals go in `art/incoming/<name>/` under the same file names as the drafts.
+Checkpoints: +2 h (~03:50), +4 h (~05:50), +6 h (~07:50). Post screenshots in Team HQ.
+
+Files: drafts go in `art-src/pixel/scene<N>/` (characters in `art-src/pixel/chars/`). Finals go in `art/incoming/<name>/` under the **same file name** as the draft.
 
 ## Scene 1 files (`art-src/pixel/scene1/`)
 
