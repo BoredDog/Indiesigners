@@ -109,17 +109,21 @@ Bhumi now has Claude Code, so she handles the technical side of her art: importi
 | B8 | **Wire the art that has no slot yet:** the reaction expressions (`char_<witness>_react`, shown on the Conversation reaction beat), title cover, finale reveal panel, ending panels. Her Claude adds the keys to `BootScene.ART_REPLACES` / the scenes. OK to touch Title/Finale/Ending (Garv's) and Conversation (ask Vansh first in Team HQ) | Each piece shows in the game; `npm test` passes (check the exit code, not the tail) | Tue 11:00 | todo (after B3) |
 | B9 | Log her Claude use in the AI disclosure in `CREDITS.md` (what it did: import, wiring, checks; not drawing) | Line added on her PR | Tue 12:00 | todo |
 | B10 | Art for the new beats: abandoned room with rocking chair + woman silhouette (bg + cutout); burned photo in **two states** (face scratched / face = young Elias). `char_*`/`bg_*` naming | In the game via the art pipeline | Tue 09:00 | todo (after character art) |
+| B11 | **Backgrounds for the scenes both scripts share** (moved from Arya's A2/A3/A5/A7, Garv 6 Oct), as paint-overs of Claude vector drafts: clock tower at 2:17 / village (`bg_village`), Mira's school + bell tower at night (`bg_mira`), Arun's river + boats (`bg_arun`), Leela's underground lantern chamber (`bg_leela`), the archive (`bg_archive`) | Same file names and canvas sizes as the drafts; the panel crops still frame the right content | Tue 11:00 | todo |
+
+**Bhumi's priority tonight** (the scenes both v2 and script_final share, Garv 6 Oct): **1** Figure + young Elias on one outline (B2) → **2** the three witnesses (B3/B4) → **3** Nia (B4) → **4** rocking-chair room + burned photo, 2 states (B10) → **5** finale reveal panel (B5) → **6** backgrounds (B11) → **7** title cover + ending panels if time is left (B6).
+**Draft support:** Garv's second Claude session builds vector drafts (Andy & Leyley direction) on `feat/art-drafts-2`, with a PR by about 04:30: `bg_mira`, `bg_arun`, `bg_leela`, `bg_archive`, props (watch at 2:31, bell rope, "E.V." lantern case) and the room + photo bases. Bhumi paints over them; her file in `art/incoming/bhumi/` with the same name replaces the draft automatically.
 
 ## Arya — environment art, assets, QA (upload to `art/incoming/arya/`)
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
 | A1 | License-check fonts / ambientCG / Kenney / Outlander and log each in `CREDITS.md` | Every downloaded asset has a row with its source URL + license | Mon 13:00 | todo |
-| A2 | Village hub background (ink-noir paint-over, clock at 2:17) | Uploaded as `bg_village.*` | Mon 19:00 | tonight (art session) |
-| A3 | Mira page background (classroom + clock tower interior) | Uploaded as `bg_mira.*` | Mon 19:00 | tonight (art session) |
+| A2 | Village hub background (ink-noir paint-over, clock at 2:17) | Uploaded as `bg_village.*` | Mon 19:00 | moved to Bhumi (B11) |
+| A3 | Mira page background (classroom + clock tower interior) | Uploaded as `bg_mira.*` | Mon 19:00 | moved to Bhumi (B11) |
 | A4 | Props: pocket watch 2:31, bell rope, silver hairclip, lantern case "E.V." | Uploaded as transparent PNGs | Tue 01:00 | tonight (art session) |
-| A5 | Arun + Leela page backgrounds | Uploaded as `bg_arun.*`, `bg_leela.*` | Tue 01:00 | tonight (art session) |
+| A5 | Arun + Leela page backgrounds | Uploaded as `bg_arun.*`, `bg_leela.*` | Tue 01:00 | moved to Bhumi (B11) |
 | A6 | Proofread `design/script_review.html`; play-test M1 | Findings filed as `text` / `bug` issues | Tue 01:00 | todo |
-| A7 | Hidden Archive background | Uploaded as `bg_archive.*` | Tue 10:00 | tonight (art session) |
+| A7 | Hidden Archive background | Uploaded as `bg_archive.*` | Tue 10:00 | moved to Bhumi (B11) |
 | A8 | 2 external playtesters (Blueprint T1 log) | Log posted in Team HQ | Tue 11:30 | todo |
 | A9 | itch.io page text: description, controls, content warning, AI disclosure | Text posted in Team HQ | Tue 12:00 | todo |
 
