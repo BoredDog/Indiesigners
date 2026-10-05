@@ -87,7 +87,8 @@ export class MemoryScene extends Phaser.Scene {
     );
 
     def.bubbles.forEach((b, i) => {
-      const bubble = new Bubble(this, b.x, b.y, { kind: b.kind, text: b.text, tail: b.tail, maxWidth: b.maxWidth });
+      // Page lettering is placed on the panel art: text size capped at 110 % so bubbles don't pile up.
+      const bubble = new Bubble(this, b.x, b.y, { kind: b.kind, text: b.text, tail: b.tail, maxWidth: b.maxWidth, scaleCap: 1.1 });
       this.page.panel(b.panel).overlay.add(bubble.appear(150 + i * 60));
     });
 

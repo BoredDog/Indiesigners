@@ -9,6 +9,7 @@
     "test:puzzles": "tsx tools/check-puzzle.ts && tsx tools/solve-puzzles.ts",
     "preview": "vite preview",
     "typecheck": "tsc",
+    "test:settings": "npm run build && tsx tools/shots-textsize.ts 150",
     "assets": "bash tools/download-assets.sh",
     "art": "tsx tools/process-art.ts",
     "test": "npm run build && tsx tools/check-core.ts && tsx tools/autoplay-smoke.ts && tsx tools/shots-memory.ts mira && tsx tools/shots-memory.ts arun && tsx tools/shots-memory.ts leela && tsx tools/shots-casebook.ts && tsx tools/shots-sequence.ts && tsx tools/shots-puzzle.ts",
