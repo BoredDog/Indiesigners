@@ -61,6 +61,20 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | V9 | Feel: hover preview, wisp trail, ink splat on slip, catch shake (all off under Reduce Motion/Flashing) | Visible in shots-puzzle | Mon 07:15 | done |
 | V10 | Readable without colour: group shape marks on ropes/gates/sluices/nodes | Greyscale screenshot of every board readable | Mon 08:00 | done |
 | V11 | Archive escape polish: crumbling tiles, rumble, Elias lines | Archive → Finale smooth | Mon 09:00 | done |
+| V14 | **Difficulty pass: medium levels, no redundant pieces.** Keep `pz_tower` and each `*_1` as teaching levels; rework `*_2`, `*_3` and `pz_archive` so each needs 2+ mechanics working together and has one "aha" (crate shadow as cover, dial order, timing a sentinel, a lever that also closes your way back). **Light rules stay exactly as they are.** References: Lara Croft GO / Hitman GO (turn-based patrols, lever sequencing), Felix the Reaper (shadow-walking, rotating the light), Sokoban / Stephen's Sausage Roll (no wasted tiles; pushes that can trap you). Levels stay in the shared `content/puzzles/*.json`, so the Phaser build gets them too | Every piece is needed (V15 passes); `*_2`/`*_3` par 16–30 with dead ends; a fresh tester finishes each with ≤1 HINT | Tue 10:00 | todo (Vansh) |
+| V15 | **Redundancy + difficulty check** in `test:puzzles` (TS) and the GDScript solver: remove each piece (crate, dial, lever/sluice/node, gate, water, collapse tile, sentinel); if the level still solves with the same optimal moves, that piece is unused → fail. Print par, states explored, dead ends per level | Fails on today's levels (9 of 11 have unused pieces: sentinels in `pz_mom_1/2/3`, `pz_archive`; crate in `pz_bro_1`; dial in `pz_sis_3`; lever etc. in `pz_sis_2`); passes after V14 | Tue 06:00 | todo (Vansh) |
+| V16 | **Godot 3D puzzle board** (on Vansh's laptop): diorama board, orthographic/isometric camera like Lara Croft GO; pillars/crates cast the *same* grid shadows the rules compute (light from the level's side, dial rotates it); wisp + sentinels as simple low-poly pieces. Same V12 rules engine, same V13 contract (Router data in, `justFound` out). The rest of the Godot game stays 2D | Every level playable in 3D in Godot; `test:godot` passes | Tue 12:00 | todo (Vansh) |
+
+### Art reference for tonight: *The Coffin of Andy and Leyley* (inspiration only, never copy)
+Applies to every B and A task below. Take from it:
+- **Palette:** a muted, desaturated, grimy base (browns, olive, sickly green, dried-blood red). Keep our two accents on top of it: amber lamplight and spirit teal.
+- **Line and shading:** thick dark outlines, flat cel shading, hard-edged shadows, very few gradients.
+- **Characters:**
+  - expressive, slightly exaggerated faces with big readable eyes
+  - one strong reaction expression per witness (the "+1" in B3/B4)
+  - bust-portrait framing that reads at conversation size
+- **Places:** dirty, lived-in rooms with stains, clutter and peeling walls. The tone is dark comedy-horror; it should be unsettling, not gory.
+- **Do not reuse** their characters, designs or assets.
 
 ## Bhumi — character & key art (upload to `art/incoming/bhumi/`)
 | ID | Task | Done when | Due | Status |
@@ -94,7 +108,7 @@ Port in `godot/` (see `godot/README.md`). Shared data in `content/`; `npm run te
 | GD3 | Garv | Memory page scene from `content/pages/*.json` | Mira page playable in Godot | done |
 | GD4 | Garv | Title, Village, Conversation, Deduction, Aftermath | Mira loop playable start to finish | done |
 | GD5 | Garv | Casebook | Threads + notes from GameState | done |
-| GD6 | Garv | Opening, Finale, Ending | Game completable in Godot | done (PR) |
+| GD6 | Garv | Opening, Finale, Ending | Game completable in Godot | done (#26) |
 | V12 | Vansh | Puzzle rules engine + solver in GDScript | 11 levels solve at the TS par in a headless test | done |
 | V13 | Vansh | Godot Puzzle scene (+ Archive) | Every level playable; returns `justFound` | done |
 | GD7 | Garv | Web export + autoplay test in Godot | Exported build plays in a browser | todo |
