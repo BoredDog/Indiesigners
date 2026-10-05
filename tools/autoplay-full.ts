@@ -4,7 +4,7 @@
 // Puzzles are played move by move with the solver's solution (no autosolve). Each order runs in its
 // own browser context (own save), a few in parallel. Order 1 runs with default settings; the rest
 // with Reduce Motion on, which also proves that setting end to end and keeps the suite fast.
-// Usage: npm run build && npx tsx tools/autoplay-full.ts [outDir] [orderIndex ...] [--browser=firefox|msedge]
+// Usage: npm run build && npx tsx tools/autoplay-full.ts [outDir] [orderIndex ...] [--browser=firefox|msedge|brave]
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium, firefox, type Browser, type Page } from '@playwright/test';
@@ -24,7 +24,7 @@ const ORDERS: Witness[][] = [
   ['leela', 'mira', 'arun'],
   ['leela', 'arun', 'mira'],
 ];
-// Flags (work in npm scripts on Windows too): --browser=chromium|firefox|msedge (N9).
+// Flags (work in npm scripts on Windows too): --browser=chromium|firefox|msedge|brave (N9).
 const flag = (name: string) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split('=')[1];
 const positional = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const outDir = positional[0] ?? 'test-results/autoplay';
@@ -296,6 +296,12 @@ async function launch(): Promise<Browser> {
   const args = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
   if (BROWSER === 'firefox') return firefox.launch();
   if (BROWSER === 'msedge') return chromium.launch({ channel: 'msedge', args });
+  // Brave is Chromium with its own binary: BRAVE_PATH, or the default Windows install.
+  if (BROWSER === 'brave')
+    return chromium.launch({
+      executablePath: process.env.BRAVE_PATH ?? 'C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe',
+      args,
+    });
   return chromium.launch({ args });
 }
 
