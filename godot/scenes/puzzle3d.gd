@@ -240,7 +240,12 @@ func _rebuild_terrain() -> void:
 				_label3d(SYMBOLS[c.group % 5], p + Vector3(0.3, 0.1, 0.3), _marks, 40)
 				continue
 			"collapse":
-				_box3(Vector3(0.94, 0.1, 0.94), Color("cdbf9f"), p + Vector3(0, -0.05, 0), _terrain)
+				# Cracked floor: darker slab with ink cracks, so it reads apart from solid paper.
+				_box3(Vector3(0.94, 0.1, 0.94), Color("9c8e70"), p + Vector3(0, -0.05, 0), _terrain)
+				var c1 := _box3(Vector3(0.62, 0.012, 0.05), INK, p + Vector3(-0.05, 0.006, 0.05), _terrain)
+				c1.rotation.y = 0.6
+				var c2 := _box3(Vector3(0.4, 0.012, 0.05), INK, p + Vector3(0.16, 0.006, -0.16), _terrain)
+				c2.rotation.y = -0.9
 			_:
 				_box3(Vector3(0.94, 0.1, 0.94), FLOOR3D, p + Vector3(0, -0.05, 0), _terrain)
 		match c.k:
