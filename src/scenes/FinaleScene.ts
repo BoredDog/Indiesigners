@@ -3,6 +3,7 @@ import { attachComicFx, COLORS, comicSettings, dur, impact, RichText, FONTS, TEX
 import { gameState } from '../core/GameState';
 import { story } from '../core/StoryData';
 import { PH } from '../dev/placeholders';
+import { BEAT, makeBeatArt } from '../dev/beatArt';
 import { FRAME, SequenceScene, type FrameBuilder } from './sequence/SequenceScene';
 
 /**
@@ -215,6 +216,14 @@ export class FinaleScene extends SequenceScene {
         const young = this.add.image(x, y, PH.elias).setOrigin(0.5, 1).setScale(1.3);
         const shadow = this.add.image(x, y, PH.figure).setOrigin(0.5, 1).setScale(1.3).setTintFill(0x000000);
         layer.add([young, shadow]);
+        // Script §11: the scratched-out face in the burned photograph becomes his own.
+        makeBeatArt(this);
+        const px = FRAME.x + 380;
+        const py = FRAME.y + 430;
+        const scratched = this.add.image(px, py, BEAT.photo).setScale(0.42).setAngle(-4).setName('finale:photo');
+        const revealed = this.add.image(px, py, BEAT.photoRevealed).setScale(0.42).setAngle(-4).setAlpha(0).setName('finale:photo-revealed');
+        layer.add([scratched, revealed]);
+        this.tweens.add({ targets: revealed, alpha: 1, duration: dur(2600), delay: 900, ease: 'Sine.InOut' });
         const fx = attachComicFx(young);
         if (fx) fx.ink = 1;
         // Edges first, face last: the ink recedes from the highlights while the black mask fades.

@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 import { makePlaceholders } from '../dev/placeholders';
+import { BEAT_ART } from '../dev/beatArt';
 
 /** Art file name (art/incoming/<you>/<name>.png) → the placeholder texture it replaces. */
 const ART_REPLACES: Record<string, string> = {
+  ...BEAT_ART, // unknown woman's room, rocking chair, the woman, burned photo (both states)
   bg_village: 'ph_village',
   char_figure: 'ph_figure',
   char_mira: 'ph_mira',
