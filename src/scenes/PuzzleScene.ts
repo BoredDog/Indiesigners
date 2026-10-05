@@ -40,6 +40,8 @@ export class PuzzleScene extends Phaser.Scene {
   private done = false;
   private queued?: Dir;
   private explained = new Set<string>();
+  /** True once the first-time mechanic captions are done (tests wait on it). */
+  teachDone = false;
   private hoverG!: Phaser.GameObjects.Graphics;
 
   private tile = 100;
@@ -72,6 +74,7 @@ export class PuzzleScene extends Phaser.Scene {
     this.done = false;
     this.queued = undefined;
     this.explained.clear();
+    this.teachDone = false;
     this.crates.clear();
     this.sentinels = [];
     this.dialHands = [];
@@ -158,7 +161,10 @@ export class PuzzleScene extends Phaser.Scene {
   /** V8: one rule caption per mechanic the first time it appears (saved via gameState flags). */
   private async teach() {
     const fresh = this.mechanics().filter((m) => !gameState.flag(`pz_taught_${m}`));
-    if (!fresh.length || this.done) return;
+    if (!fresh.length || this.done) {
+      this.teachDone = true;
+      return;
+    }
     this.busy = true;
     for (const m of fresh) {
       await popup(this, T.teach[m], [T.teachOk]);
@@ -166,6 +172,7 @@ export class PuzzleScene extends Phaser.Scene {
     }
     this.queued = undefined; // keys pressed while a caption was open must not fire later
     this.busy = false;
+    this.teachDone = true;
   }
 
   // ------------------------------------------------------------------ public test hooks
