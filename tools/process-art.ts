@@ -5,6 +5,8 @@
 //
 // Rules (tasks.md §5):
 //   bg_*   backgrounds: kept whole, longest side capped at 2560 px, no trim
+//   char_* characters that replace a placeholder: kept whole (same canvas as the stand-in, so
+//          cutout scales and feet positions still line up; see src/dev/placeholders.ts)
 //   other  cutouts/props: transparent border trimmed, fitted inside 1920×1080
 // Also writes public/assets/art/manifest.json ({ key: "art/<file>.webp" }) so the game can load
 // every processed image without editing code. Skips files that are already up to date.
@@ -39,7 +41,9 @@ mkdirSync(SRC, { recursive: true });
 
 const rows: string[] = [];
 const seen = new Map<string, string>();
-for (const file of walk(IN)) {
+// Drafts in art/incoming/claude/ go last: a teammate's file with the same name replaces the draft.
+const isDraft = (f: string) => relative(IN, f).split(/[\\/]/)[0] === 'claude';
+for (const file of walk(IN).sort((a, b) => Number(isDraft(a)) - Number(isDraft(b)))) {
   const ext = extname(file).toLowerCase();
   const key = snake(basename(file, extname(file)));
 
@@ -54,6 +58,7 @@ for (const file of walk(IN)) {
   if (!IMAGE.has(ext)) continue;
 
   if (seen.has(key)) {
+    if (isDraft(file)) continue; // replaced by a teammate's upload
     console.warn(`! name clash: ${relative(IN, file)} and ${seen.get(key)} both become ${key}.webp, skipping the second`);
     continue;
   }
@@ -65,6 +70,8 @@ for (const file of walk(IN)) {
   let img = sharp(file).rotate(); // honour EXIF orientation from phone photos of sketches
   if (key.startsWith('bg_')) {
     img = img.resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true });
+  } else if (key.startsWith('char_')) {
+    // keep the canvas as drawn
   } else {
     img = img.trim().resize({ width: 1920, height: 1080, fit: 'inside', withoutEnlargement: true });
   }

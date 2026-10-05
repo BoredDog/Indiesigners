@@ -20,6 +20,8 @@ Every third-party asset in the game, with source and license. **Add a row before
 | Caveat (font) | Impallari Type | https://fonts.google.com/specimen/Caveat | SIL OFL 1.1 (`public/assets/fonts/Caveat-OFL.txt`) | Elias's handwriting | No | ☐ |
 | Paper002 texture | ambientCG | https://ambientcg.com/view?id=Paper002 | CC0 1.0 | Comic page paper, documents | Tinted in code | ☐ |
 | Cork001 texture | ambientCG | https://ambientcg.com/view?id=Cork001 | CC0 1.0 | Casebook board | Tinted in code | ☐ |
+| PaintedPlaster017 texture | ambientCG | https://ambientcg.com/view?id=PaintedPlaster017 | CC0 1.0 | Grime on the village walls (draft art) | Greyscale, multiplied into `bg_village` by `tools/draft-art.ts` | ☐ |
+| Leaking006 texture (opacity map) | ambientCG | https://ambientcg.com/view?id=Leaking006 | CC0 1.0 | Water stains under sills and eaves (draft art) | Used as a stain mask by `tools/draft-art.ts` | ☐ |
 | Paper001, Paper003, Wood049, Concrete034 textures | ambientCG | https://ambientcg.com | CC0 1.0 | Downloaded; **remove before release if unused** | — | ☐ |
 
 ## Software
@@ -31,4 +33,5 @@ Every third-party asset in the game, with source and license. **Add a row before
 
 ## AI disclosure
 - **Claude Code (Anthropic)** was used to write and test game code (`src/`, `tools/`), structure content files from our own design doc, and help plan the project. All story, characters and design come from the team's proposal and blueprint.
-- No AI image, music or voice generators were used. *(Update this line if that changes, e.g. if AI-generated CC0 backgrounds such as The Outlander pack are used.)*
+- **Draft art by Claude Code:** the village background and the six character drafts in `art/incoming/claude/` were drawn by Claude Code as vector (SVG) code in `tools/draft-art.ts`, a first pass for Bhumi and Arya to paint over or replace. Sources: `art-src/claude/*.svg`. Any draft still in the game at release is listed here as AI-assisted art. *(Check the jam's rules on AI-made art before release: PLAN.md open question 3.)*
+- No AI image-generation models, music or voice generators were used.

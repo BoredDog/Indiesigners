@@ -44,7 +44,7 @@ try {
     const d = witnesses[w];
     await page.goto('http://localhost:4185/');
     await page.evaluate(() => localStorage.clear());
-    await page.waitForFunction(() => (window as any).__echoes?.gameState);
+    await page.waitForFunction(() => (window as any).__echoes?.game.scene.isActive('Title'), undefined, { polling: 250 });
     await page.evaluate(
       ([wit, evs]) => {
         const { game, gameState } = (window as any).__echoes;
