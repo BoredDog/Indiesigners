@@ -436,5 +436,143 @@
     "w": 128,
     "h": 64,
     "final": false
+  },
+  "ui_button_9s": {
+    "file": "assets/pixel/ui_button_9s.png",
+    "w": 24,
+    "h": 16,
+    "final": false
+  },
+  "ui_button_hover_9s": {
+    "file": "assets/pixel/ui_button_hover_9s.png",
+    "w": 24,
+    "h": 16,
+    "final": false
+  },
+  "ui_button_pressed_9s": {
+    "file": "assets/pixel/ui_button_pressed_9s.png",
+    "w": 24,
+    "h": 16,
+    "final": false
+  },
+  "ui_button_primary_9s": {
+    "file": "assets/pixel/ui_button_primary_9s.png",
+    "w": 24,
+    "h": 16,
+    "final": false
+  },
+  "ui_button_primary_hover_9s": {
+    "file": "assets/pixel/ui_button_primary_hover_9s.png",
+    "w": 24,
+    "h": 16,
+    "final": false
+  },
+  "ui_button_primary_pressed_9s": {
+    "file": "assets/pixel/ui_button_primary_pressed_9s.png",
+    "w": 24,
+    "h": 16,
+    "final": false
+  },
+  "ui_card_9s": {
+    "file": "assets/pixel/ui_card_9s.png",
+    "w": 24,
+    "h": 24,
+    "final": false
+  },
+  "ui_casebook_bg": {
+    "file": "assets/pixel/ui_casebook_bg.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "ui_check_off": {
+    "file": "assets/pixel/ui_check_off.png",
+    "w": 9,
+    "h": 9,
+    "final": false
+  },
+  "ui_check_on": {
+    "file": "assets/pixel/ui_check_on.png",
+    "w": 9,
+    "h": 9,
+    "final": false
+  },
+  "ui_ending_bg": {
+    "file": "assets/pixel/ui_ending_bg.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "ui_font_3x5": {
+    "file": "assets/pixel/ui_font_3x5.png",
+    "w": 64,
+    "h": 18,
+    "final": false
+  },
+  "ui_logo": {
+    "file": "assets/pixel/ui_logo.png",
+    "w": 184,
+    "h": 58,
+    "final": false
+  },
+  "ui_panel_9s": {
+    "file": "assets/pixel/ui_panel_9s.png",
+    "w": 48,
+    "h": 48,
+    "final": false
+  },
+  "ui_pin": {
+    "file": "assets/pixel/ui_pin.png",
+    "w": 7,
+    "h": 7,
+    "final": false
+  },
+  "ui_popup_9s": {
+    "file": "assets/pixel/ui_popup_9s.png",
+    "w": 48,
+    "h": 48,
+    "final": false
+  },
+  "ui_slider_fill_9s": {
+    "file": "assets/pixel/ui_slider_fill_9s.png",
+    "w": 16,
+    "h": 6,
+    "final": false
+  },
+  "ui_slider_knob": {
+    "file": "assets/pixel/ui_slider_knob.png",
+    "w": 7,
+    "h": 9,
+    "final": false
+  },
+  "ui_slider_track_9s": {
+    "file": "assets/pixel/ui_slider_track_9s.png",
+    "w": 16,
+    "h": 6,
+    "final": false
+  },
+  "ui_stamp_contradiction": {
+    "file": "assets/pixel/ui_stamp_contradiction.png",
+    "w": 59,
+    "h": 11,
+    "final": false
+  },
+  "ui_stamp_new_evidence": {
+    "file": "assets/pixel/ui_stamp_new_evidence.png",
+    "w": 55,
+    "h": 11,
+    "final": false
+  },
+  "ui_stamp_unknown": {
+    "file": "assets/pixel/ui_stamp_unknown.png",
+    "w": 71,
+    "h": 11,
+    "final": false
+  },
+  "ui_title_bg": {
+    "file": "assets/pixel/ui_title_bg.png",
+    "w": 480,
+    "h": 270,
+    "final": false
   }
 }
