@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run pixel && tsc && npm run test:puzzles && vite build",
+    "build": "npm run pixel && npm run check:pixel && tsc && npm run test:puzzles && vite build",
     "test:puzzles": "tsx tools/check-puzzle.ts && tsx tools/solve-puzzles.ts --strict",
     "test:puzzles:strict": "tsx tools/check-puzzle.ts && tsx tools/solve-puzzles.ts --strict",
     "preview": "vite preview",
@@ -16,6 +16,7 @@
     "assets": "bash tools/download-assets.sh",
     "art": "tsx tools/process-art.ts",
     "pixel": "tsx tools/pixel-art.ts",
+    "check:pixel": "tsx tools/check-pixel.ts",
     "test": "npm run build && tsx tools/check-core.ts && tsx tools/autoplay-smoke.ts && tsx tools/shots-memory.ts mira && tsx tools/shots-memory.ts arun && tsx tools/shots-memory.ts leela && tsx tools/shots-casebook.ts && tsx tools/shots-conversation.ts && tsx tools/shots-sequence.ts && tsx tools/shots-puzzle.ts && tsx tools/autoplay-full.ts test-results/autoplay 0 5",
     "test:autoplay": "npm run build && tsx tools/autoplay-full.ts",
     "answer-key": "tsx tools/answer-key.ts",
