@@ -1,8 +1,8 @@
 {
   "id": "pz_mom_3",
-  "title": "WHOOM! Every Node at Once",
+  "title": "PAPER! The Self-Purge",
   "tip": "Two nodes, an echo and the clock. Time every step.",
-  "reward": "ev_leela_whoom",
+  "reward": "ev_leela_paper",
   "light": "W",
   "shadow": 2,
   "par": 20,

@@ -174,33 +174,38 @@ export class FinaleScene extends SequenceScene {
         this.narration(layer, n(4), FRAME.x + 260, FRAME.y + FRAME.h - 70);
         this.sfxWord(layer, f[4].sfx, cx + 260, cy - 200, 72, 1300);
       },
-      // 6 — Anonymous case request beside old Elias handwriting; the ink duplicates and aligns.
+      // 6 — The memory of writing the request: young hands write the note by teal light, then fold
+      // it into the lantern-case lining (A2 already showed the handwriting proof).
       (layer) => {
-        layer.add(this.add.rectangle(FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h / 2, FRAME.w, FRAME.h, 0x16181f));
-        const line = '“Someone has to finish the record of Veyra.”';
-        const left = this.document(layer, FRAME.x + 430, FRAME.y + 500, 600, 460, 'CASE REQUEST', `${line}
-
-— unsigned`, true, -4);
-        const right = this.document(layer, FRAME.x + 1170, FRAME.y + 500, 600, 460, 'APPRENTICE LOG · E. VANE', `${line}
-
-— E.V.`, true, 3);
-        // Same hand, same words: the matching lines light up and get stamped.
-        for (const d of [left, right]) {
-          const hl = this.add.rectangle(d.text.x - 8, d.text.y - 4, d.text.width + 16, d.text.height * 0.62, COLORS.spiritTeal, 0.35).setOrigin(0);
-          d.doc.addAt(hl, 3);
-          hl.setScale(0, 1);
-          this.tweens.add({ targets: hl, scaleX: 1, duration: dur(700), delay: 1100, ease: 'Cubic.Out' });
-        }
-        const stamp = this.add
-          .text(FRAME.x + 800, FRAME.y + 520, 'SAME HAND', { ...this.sfx(64, '#b3261e'), stroke: '#b3261e', strokeThickness: 2 })
-          .setOrigin(0.5)
-          .setAngle(-12)
-          .setScale(2.2)
-          .setAlpha(0);
-        layer.add(stamp);
-        this.tweens.add({ targets: stamp, scale: 1, alpha: 0.9, duration: dur(260), delay: 2000, ease: 'Back.Out', onComplete: () => impact(this) });
+        layer.add(this.add.rectangle(FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h / 2, FRAME.w, FRAME.h, 0x0d1016).setStrokeStyle(6, COLORS.ink));
+        const glow = this.add.circle(FRAME.x + 700, FRAME.y + 470, 360, COLORS.spiritTeal, 0.16);
+        layer.add(glow);
+        // The lantern case, its patch not yet scratched: the initials are still there.
+        const kase = this.add.container(FRAME.x + 1290, FRAME.y + 690).setAngle(-3);
+        kase.add(this.add.rectangle(0, 0, 360, 210, 0x3b2a1a).setStrokeStyle(6, COLORS.ink));
+        kase.add(this.add.rectangle(0, -60, 330, 24, 0x5a4128).setStrokeStyle(3, COLORS.ink));
+        kase.add(this.add.text(110, 50, 'E.V.', this.sfx(34, '#c9a36a')).setOrigin(0.5));
+        layer.add(kase);
+        const line = f[5].prop ?? '';
+        const { doc, text } = this.document(layer, FRAME.x + 700, FRAME.y + 470, 620, 330, 'CASE REQUEST', '', true, -3);
+        const prog = { k: 0 };
+        // The player may click on before the pen finishes: the frame (and this text) is then destroyed.
+        const write = this.tweens.add({
+          targets: prog,
+          k: line.length,
+          duration: dur(1800),
+          delay: 500,
+          onUpdate: () => text.active && text.setText(line.slice(0, Math.floor(prog.k))),
+          onComplete: () => {
+            if (!text.active) return;
+            text.setText(line);
+            // Folded small and slipped into the case lining.
+            this.tweens.add({ targets: doc, x: kase.x - 40, y: kase.y - 10, scale: 0.18, angle: 8, alpha: 0.9, duration: dur(900), delay: 700, ease: 'Cubic.In' });
+          },
+        });
+        layer.once(Phaser.GameObjects.Events.DESTROY, () => write.remove());
         this.narration(layer, n(5), FRAME.x + 330, FRAME.y + 70);
-        this.sfxWord(layer, f[5].sfx, FRAME.x + 1350, FRAME.y + 820, 64, 2300);
+        this.sfxWord(layer, f[5].sfx, FRAME.x + 260, FRAME.y + 800, 64, 600);
       },
       // 7 — The black silhouette dissolves from the edges inward into the younger Elias.
       (layer) => {
@@ -216,6 +221,7 @@ export class FinaleScene extends SequenceScene {
         this.tweens.add({ targets: shadow, alpha: 0, duration: dur(2600), delay: 500, ease: 'Sine.In' });
         if (fx) this.tweens.add({ targets: fx, ink: 0, duration: dur(3200), delay: 900, ease: 'Sine.InOut' });
         this.narration(layer, n(6), FRAME.x + 380, FRAME.y + 120);
+        if (f[6].bubble) this.speech(layer, f[6].bubble.line, FRAME.x + 640, FRAME.y + 420, { x: -170, y: 70 }, 3000);
         this.sfxWord(layer, f[6].sfx, FRAME.x + 380, FRAME.y + 700, 90, 3000);
       },
       // 8 — Young Elias activates the machine, then reaches for the self-purge control.

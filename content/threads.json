@@ -1,39 +1,39 @@
 {
-  "_source": "Blueprint D2 (relationship + why) and Part I (caption + reaction). A thread appears as soon as both endpoint deductions are confirmed (A20).",
+  "_source": "Script v2 (design/script_v2.md d6; applied 5 Oct 2026), from Blueprint D2 (relationship + why) and Part I (caption + reaction). A thread appears as soon as both endpoint deductions are confirmed (A20).",
   "threads": [
     {
       "id": "th_sis1_mom1", "from": "sis_1", "type": "corroborates", "to": "mom_1",
-      "why": "The bell's resonance matches the Echo Lantern's documented network behavior.",
+      "why": "The bell's resonance matches the Echo Lantern's network behaviour.",
       "caption": "The bell resonance matches the machine's documented network behavior.",
       "reaction": { "speaker": "leela", "line": "Then the bell was part of the machine." }
     },
     {
       "id": "th_sis2_bro2", "from": "sis_2", "type": "contradicts", "to": "bro_2",
-      "why": "The fixed 2:17 clocks conflict with Arun's 2:31 watch, exposing the false timeline.",
+      "why": "The fixed 2:17 clocks conflict with Arun's 2:31 watch.",
       "caption": "The 2:17 freeze conflicts with Arun's 2:31 watch.",
       "reaction": { "speaker": "arun", "line": "So my watch was right." }
     },
     {
       "id": "th_sis3_bro3", "from": "sis_3", "type": "reveals", "to": "bro_3",
-      "why": "The same figure and tools connect the apprentice to the person carrying Nia.",
-      "caption": "The same tools identify the fourth figure.",
+      "why": "The apprentice at Nia's door is the walker who carried her.",
+      "caption": "The same staff crosses the river.",
       "reaction": { "speaker": "arun", "line": "That was his case." }
     },
     {
       "id": "th_bro1_mom3", "from": "bro_1", "type": "corroborates", "to": "mom_3",
-      "why": "The underground sluice ends beneath the lantern chamber, proving the river was displaced by the network event.",
+      "why": "The sluice feeds the lantern chamber. The river fed the overload.",
       "caption": "The hidden sluice ends beneath the lantern chamber.",
-      "reaction": { "speaker": "leela", "line": "The river was another anchor." }
+      "reaction": { "speaker": "leela", "line": "The lantern drank the river to keep burning." }
     },
     {
       "id": "th_bro3_mom2", "from": "bro_3", "type": "reveals", "to": "mom_2",
-      "why": "Nia's identity explains why Elias later erased the records: he was protecting the secret experiment and his guilt.",
-      "caption": "Nia's identity explains why the records were erased.",
-      "reaction": { "speaker": "leela", "line": "He was trying to save her." }
+      "why": "The walker has no face because the purge took it.",
+      "caption": "The faceless walker is the purge's work.",
+      "reaction": { "speaker": "leela", "line": "He took himself out of every memory of her." }
     },
     {
       "id": "th_mom2_sis3", "from": "mom_2", "type": "corroborates", "to": "sis_3",
-      "why": "The erased apprentice entry explains why the photograph and witness memories lost Elias's identity.",
+      "why": "The purge explains the name scraped from Mira's register.",
       "caption": "The deleted apprentice entry explains the missing identity.",
       "reaction": { "speaker": "mira", "line": "The name was removed, not forgotten." }
     }

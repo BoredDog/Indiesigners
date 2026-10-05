@@ -13,6 +13,7 @@ import {
   isEvidenceId,
   story,
   type DeductionId,
+  type EvidenceSource,
   type Question,
   type Thread,
   type WitnessId,
@@ -164,8 +165,8 @@ export class GameState extends Emitter<Events> {
     return this.d.evidence;
   }
 
-  /** Known evidence ids from one witness's page (or the tower), in page order. */
-  evidenceFor(witness: WitnessId | 'tower'): string[] {
+  /** Known evidence ids from one witness's page (or the tower / archive), in page order. */
+  evidenceFor(witness: EvidenceSource): string[] {
     return evidenceOf(witness)
       .map((e) => e.id)
       .filter((id) => this.hasEvidence(id));
@@ -177,9 +178,12 @@ export class GameState extends Emitter<Events> {
     return { found: core.filter((e) => this.hasEvidence(e.id)).length, total: core.length };
   }
 
-  /** Optional evidence found / total, for the ending summary and the epilogue check (A15). */
+  /**
+   * Optional evidence found / total, for the ending summary and the epilogue check (A15). The
+   * Archive's two documents are granted automatically, so they don't count (script v2 d8).
+   */
   optionalProgress(): { found: number; total: number } {
-    const opt = story.evidence.filter((e) => !e.core);
+    const opt = story.evidence.filter((e) => !e.core && e.witness !== 'archive');
     return { found: opt.filter((e) => this.hasEvidence(e.id)).length, total: opt.length };
   }
 

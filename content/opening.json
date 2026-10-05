@@ -1,12 +1,12 @@
 {
-  "_source": "Blueprint F2 (opening, frame by frame) and F3 (false assumption line). 'see' and 'animation' are art/animation direction, not on-screen text.",
+  "_source": "Script v2 (design/script_v2.md d1; applied 5 Oct 2026), from Blueprint F2 (opening, frame by frame) and F3 (false assumption line). 'see' and 'animation' are art/animation direction, not on-screen text. 'prop' = handwritten text on an object in the frame (Caveat, the investigator's casebook hand).",
   "frames": [
-    { "id": 1, "see": "Rainy Veyra road, case file and lantern held from off-screen.", "narration": "The file was ten years old. The village was still listed as a disappearance.", "dialogue": null, "sfx": "WIND...", "animation": "Slow rain; comic panel slides in." },
-    { "id": 2, "see": "Elias sets the lantern down; face never shown.", "narration": "Three ghosts were said to be trapped here. I thought that was the case.", "dialogue": null, "sfx": "PAPER...", "animation": "Lantern glow pulses." },
+    { "id": 1, "see": "Rainy Veyra road. Typed case file and lantern held from off-screen.", "narration": "The file was ten years old. The village was still listed as a disappearance.", "dialogue": null, "sfx": "WIND...", "animation": "Slow rain; comic panel slides in." },
+    { "id": 2, "see": "Gloved hands with three brass cuff buttons set the lantern down. Cracked teal glass. The lantern case has a scratched patch where initials were. A handwritten note is pinned to the typed file. A silver glint shows in the coat pocket. The face is never shown.", "narration": "The request was unsigned. I found it in my lantern case.", "dialogue": null, "prop": "Veyra stopped at 2:17. Someone has to remember it.", "sfx": "PAPER...", "animation": "Lantern glow pulses." },
     { "id": 3, "see": "Clock tower close-up frozen at 2:17.", "narration": "Every clock in Veyra stopped at the same minute.", "dialogue": null, "sfx": "TICK...TICK...", "animation": "The hand twitches but never advances." },
-    { "id": 4, "see": "Mira appears by the schoolhouse.", "narration": "She looked at me as though she had been waiting for ten years.", "dialogue": { "speaker": "mira", "line": "You came back." }, "sfx": "KNOCK!", "animation": "Mira fades in; Elias remains off-frame." },
-    { "id": 5, "see": "Black silhouette appears in a window reflection.", "narration": "I had never been inside Veyra before. At least, that is what I remembered.", "dialogue": null, "sfx": "GLASS!", "animation": "Reflection doubles for one beat, then clears." },
-    { "id": 6, "see": "Village hub, three witnesses, clock tower and locked locations.", "narration": "The case began with a missing village. It would end by asking who had erased it.", "dialogue": null, "sfx": "BELL!", "animation": "Comic page turns into hub." }
+    { "id": 4, "see": "Mira appears by the schoolhouse. The investigator stays off-frame.", "narration": "She looked at me as though she had been waiting for ten years.", "dialogue": { "speaker": "mira", "line": "You came back." }, "sfx": "KNOCK!", "animation": "Mira fades in; the investigator remains off-frame." },
+    { "id": 5, "see": "The Figure sprite in the window reflection.", "narration": "I had never been to Veyra. The window seemed to disagree.", "dialogue": null, "sfx": "GLASS!", "animation": "Reflection doubles for one beat, then clears." },
+    { "id": 6, "see": "Village hub, three witnesses, clock tower and locked well.", "narration": "The case began with a missing village. It would end by asking who had erased it.", "dialogue": null, "sfx": "BELL!", "animation": "Comic page turns into hub." }
   ],
   "falseAssumption": "I came here to investigate a ten-year-old disappearance."
 }

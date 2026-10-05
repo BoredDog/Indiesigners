@@ -56,8 +56,9 @@ func unsupported() -> String:
 	return StoryData.ui.popups.unsupported.text
 
 
-## B1 closeness feedback for a wrong attempt (Golden Idol style): says whether the cards or the
-## conclusion are the problem, and how many cards fit or are missing, never which ones.
+## B1 closeness feedback for a wrong attempt (Golden Idol style, script v2 d5): says whether the
+## cards or the conclusion are the problem, and how many cards belong, never which ones. When the
+## likely-miss conclusion (closeHint.wrong) is picked, its closeHint follows on a new line.
 ## `conclusion` "" = none picked yet. Text: ui_text.json → closeness.
 func closeness(id: String, selected: Array, conclusion: String) -> String:
 	var c: Dictionary = StoryData.ui.closeness
@@ -72,25 +73,22 @@ func closeness(id: String, selected: Array, conclusion: String) -> String:
 			picked.append(e)
 	var missing := required.filter(func(e): return not picked.has(e)).size()
 	var extra := picked.filter(func(e): return not allowed.has(e)).size()
-	var fit := picked.filter(func(e): return required.has(e)).size()
-	var words := {
-		"missing": "%d %s" % [missing, "clue is" if missing == 1 else "clues are"],
-		"extra": str(extra),
-		"extraWord": "card doesn't" if extra == 1 else "cards don't",
-		"fit": str(fit),
-		"fitWord": "fits" if fit == 1 else "fit",
-	}
+	var right := picked.size() - extra
 	if conclusion == "correct":
 		if missing and extra:
-			return StoryData.fmt(c.conclusionRightMissingAndExtra, words)
+			return c.conclusionRightMissingAndExtra
 		if extra:
-			return StoryData.fmt(c.conclusionRightExtra, words)
+			return c.conclusionRightExtra if extra == 1 else c.conclusionRightExtraMany
 		if missing:
-			return StoryData.fmt(c.conclusionRightMissing, words)
+			return c.conclusionRightMissing
 		return unsupported()  # right cards + conclusion but evidence not known (can't happen via the UI)
+	var hint := ""
+	var ch = d.get("closeHint")
+	if ch is Dictionary and conclusion == "wrong_%d" % int(ch.wrong):
+		hint = "\n" + String(ch.text)
 	if not missing and not extra:
-		return c.cardsFitConclusionWrong
-	return StoryData.fmt(c.someCardsFit, words) if fit else unsupported()
+		return c.cardsFitConclusionWrong + hint
+	return (StoryData.fmt(c.someCardsFit, {"right": right, "picked": picked.size()}) if right else unsupported()) + hint
 
 
 ## Confirm the hypothesis. Wrong → closeness feedback (B1), no penalty (A5).

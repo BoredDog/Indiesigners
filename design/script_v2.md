@@ -1,6 +1,6 @@
 # Echoes of Sorrow: Script v2 (proposal)
 
-> **Status:** this is a proposal to compare against v1. v1 lives in `content/*.json` and `design/script_review.html`, and nothing there has been changed.
+> **Status:** applied to the game on 5 Oct 2026 (chosen by Garv). v2 now lives in `content/*.json`; the readable v2 script is `design/script_review_v2.html`. v1 is kept as the git tag `script-v1` and in `design/script_review.html`.
 > **Scope:** the same 3 witnesses, 5 core fragments per page, the same 9 deduction ids, the same 11 puzzle ids, and the same evidence ids wherever possible. New ids are marked **NEW**.
 > **Built for:** A1 spirit-light, A2 final accusation and B1 closeness feedback.
 > **Legend:** **(changed)** means the line differs from v1. **(NEW)** means v1 has no such line. `=` means the line is unchanged from v1 and is listed only for context.

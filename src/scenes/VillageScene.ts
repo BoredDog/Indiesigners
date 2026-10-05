@@ -150,7 +150,7 @@ export class VillageScene extends Phaser.Scene {
       this.tweens.add({ targets: glow, alpha: 0.12, duration: dur(1100), yoyo: true, repeat: -1 });
     }
     label(this, s.x, s.y + 6, story.ui.village.theRecord, 36, { color: COLORS.spiritTealCss }).setOrigin(0.5, 0);
-    this.hotspot('record', () => this.enterArchive(), () => story.ui.village.theRecord);
+    this.hotspot('record', () => this.enterArchive(), () => story.ui.village.theRecordHover ?? story.ui.village.theRecord);
   }
 
   private shimmer(x: number, y: number) {

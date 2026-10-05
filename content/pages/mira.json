@@ -174,7 +174,7 @@
     {
       "panel": "P4",
       "kind": "narration",
-      "text": "The minute was ~fixed~. The night was not.",
+      "text": "The clocks had stopped. Her pen hadn't.",
       "x": 200,
       "y": 300,
       "maxWidth": 300
@@ -201,7 +201,7 @@
     {
       "panel": "P6",
       "kind": "narration",
-      "text": "Someone had tried to remove a name from the story: [[Elias Vane]].",
+      "text": "Someone had scraped a name from the register: [[Elias Vane]].",
       "x": 280,
       "y": 80,
       "maxWidth": 420
@@ -224,7 +224,11 @@
       "panel": "P2",
       "x": 360,
       "y": 230,
-      "angle": 5
+      "angle": 5,
+      "card": {
+        "x": 600,
+        "y": 95
+      }
     },
     {
       "evidence": "ev_mira_resonance",
@@ -274,8 +278,9 @@
       }
     }
   ],
+  "firstLight": "Under the light the hand had a lantern. Its glass was cracked like mine.",
   "residue": [
-    {"panel": "P5", "fx": 0.82, "fy": 0.22, "text": "E.V.", "size": 54, "angle": -8},
-    {"panel": "P2", "fx": 0.18, "fy": 0.78, "text": "2:31", "size": 40, "angle": 6}
+    {"panel": "P3", "fx": 0.46, "fy": 0.3, "text": "E.V.", "size": 50, "angle": -8},
+    {"panel": "P5", "fx": 0.62, "fy": 0.5, "text": "", "shape": "hand", "size": 70, "angle": -14}
   ]
 }

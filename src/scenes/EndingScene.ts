@@ -72,8 +72,24 @@ export class EndingScene extends SequenceScene {
           this.tweens.add({ targets: p, alpha: 1, duration: dur(500), delay: 200 + i * 350 });
         });
         this.narration(layer, t.narration, 960, 540, 1700).setDepth(5);
+        // Nia's echo, on her panel.
+        if (t.niaEcho) this.speech(layer, t.niaEcho, frames[0].x + frames[0].w - 190, frames[0].y + 80, { x: -110, y: 70 }, 1400);
       },
     ];
+    if (t.closing) {
+      // Closing desk panel (art B6): the case file, the cracked lantern and Nia's hairclip.
+      list.push((layer) => {
+        this.panel(layer, PH.village, { x: 560, y: 600, w: 760, h: 428 }).setColour(0.4, 0);
+        this.document(layer, FRAME.x + 520, FRAME.y + 560, 560, 330, 'CASE FILE · VEYRA', 'Mass disappearance.\nStatus: closed.', false, -5);
+        const lx = FRAME.x + 1150;
+        const ly = FRAME.y + 560;
+        const lantern = this.add.circle(lx, ly, 70, COLORS.spiritTeal, 0.55).setStrokeStyle(8, COLORS.ink);
+        const crack = this.add.graphics().lineStyle(4, COLORS.ink).lineBetween(lx - 30, ly - 50, lx + 5, ly - 5).lineBetween(lx + 5, ly - 5, lx - 10, ly + 40);
+        const clip = this.add.rectangle(FRAME.x + 1340, FRAME.y + 720, 110, 22, 0xd9dde3).setStrokeStyle(3, COLORS.ink).setAngle(-20);
+        layer.add([lantern, crack, clip]);
+        this.narration(layer, t.closing ?? '', FRAME.x + 330, FRAME.y + 90);
+      });
+    }
 
     if (this.fullEvidence()) {
       const e = story.finale.epilogue;
@@ -86,6 +102,17 @@ export class EndingScene extends SequenceScene {
         layer.add(hand);
         this.tweens.add({ targets: hand, angle: (18 / 60) * 360, duration: dur(400), delay: 1400, ease: 'Back.Out' });
         this.sfxWord(layer, 'TICK.', cx + 320, cy + 200, 70, 1500);
+        // The archived master log, finally signed (the unsigned request, closed).
+        if (e.stamp) {
+          const { doc } = this.document(layer, FRAME.x + 360, FRAME.y + 640, 520, 300, 'MASTER LOG', 'Veyra, incident night.\nArchived.', false, -4);
+          const stamp = this.add
+            .text(0, 40, e.stamp, { ...this.sfx(40, '#b3261e'), align: 'center', wordWrap: { width: 460 } })
+            .setOrigin(0.5)
+            .setAngle(-10)
+            .setAlpha(0);
+          doc.add(stamp);
+          this.tweens.add({ targets: stamp, alpha: 0.9, duration: dur(260), delay: 1900 });
+        }
         this.narration(layer, e.narration);
       });
     }

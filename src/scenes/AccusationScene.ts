@@ -4,16 +4,19 @@ import { Accusation, type AccusationPicks } from '../core/Accusation';
 import { evidence, type WitnessId } from '../core/StoryData';
 import { backdrop, button, hudIcons, label, popup } from './coreUi';
 
-const CARD_W = 380;
-const CARD_H = 84;
-const COL_X = [220, 620, 1020]; // three witness columns, clear of the right-hand panel
-const CONC_X = 1580;
-const PANEL_W = 600;
+const CARD_W = 400;
+const SFX_W = 118; // left strip of a card: the SFX word; the clue text sits to its right
+const COL_X = [230, 650, 1070]; // three witness columns, clear of the right-hand panel
+const COL_TOP = 290;
+const COL_BOTTOM = 1060;
+const CONC_X = 1600;
+const PANEL_W = 560;
 
 /**
- * A2 final accusation (content/accusation.json), between the Archive escape and the Finale:
- * one clue per witness + the Archive's handwriting match, then name who caused the incident.
- * Wrong → that option's nudge (B1 style), no penalty. Right → CASE CLOSED, then the Finale.
+ * A2 final accusation (content/accusation.json, script v2 d9), between the Archive escape and the
+ * Finale: one card per witness + the Archive's three documents in one hand (shown, not picked),
+ * then name who caused the incident. Wrong → how many slots hold, or that option's nudge once all
+ * three hold; no penalty. Right → CONFIRMED, the investigator's line, then the Finale.
  */
 export class AccusationScene extends Phaser.Scene {
   private picks: AccusationPicks = {};
@@ -38,59 +41,118 @@ export class AccusationScene extends Phaser.Scene {
     backdrop(this, 0.8);
     hudIcons(this, 'Accusation');
     label(this, 80, 40, a.title, 56);
-    this.add.existing(new Bubble(this, 960, 160, { kind: 'narration', text: `${a.question}\n${a.intro}`, maxWidth: 900, fontSize: 34, scaleCap: 1.15 }));
+    this.add.existing(new Bubble(this, 650, 168, { kind: 'narration', text: a.intro, maxWidth: 900, fontSize: 34, scaleCap: 1.15 }));
 
     a.slots.forEach((slot, col) => {
-      label(this, COL_X[col] - CARD_W / 2, 250, slot.label, 30, { color: COLORS.spiritTealCss });
-      Accusation.cards(slot.witness).forEach((id, i) => {
-        this.cardViews.set(id, this.card(COL_X[col], 320 + i * (CARD_H + 12) + CARD_H / 2, id, slot.witness));
-      });
+      label(this, COL_X[col] - CARD_W / 2, 222, slot.label, 30, { color: COLORS.spiritTealCss });
+      // Cards stack by their own height; a long column shrinks to fit the screen.
+      const column = this.add.container(COL_X[col], COL_TOP);
+      let y = 0;
+      for (const id of Accusation.cards(slot.witness)) {
+        const card = this.card(id, slot.witness);
+        const h = card.getData('h') as number;
+        card.setY(y + h / 2);
+        column.add(card);
+        this.cardViews.set(id, card);
+        y += h + 10;
+      }
+      const fit = (COL_BOTTOM - COL_TOP) / Math.max(1, y - 10);
+      if (fit < 1) column.setScale(fit);
     });
 
-    // The Archive's evidence is shown, not picked: the case request and the apprentice log match.
-    const doc = this.add.container(CONC_X, 300).setName('archiveClue');
-    doc.add([
-      this.add.rectangle(6, 6, PANEL_W, 130, COLORS.ink),
-      this.add.rectangle(0, 0, PANEL_W, 130, COLORS.paper).setStrokeStyle(5, COLORS.spiritTeal),
-      this.add.text(-PANEL_W / 2 + 20, -50, a.archiveClue.title, { fontFamily: `"${FONTS.sfx}"`, fontSize: '28px', color: COLORS.inkCss, resolution: TEXT_RESOLUTION }),
-      this.add.text(-PANEL_W / 2 + 20, -12, a.archiveClue.text, {
-        fontFamily: `"${FONTS.narration}"`,
-        fontSize: `${ts(24, 1.2)}px`,
-        color: COLORS.inkCss,
-        wordWrap: { width: PANEL_W - 40 },
-        resolution: TEXT_RESOLUTION,
-      }),
-    ]);
-
-    a.conclusions.forEach((c, i) => this.conclusionViews.set(c.id, this.conclusionCard(CONC_X, 430 + i * 96, c.id, c.text)));
-    this.accuseBtn = button(this, CONC_X, 960, a.buttons.accuse, () => void this.accuse(), { fontSize: 44, width: 360, fill: 0x7fe0d4 });
+    this.archiveClue();
+    a.conclusions.forEach((c, i) => this.conclusionViews.set(c.id, this.conclusionCard(CONC_X, 480 + i * 92, c.id, c.text)));
+    this.accuseBtn = button(this, CONC_X, 970, a.buttons.accuse, () => void this.accuse(), { fontSize: 44, width: 360, fill: 0x7fe0d4 });
   }
 
-  private card(x: number, y: number, id: string, witness: WitnessId): Phaser.GameObjects.Container {
+  /** The Archive's evidence is shown, not picked: three documents side by side, stamped SAME HAND. */
+  private archiveClue() {
+    const clue = Accusation.text.archiveClue;
+    const H = 262;
+    const doc = this.add.container(CONC_X, 300).setName('archiveClue');
+    doc.add([
+      this.add.rectangle(6, 6, PANEL_W, H, COLORS.ink),
+      this.add.rectangle(0, 0, PANEL_W, H, COLORS.paper).setStrokeStyle(5, COLORS.spiritTeal),
+      this.add.text(-PANEL_W / 2 + 18, -H / 2 + 8, clue.title, { fontFamily: `"${FONTS.sfx}"`, fontSize: '28px', color: COLORS.inkCss, resolution: TEXT_RESOLUTION }),
+    ]);
+    const dw = 168;
+    clue.documents.forEach((d, i) => {
+      const page = this.add.container((i - 1) * (dw + 14), 4).setAngle((i - 1) * 2.5);
+      page.add([
+        this.add.rectangle(3, 4, dw, 150, 0x000000, 0.3),
+        this.add.rectangle(0, 0, dw, 150, 0xfff6c9).setStrokeStyle(2, COLORS.ink),
+        this.add.text(-dw / 2 + 8, -68, d.title, { fontFamily: `"${FONTS.sfx}"`, fontSize: '17px', color: '#7a2f2f', resolution: TEXT_RESOLUTION }),
+        this.add.text(-dw / 2 + 8, -46, d.text, {
+          fontFamily: `"${FONTS.hand}"`,
+          fontSize: `${ts(21, 1.1)}px`,
+          color: '#1d3557',
+          wordWrap: { width: dw - 14 },
+          resolution: TEXT_RESOLUTION,
+        }),
+      ]);
+      doc.add(page);
+    });
+    doc.add(
+      this.add
+        .text(0, 8, clue.stamp, { fontFamily: `"${FONTS.sfx}"`, fontSize: '54px', color: '#b3261e', stroke: '#b3261e', strokeThickness: 1, resolution: TEXT_RESOLUTION })
+        .setOrigin(0.5)
+        .setAngle(-12)
+        .setAlpha(0.8),
+    );
+    doc.add(
+      this.add
+        .text(0, H / 2 - 22, clue.text, {
+          fontFamily: `"${FONTS.narration}"`,
+          fontSize: `${ts(19, 1.1)}px`,
+          color: COLORS.inkCss,
+          align: 'center',
+          wordWrap: { width: PANEL_W - 30 },
+          resolution: TEXT_RESOLUTION,
+        })
+        .setOrigin(0.5),
+    );
+  }
+
+  /** One evidence card: SFX word on the left, clue text on the right; the height follows the text. */
+  private card(id: string, witness: WitnessId): Phaser.GameObjects.Container {
     const e = evidence(id);
-    const c = this.add.container(x, y).setName(`acc:${id}`);
-    const box = this.add.rectangle(0, 0, CARD_W, CARD_H, 0xfff6c9).setStrokeStyle(4, COLORS.ink);
-    c.add([
-      this.add.rectangle(5, 5, CARD_W, CARD_H, COLORS.ink),
-      box,
-      this.add.text(-CARD_W / 2 + 12, -CARD_H / 2 + 6, e.sfx, { fontFamily: `"${FONTS.sfx}"`, fontSize: '22px', color: COLORS.amberCss, stroke: COLORS.inkCss, strokeThickness: 4, resolution: TEXT_RESOLUTION }),
-      this.add.text(-CARD_W / 2 + 12, -CARD_H / 2 + 34, e.text, {
+    const c = this.add.container(0, 0).setName(`acc:${id}`);
+    const text = this.add
+      .text(-CARD_W / 2 + SFX_W, 0, e.text, {
         fontFamily: `"${FONTS.narration}"`,
         fontSize: `${ts(17, 1.15)}px`, // small fixed card: capped at 115 %
         color: COLORS.inkCss,
-        wordWrap: { width: CARD_W - 24 },
+        wordWrap: { width: CARD_W - SFX_W - 12 },
         resolution: TEXT_RESOLUTION,
-      }),
+      })
+      .setOrigin(0, 0.5);
+    const h = Math.max(56, text.height + 16);
+    const box = this.add.rectangle(0, 0, CARD_W, h, 0xfff6c9).setStrokeStyle(4, COLORS.ink);
+    c.add([
+      this.add.rectangle(5, 5, CARD_W, h, COLORS.ink),
+      box,
+      this.add
+        .text(-CARD_W / 2 + 10, 0, e.sfx, {
+          fontFamily: `"${FONTS.sfx}"`,
+          fontSize: '21px',
+          color: COLORS.amberCss,
+          stroke: COLORS.inkCss,
+          strokeThickness: 4,
+          wordWrap: { width: SFX_W - 14 },
+          resolution: TEXT_RESOLUTION,
+        })
+        .setOrigin(0, 0.5),
+      text,
     ]);
-    c.setData({ box, witness });
-    c.setSize(CARD_W, CARD_H).setInteractive({ useHandCursor: true });
+    c.setData({ box, witness, h });
+    c.setSize(CARD_W, h).setInteractive({ useHandCursor: true });
     c.on('pointerup', () => this.pick(witness, id));
     return c;
   }
 
   private conclusionCard(x: number, y: number, id: string, text: string): Phaser.GameObjects.Container {
     const w = PANEL_W;
-    const h = 82;
+    const h = 80;
     const c = this.add.container(x, y).setName(`accuse:${id}`);
     const box = this.add.rectangle(0, 0, w, h, COLORS.paper).setStrokeStyle(4, COLORS.ink);
     c.add([
@@ -114,7 +176,7 @@ export class AccusationScene extends Phaser.Scene {
     return c;
   }
 
-  /** One clue per witness: picking a card replaces that column's previous pick. */
+  /** One card per witness: picking a card replaces that column's previous pick. */
   pick(witness: WitnessId, id: string) {
     if (this.busy) return;
     this.picks[witness] = this.picks[witness] === id ? undefined : id;
@@ -146,16 +208,16 @@ export class AccusationScene extends Phaser.Scene {
       return;
     }
     this.accuseBtn?.setVisible(false);
-    const s = label(this, CONC_X, 640, 'CASE CLOSED', 110, { color: '#c0392b', strokeThickness: 14 }).setOrigin(0.5).setAngle(-12).setDepth(50).setName('stamp');
+    const s = label(this, CONC_X, 660, a.stamp, 110, { color: '#c0392b', strokeThickness: 14 }).setOrigin(0.5).setAngle(-12).setDepth(50).setName('stamp');
     s.setScale(1.6).setAlpha(0);
     this.tweens.add({ targets: s, scale: 1, alpha: 1, duration: dur(300), ease: 'Back.Out', onComplete: () => impact(this) });
-    const reaction = new Bubble(this, 690, 960, { kind: 'narration', text: result.reaction, maxWidth: 1000, fontSize: 30 });
+    const reaction = new Bubble(this, 650, 970, { kind: 'narration', text: result.reaction, maxWidth: 1000, fontSize: 30 }).setDepth(60);
     this.add.existing(reaction);
     reaction.appear(dur(500));
     this.busy = true;
     await new Promise((r) => this.time.delayedCall(dur(1400) || 50, r));
     this.busy = false;
-    button(this, CONC_X, 960, a.buttons.continue, () => this.toFinale(), { fontSize: 40, width: 360 });
+    button(this, CONC_X, 970, a.buttons.continue, () => this.toFinale(), { fontSize: 40, width: 360 });
   }
 
   private async modal(text: string, buttons: string[]): Promise<string> {

@@ -2,6 +2,7 @@
 // from the real game data.  Usage: npx tsx tools/answer-key.ts   (also checked by npm test)
 import { writeFileSync } from 'node:fs';
 import { DEDUCTION_IDS, WITNESSES, deduction, evidence, evidenceOf, story, type WitnessId } from '../src/core/StoryData';
+import { MEMORY_PAGES } from '../src/scenes/memory/MemoryData';
 
 const OUT = 'design/ANSWER_KEY.md';
 const name = (w: WitnessId) => story.dialogue[w].name;
@@ -13,6 +14,7 @@ const usedBy = (id: string) =>
   story.deductions.filter((d) => d.requiredEvidence.includes(id)).map((d) => d.id);
 const supports = (id: string) =>
   story.deductions.filter((d) => d.supportingEvidence.includes(id)).map((d) => d.id);
+const lightOnly = new Set(WITNESSES.flatMap((w) => MEMORY_PAGES[w].fragments.filter((f) => f.light).map((f) => f.evidence)));
 const strip = (s: string) => s.replace(/\[\[(.+?)\]\]/g, '█$1█').replace(/~(.+?)~/g, '$1').replace(/\*(.+?)\*/g, '$1');
 
 const L: string[] = [];
@@ -33,13 +35,13 @@ p('| 1 | Title → **NEW GAME** | Wipes the save, plays the **Opening** (6 frame
 p('| 2 | Village: click a witness | **Conversation**: first talk sets the witness to `active`. Extra questions appear when their required evidence is known (§6). |');
 p('| 3 | **ENTER HER/HIS/THE ARCHIVE MEMORY** | **Memory** page for that witness (6 panels, grey). |');
 p('| 4 | Click SFX words on panels | Evidence added (autosaves). A panel turns colour when all its fragments are found. Fragments with a puzzle (◆) open **Puzzle** first; while the Puzzle scene isn\'t built, the first click just unlocks them. |');
-p('| 5 | **RECONSTRUCT** (shows when a deduction\'s required evidence is all found) | **Deduction** screen: pick evidence cards + one conclusion → **CONFIRM** (§3 rules). Wrong = "does not support", no penalty. Right = stamp, unlocks, threads → back to Memory. |');
+p('| 5 | **RECONSTRUCT** (shows when a deduction\'s required evidence is all found) | **Deduction** screen: pick evidence cards + one conclusion → **CONFIRM** (§3 rules). Wrong = B1 closeness line (+ a hint for the likely miss), no penalty. Right = stamp, unlocks, threads → back to Memory. |');
 p('| 6 | **LEAVE MEMORY** (shows at 3/3 deductions for this witness) | **Aftermath**: at 3/3 the witness becomes `resolved` (resolution scene + last line), new threads are captioned → Village. |');
 p('| 7 | Repeat for all three witnesses, **any order** | Each deduction only needs evidence from its own witness\'s page, so no visit order can soft-lock. |');
 p('| 8 | All **9/9** deductions confirmed | `finale` becomes `ready`; the well turns into **THE RECORD**. |');
-p('| 9 | Click **THE RECORD** | **Archive** escape puzzle (when built) → **Finale** (8 frames: the silhouette becomes young Elias) → **Ending**: truth panels, epilogue *only if every optional evidence was found*, summary + credits. |');
+p('| 9 | Click **THE RECORD** | **Archive**: escape puzzle `pz_archive`; the escape grants the two archive documents automatically (§4) → **Accusation** (A2, §7) → **Finale** (8 frames: the silhouette becomes young Elias) → **Ending**: truth panels, epilogue *only if every optional page/tower evidence was found* (incl. the light-only ones), summary + credits. |');
 p();
-p('Any time: **C** = casebook, **Esc** = pause/settings (or close a zoomed panel). Clock tower in the Village = optional tower clue (`pz_tower`).');
+p('Any time: **C** = casebook, **Esc** = pause/settings (or close a zoomed panel), **L** (hold) or the LANTERN button = spirit-light on a memory page (shows residue and light-only clues). Clock tower in the Village = optional tower clue (`pz_tower`).');
 p();
 
 // ------------------------------------------------------------------ fastest route
@@ -56,7 +58,7 @@ for (const w of WITNESSES) {
   p(`3. **LEAVE MEMORY** → Aftermath → Village`);
   p();
 }
-p('Then **THE RECORD** → Finale → Ending. For the epilogue, also find every optional fragment in §4 first.');
+p('Then **THE RECORD** → escape → Accusation (§7) → Finale → Ending. For the epilogue, also find every optional fragment in §4 first (light-only ones need the LANTERN).');
 p();
 
 // ------------------------------------------------------------------ deduction rules
@@ -77,7 +79,7 @@ for (const id of DEDUCTION_IDS) {
   p(`- **Required:** ${d.requiredEvidence.map(ev).join('; ')}`);
   p(`- **Supporting (allowed, not needed):** ${d.supportingEvidence.length ? d.supportingEvidence.map(ev).join('; ') : 'none'}`);
   p(`- ✅ **Correct:** ${d.conclusion}`);
-  d.wrongConclusions.forEach((w) => p(`- ❌ Wrong: ${w}`));
+  d.wrongConclusions.forEach((w, i) => p(`- ❌ Wrong: ${w}${d.closeHint?.wrong === i ? ` (B1 hint: *"${d.closeHint.text}"*)` : ''}`));
   p(`- **Unlocks:** ${d.unlocks.map((u) => `\`${u}\``).join(', ') || 'none'} (${d.unlockText})`);
   p(`- **Narrator reaction:** "${d.reaction}"`);
   const th = story.threads.filter((t) => t.from === id || t.to === id);
@@ -88,15 +90,15 @@ for (const id of DEDUCTION_IDS) {
 // ------------------------------------------------------------------ evidence
 p('## 4. All evidence');
 p();
-p('Core = counts toward "Evidence n/5" and can be required. Optional = never required; finding **all** optional evidence unlocks the epilogue.');
+p('Core = counts toward "Evidence n/5" and can be required. Optional = never required; finding **all** optional page and tower evidence unlocks the epilogue. **Light-only** = invisible until the spirit-light (LANTERN / hold L) passes over it. Archive evidence is granted automatically on the escape and never counts.');
 p();
-for (const w of [...WITNESSES, 'tower'] as const) {
-  p(`### ${w === 'tower' ? 'Village clock tower' : name(w)}`);
+for (const w of [...WITNESSES, 'tower', 'archive'] as const) {
+  p(`### ${w === 'tower' ? 'Village clock tower' : w === 'archive' ? 'Hidden Archive (automatic)' : name(w)}`);
   p();
   p('| Panel | SFX | Text | Id | Core | Puzzle | Required by | Supports |');
   p('|---|---|---|---|---|---|---|---|');
   for (const e of evidenceOf(w)) {
-    p(`| ${e.panel ?? '-'} | ${e.sfx} | ${e.text} | \`${e.id}\` | ${e.core ? 'core' : 'optional'} | ${e.puzzle ?? '-'} | ${usedBy(e.id).join(', ') || '-'} | ${supports(e.id).join(', ') || '-'} |`);
+    p(`| ${e.panel ?? '-'} | ${e.sfx} | ${e.text} | \`${e.id}\` | ${e.core ? 'core' : lightOnly.has(e.id) ? 'optional, light-only' : w === 'archive' ? 'automatic' : 'optional'} | ${e.puzzle ?? '-'} | ${usedBy(e.id).join(', ') || '-'} | ${supports(e.id).join(', ') || '-'} |`);
   }
   p();
 }
@@ -127,8 +129,19 @@ for (const w of WITNESSES) {
 }
 p();
 
+// ------------------------------------------------------------------ accusation
+const acc = story.accusation;
+p('## 7. A2 final accusation (after the Archive escape)');
+p();
+p('Pick one card per witness and a conclusion, then **ACCUSE**. Slots are judged first ("{n} of 3 witness cards hold"); the conclusion is judged only once all three hold. No penalty.');
+p();
+for (const sl of acc.slots) p(`- **${sl.label}** accepts any of: ${sl.accept.map(ev).join('; ')}`);
+p();
+for (const c of acc.conclusions) p(`- ${c.correct ? '✅ **Correct:**' : '❌'} ${c.text} → "${acc.reactions[c.id]}"`);
+p();
+
 // ------------------------------------------------------------------ dev tools
-p('## 7. Dev shortcuts');
+p('## 8. Dev shortcuts');
 p();
 p('| URL | Opens |');
 p('|---|---|');
