@@ -1,20 +1,21 @@
 {
   "id": "pz_bro_2",
   "title": "TICK! The Pocket Watch",
-  "tip": "Sluice switches drain or flood the channels.",
+  "tip": "A sluice drains one channel and floods the other. Both sluices move the same water.",
   "reward": "ev_arun_tick",
-  "light": "E",
+  "light": "N",
   "shadow": 1,
-  "par": 8,
+  "par": 10,
   "tiles": [
-    "._...",
-    "G~...",
-    ".~...",
-    ".~..S",
-    ".~..L"
+    ".~.-G",
+    ".~.-.",
+    "S~W-.",
+    ".~#-.",
+    "W~.-."
   ],
   "legend": {
     "~": "water:s1",
-    "L": "sluice:s1"
+    "-": "water:s1:dry",
+    "W": "sluice:s1"
   }
 }

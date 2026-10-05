@@ -11,8 +11,8 @@ export interface ArchiveData {
 
 // Archive beats (Blueprint E "Hidden archive": explore, master console, collapse/scripted escape → Finale).
 const TEXT = {
-  intro: 'Beneath the well, the floor Leela kept her records under. The master console was still warm.',
-  console: 'Every node in Veyra, one switch. Someone had labelled it in my handwriting.',
+  intro: 'My feet knew the way down. I told myself it was instinct.',
+  console: "Beneath the well, Leela's hidden archive. The master console was still warm, its labels in my handwriting.",
   collapse: 'Then the archive began to fall in on itself.',
   escape: 'ESCAPE WITH THE RECORD',
   escaped: 'I got out with the record. The archive did not.',

@@ -1,7 +1,7 @@
 {
   "id": "pz_bro_3",
   "title": "CLOTH! The Silver Hairclip",
-  "tip": "Crates cast shadows too.",
+  "tip": "Crates cast shadows too. The clock dial turns the light.",
   "reward": "ev_arun_cloth",
   "light": "E",
   "shadow": 2,

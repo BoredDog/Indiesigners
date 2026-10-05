@@ -32,10 +32,13 @@ npx tsx tools/export-placeholders.ts       # re-export the Phaser placeholder ar
 | `src/core/StoryData.ts` | `core/story_data.gd` (autoload `StoryData`) | ✅ ported + tested |
 | `src/core/GameState.ts` + `SaveManager.ts` | `core/game_state.gd` (autoload `GameState`, `user://save.json`) | ✅ ported + tested |
 | `src/core/DeductionController.ts` | `core/deduction_controller.gd` (autoload `Deductions`) | ✅ ported + tested |
-| `src/puzzle/*` (Rules, Solver) | `puzzle/` | ⏳ V12 (Vansh) |
+| `src/puzzle/*` (Rules, Solver) | `puzzle/echo_rules.gd`, `puzzle/echo_solver.gd` | ✅ V12: `-s res://tests/test_puzzles.gd` (same moves + state counts as TS) |
+| `src/scenes/PuzzleScene.ts` | `scenes/puzzle.tscn` (+ `scenes/puzzle_menu.tscn` test menu) | ✅ V13: `tests/test_puzzle_scene.tscn`. `Router.goto("puzzle", {puzzleId, evidenceId, witness, returnTo})` → back with `{witness, justFound, solved}` (or `PuzzleScene.open` / `take_result` without Router) |
+| `src/scenes/ArchiveScene.ts` | `scenes/archive.tscn` | ✅ V13: beat → `pz_archive` → escaped → Finale; flag `archiveEscaped` |
 | `src/comic/*` (panels, shader, bubbles, SFX) | `comic/` (+ `comic_fx.gdshader`) | ✅ GD2: demo `scenes/comic_demo.tscn` |
 | `MemoryScene.ts` | `scenes/memory.tscn` (+ `core/router.gd` for scene data) | ✅ GD3: `tests/test_memory.tscn` |
 | Title, Village, Conversation, Deduction, Aftermath (+ `coreUi.ts`) | `scenes/{title,village,conversation,deduction,aftermath}`, `core_ui.gd`, `popup_layer.gd` | ✅ GD4: `tests/test_loop.tscn` |
-| Casebook, Opening, Finale, Ending | `scenes/*.tscn` | ⏳ GD5–GD6 |
+| Casebook | `scenes/casebook` | ✅ GD5: `tests/test_casebook.tscn` |
+| Opening, Finale, Ending | `scenes/*.tscn` | ⏳ GD6 |
 
 Task list: the **Godot track** section at the bottom of `../TASKS.md`.

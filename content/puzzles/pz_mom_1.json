@@ -1,37 +1,40 @@
 {
   "id": "pz_mom_1",
   "title": "TINK! The Memory Spool",
-  "tip": "Memory echoes move after you do. Never stand on one, or in front of it.",
+  "tip": "Echoes move after you do. Never stand on one, or in the square it faces.",
   "reward": "ev_leela_tink",
-  "light": "S",
+  "light": "N",
   "shadow": 1,
   "par": 10,
   "tiles": [
+    "S...#",
+    "_.___",
     ".....",
-    "G....",
-    ".....",
-    "#....",
-    ".S..."
+    "_.___",
+    "G...."
   ],
-  "legend": {},
   "sentinels": [
     {
       "path": [
         [
-          1,
-          0
+          4,
+          2
         ],
         [
-          1,
-          1
+          3,
+          2
+        ],
+        [
+          2,
+          2
         ],
         [
           1,
           2
         ],
         [
-          1,
-          3
+          0,
+          2
         ]
       ]
     }

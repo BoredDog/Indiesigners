@@ -54,7 +54,7 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | V4 | Levels `pz_tower`, `pz_sis_1`, `pz_sis_3` | Solver passes, playable from Mira's page | Mon 19:00 | review |
 | V5 | Sluice/water, crate, sentinels, nodes, collapsing floor | Each mechanic has a unit test | Mon 23:00 | review |
 | V6 | Levels `pz_bro_2`, `pz_bro_3`, `pz_mom_1`, `pz_mom_3`, `pz_archive` + Archive scene | Solver passes; archive escape leads to finale | Tue 02:30 | review |
-| V7 | Difficulty tuning from playtests; stretch levels `pz_sis_2`, `pz_bro_1`, `pz_mom_2` if time | Testers finish every puzzle without skip | Tue 12:00 | todo |
+| V7 | Difficulty tuning from playtests; stretch levels `pz_sis_2`, `pz_bro_1`, `pz_mom_2` if time | Testers finish every puzzle without skip | Tue 12:00 | review |
 
 ## Bhumi — character & key art (upload to `art/incoming/bhumi/`)
 | ID | Task | Done when | Due | Status |
@@ -89,6 +89,6 @@ Port in `godot/` (see `godot/README.md`). Shared data in `content/`; `npm run te
 | GD4 | Garv | Title, Village, Conversation, Deduction, Aftermath | Mira loop playable start to finish | review |
 | GD5 | Garv | Casebook | Threads + notes from GameState | todo |
 | GD6 | Garv | Opening, Finale, Ending | Game completable in Godot | todo |
-| V12 | Vansh | Puzzle rules engine + solver in GDScript | 11 levels solve at the TS par in a headless test | todo |
-| V13 | Vansh | Godot Puzzle scene (+ Archive) | Every level playable; returns `justFound` | todo |
+| V12 | Vansh | Puzzle rules engine + solver in GDScript | 11 levels solve at the TS par in a headless test | review |
+| V13 | Vansh | Godot Puzzle scene (+ Archive) | Every level playable; returns `justFound` | review |
 | GD7 | Garv | Web export + autoplay test in Godot | Exported build plays in a browser | todo |

@@ -6,6 +6,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium, type Page } from '@playwright/test';
 import { preview } from 'vite';
+import sharp from 'sharp';
 import { parseLevel } from '../src/puzzle/Rules';
 import { solve } from '../src/puzzle/Solver';
 import type { LevelFile } from '../src/puzzle/types';
@@ -44,6 +45,11 @@ async function waitScene(key: string, timeout = 10_000) {
 }
 /** Headless WebGL runs at a few fps: wait for the scene to finish animating before the next input. */
 const idle = () => page.waitForFunction(() => !(window as any).__puzzle?.busy, undefined, { timeout: 10_000 });
+/** Waits (up to 15 s) until a GameState expression is true: the page rebuild + 350 ms reveal can be slow under swiftshader. */
+const until = (code: string) =>
+  page
+    .waitForFunction((c) => new Function('gs', `return ${c}`)((window as any).__echoes.gameState), code, { timeout: 15_000 })
+    .catch(() => {});
 const gs = <T>(code: string) =>
   page.evaluate((c) => new Function('gs', `return ${c}`)((window as any).__echoes.gameState), code) as Promise<T>;
 
@@ -52,6 +58,27 @@ function route(l: LevelFile) {
   if (l.id === 'pz_archive') return { q: `puzzleId=${l.id}&returnTo=Archive`, back: 'Archive', ev: undefined };
   if (!ev || ev.witness === 'tower') return { q: `puzzleId=${l.id}&evidenceId=${ev?.id}&returnTo=Village`, back: 'Village', ev: ev?.id };
   return { q: `puzzleId=${l.id}&evidenceId=${ev.id}&witness=${ev.witness}&returnTo=Memory`, back: 'Memory', ev: ev.id };
+}
+
+/** Clicks through the first-time mechanic captions until the scene says teaching is done; returns how many. */
+async function dismissPopups(): Promise<number> {
+  let n = 0;
+  for (let k = 0; k < 40; k++) {
+    const st = await page.evaluate(() => {
+      const p = (window as any).__puzzle;
+      const layer = p?.children.list.find((o: any) => o.name === 'popup');
+      const b = layer?.list.find((o: any) => o.name === 'btn:GOT IT');
+      if (b) {
+        b.emit('click');
+        return 'clicked';
+      }
+      return p?.teachDone ? 'done' : 'waiting';
+    });
+    if (st === 'done') break;
+    if (st === 'clicked') n++;
+    await page.waitForTimeout(250);
+  }
+  return n;
 }
 
 async function open(l: LevelFile) {
@@ -68,7 +95,14 @@ async function open(l: LevelFile) {
 try {
   for (const l of levels) {
     const r = await open(l);
+    await page.waitForTimeout(300);
+    await shot(`${l.id}-0-teach`);
+    const mechanics = await page.evaluate(() => (window as any).__puzzle.mechanics().length);
+    const taught = await dismissPopups();
+    check(taught === mechanics, `${l.id}: ${taught}/${mechanics} mechanic captions on a fresh save`);
     await shot(`${l.id}-0-start`);
+    // V10: the board must read without colour; keep a greyscale copy for review.
+    await sharp(`${outDir}/${l.id}-0-start.png`).greyscale().toFile(`${outDir}/${l.id}-0-start-grey.png`);
     const sol = solve(parseLevel(l))!;
     // Play all but the last move, screenshot mid-solve, then finish.
     const moves = sol.moves.join('');
@@ -78,8 +112,8 @@ try {
     await page.evaluate((m) => (window as any).__puzzle.play(m), moves.slice(-1));
     await page.waitForTimeout(500);
     await shot(`${l.id}-2-solved`);
-    await waitScene(r.back, 8000).catch(() => {});
-    await page.waitForTimeout(1200);
+    await waitScene(r.back, 15_000).catch(() => {});
+    await until(r.ev ? `gs.hasEvidence('${r.ev}')` : `gs.flag('archiveEscaped')`);
     const scenes = await activeScene(page);
     check(scenes.includes(r.back), `${l.id}: solution wins and returns to ${r.back} (active: ${scenes.join(',')})`);
     if (r.ev) check(await gs<boolean>(`gs.hasEvidence('${r.ev}')`), `${l.id}: ${r.ev} recovered`);
@@ -89,6 +123,15 @@ try {
   // Controls: undo, reset → HINT after 3, SKIP after 6, skip awards the evidence.
   const l = levels.find((x) => x.id === 'pz_sis_1') ?? levels[0];
   const r = await open(l);
+  await dismissPopups();
+  // Captions are shown once: restarting the board in the same session shows none.
+  await page.evaluate(() => {
+    const p = (window as any).__puzzle;
+    p.scene.restart(p.data0);
+  });
+  await page.waitForTimeout(800);
+  await page.waitForFunction(() => (window as any).__puzzle?.level);
+  check((await dismissPopups()) === 0, 'mechanic captions only shown once per save');
   const P = <T>(code: string) => page.evaluate((c) => new Function('p', `return ${c}`)((window as any).__puzzle), code) as Promise<T>;
   const first = solve(parseLevel(l))!.moves[0];
   await page.evaluate((m) => (window as any).__puzzle.play(m), first);
@@ -124,14 +167,47 @@ try {
     const b = p.children.list.find((o: any) => o.name === 'popup').list.find((o: any) => o.name === 'btn:SKIP');
     b.emit('click');
   });
-  await waitScene(r.back, 8000).catch(() => {});
-  await page.waitForTimeout(1200);
+  await waitScene(r.back, 15_000).catch(() => {});
+  if (r.ev) await until(`gs.hasEvidence('${r.ev}')`);
   check(r.ev ? await gs<boolean>(`gs.hasEvidence('${r.ev}')`) : true, 'skip still recovers the fragment');
+
+  // Archive flow: intro beat → ESCAPE → pz_archive → escaped beat → CONTINUE → Finale.
+  await page.goto('http://localhost:4183/?scene=Archive');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await waitScene('Archive');
+  await page.waitForTimeout(2600);
+  await shot('archive-1-intro');
+  const clickBtn = (scene: string, name: string) =>
+    page.evaluate(
+      ([sc, n]) => {
+        const s = (window as any).__echoes.game.scene.getScene(sc);
+        s.children.list.find((o: any) => o.name === n)?.emit('click');
+      },
+      [scene, name],
+    );
+  await clickBtn('Archive', 'btn:ESCAPE WITH THE RECORD');
+  await waitScene('Puzzle');
+  await page.waitForFunction(() => (window as any).__puzzle?.level?.id === 'pz_archive');
+  await dismissPopups();
+  await page.evaluate(() => (window as any).__puzzle.solve());
+  await waitScene('Archive');
+  await until(`gs.flag('archiveEscaped')`);
+  await page.waitForFunction(
+    () => (window as any).__echoes.game.scene.getScene('Archive').children.list.some((o: any) => o.name === 'btn:CONTINUE'),
+    undefined,
+    { timeout: 15_000 },
+  );
+  await shot('archive-2-escaped');
+  check(await gs<boolean>(`gs.flag('archiveEscaped')`), 'archive escape recorded');
+  await clickBtn('Archive', 'btn:CONTINUE');
+  await waitScene('Finale', 8000).catch(() => {});
+  check((await activeScene(page)).includes('Finale'), 'archive hands off to the Finale');
 
   // Missing level → straight back with the fragment (contract).
   await page.goto('http://localhost:4183/?scene=Puzzle&puzzleId=pz_missing&evidenceId=ev_mira_bell&witness=mira&returnTo=Memory');
   await waitScene('Memory');
-  await page.waitForTimeout(1200);
+  await until(`gs.hasEvidence('ev_mira_bell')`);
   check(await gs<boolean>(`gs.hasEvidence('ev_mira_bell')`), 'missing level hands the fragment straight back');
 } catch (e) {
   failed++;

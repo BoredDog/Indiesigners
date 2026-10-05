@@ -1,7 +1,7 @@
 {
   "id": "pz_sis_1",
   "title": "HUM! The Bell Rope",
-  "tip": "The bell rope opens and closes the gates.",
+  "tip": "The bell rope opens and closes the gates. Stepping on the clock dial turns the light.",
   "reward": "ev_mira_resonance",
   "light": "W",
   "shadow": 2,
