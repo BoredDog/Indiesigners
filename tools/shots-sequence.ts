@@ -27,9 +27,12 @@ const expect = (ok: boolean, what: string) => {
 await page.goto('http://localhost:4187/?scene=Opening');
 await page.waitForFunction(() => (window as any).__echoes?.game.scene.isActive('Opening'));
 await page.waitForTimeout(2200);
-for (let i = 1; i <= 6; i++) {
+// 6 frames, plus the 5 "Ten years ago" panels when the pixel art is built.
+const openingFrames: number = await page.evaluate(() => (window as any).__echoes.game.scene.getScene('Opening').frames().length);
+expect(openingFrames === 6 || openingFrames === 11, `Opening has ${openingFrames} frames (6, or 11 with the history panels)`);
+for (let i = 1; i <= openingFrames; i++) {
   await shot(`opening-${i}`);
-  if (i < 6) await advance();
+  if (i < openingFrames) await advance();
 }
 await advance(1800);
 expect((await active()).includes('Village'), 'Opening ends in Village');

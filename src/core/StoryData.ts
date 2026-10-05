@@ -123,6 +123,12 @@ export interface OpeningFrame {
   animation: string;
 }
 
+/** One "Ten years ago" panel (Final script §3): a scene-4 pixel panel and its narration. */
+export interface HistoryPanel {
+  panel: string;
+  narration: string;
+}
+
 export interface FinaleFrame {
   id: number;
   see: string;
@@ -204,7 +210,7 @@ export const story = {
   threads: threadList,
   dialogue: (dialogueJson as unknown as { witnesses: Record<WitnessId, WitnessDialogue> }).witnesses,
   ui: uiJson as unknown as UiText,
-  opening: openingJson as unknown as { frames: OpeningFrame[]; falseAssumption: string },
+  opening: openingJson as unknown as { frames: OpeningFrame[]; history: HistoryPanel[]; falseAssumption: string },
   finale: finaleJson as unknown as Finale,
   casebook: (casebookJson as unknown as { cards: CasebookCard[] }).cards,
   memory: (memoryJson as unknown as { pages: Record<WitnessId, MemoryPageText> }).pages,
