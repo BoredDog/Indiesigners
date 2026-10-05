@@ -1,0 +1,402 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><title>Luke's River</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one dark "night file" column. The mockup sits on top, then the facts a painter and a coder need, in order of use. */
+:root{
+  --bg:#141118; --panel:#1c1821; --line:#2f2936; --fg:#e6d9bb; --muted:#9c907a;
+  --amber:#e0a33a; --teal:#7fe0d4;
+  --f-display:"Pixelify Sans", "Courier New", monospace;
+  --f-body:"Spectral", Georgia, serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:17px/1.6 var(--f-body);margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font:700 clamp(40px,7vw,68px)/1 var(--f-display);margin:10px 0 8px;letter-spacing:.02em;text-wrap:balance}
+h1 .t{color:var(--teal)}
+h2{font:700 26px/1.15 var(--f-display);margin:0 0 12px;letter-spacing:.03em;text-wrap:balance}
+p{margin:0 0 12px;max-width:68ch}
+.lede{color:var(--muted);font-style:italic}
+section{border-top:1px solid var(--line);padding-block:28px;display:grid;gap:14px}
+section:first-of-type{border-top:0}
+.stage{position:relative;background:#000;border:2px solid #000;outline:1px solid var(--line);max-width:100%}
+.stage canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
+.stage .grid{position:absolute;inset:0;width:100%;height:100%;image-rendering:auto;pointer-events:none}
+.cap{font:13px/1.5 var(--f-mono);color:var(--muted);max-width:none}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls .sep{width:1px;height:22px;background:var(--line);margin-inline:4px}
+button,.chip{font:500 13px/1 var(--f-mono);color:var(--fg);background:var(--panel);border:1px solid var(--line);padding:8px 11px;cursor:pointer;border-radius:2px}
+button:hover,.chip:hover{border-color:var(--muted)}
+button:focus-visible,.chip:focus-within{outline:2px solid var(--teal);outline-offset:2px}
+.chip{display:inline-flex;gap:7px;align-items:center;user-select:none}
+.chip input{accent-color:var(--teal);margin:0}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+.two>*{min-width:0}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px 8px 0;text-align:left;vertical-align:top}
+th{font:500 11px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td code,p code,li code{font:13px var(--f-mono);color:var(--teal);overflow-wrap:anywhere}
+td.mono{font:13px/1.5 var(--f-mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.sw{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center;font:12px/1.3 var(--f-mono)}
+.sw i{width:28px;height:28px;border:1px solid #000;display:block}
+.sw b{font-weight:500;color:var(--fg);display:block}
+.sw span{color:var(--muted)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.rule{background:var(--panel);border:1px solid var(--line);padding:14px}
+.rule h3{font:700 16px/1.2 var(--f-display);margin:0 0 6px;letter-spacing:.03em}
+.rule p{font-size:15px;margin:0;color:#cfc3a6}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ol.steps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:72ch}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.tool{border:1px solid var(--line);padding:12px;background:var(--panel)}
+.tool a{font:700 17px var(--f-display);color:var(--teal);text-decoration:none;letter-spacing:.03em}
+.tool a:hover{text-decoration:underline}
+.tool p{font-size:14px;margin:6px 0 0;color:#cfc3a6}
+.tag{font:500 10px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--amber);color:var(--amber);padding:3px 5px;margin-left:6px;vertical-align:2px}
+#copyMsg{font:12px var(--f-mono);color:var(--teal)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.cast{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.cast figure{margin:0;display:grid;gap:6px;justify-items:center}
+.cast canvas{image-rendering:pixelated;image-rendering:crisp-edges;max-width:100%;height:auto;background:var(--panel);outline:1px solid var(--line)}
+.cast figcaption{font:12px var(--f-mono);color:var(--muted)}
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Echoes of Sorrow · Memory 2 · Scene 8 · Drafts for Bhumi</div>
+    <h1>Luke's <span class="t">River</span></h1>
+    <p class="lede">Night. The river is flowing. Luke helps villagers leave Veyra and pushes a boat off. The river changes unnaturally. A figure walks back toward the village carrying something. Luke's watch says 2:31; the tower behind him says 2:17. CRACK.</p>
+    <p>The water carries the scene. It flows right, stops dead, then runs backwards with teal in it. That is the only teal until the figure passes on the far bank.</p>
+  </header>
+
+  <section aria-labelledby="s8">
+    <h2 id="s8">Memory page · Wide</h2>
+    <div class="stage"><canvas id="cvA" width="480" height="270" aria-label="Pixel-art night river: Luke pushes a boat of villagers off a jetty; the water stops and flows backwards; a dark figure carrying a bundle walks along the far bank toward the clock tower at 2:17"></canvas></div>
+    <div class="controls" role="group" aria-label="Mockup controls">
+      <button id="play" type="button">Pause</button>
+      <button id="replay" type="button">Replay</button>
+    </div>
+    <p class="cap">480 × 270 at 4×. Loop: 0–2 s villagers in the boat; 2 s Luke pushes it off; 4.5 s the water stops, then runs backwards with teal; 5.5 s the figure crosses the far bank toward the tower; 9 s CRACK, the frame splits and freezes.</p>
+  </section>
+
+  <section aria-labelledby="s8b">
+    <div class="two">
+      <div><div class="stage"><canvas id="cvB" width="192" height="108" aria-label="Close-up: Luke's open pocket watch reads 2:31 while the clock tower behind reads 2:17"></canvas></div></div>
+      <div>
+        <h2 id="s8b">Close-up · The contradiction</h2>
+        <p>Luke's gloved hand holds his pocket watch at 2:31. Over his shoulder, small and sharp, the tower says 2:17. Both clocks must be readable in one frame, because the casebook entry CONTRADICTION comes from this shot.</p>
+        <p class="cap">192 × 108 at 10×. The watch's second hand still moves. The tower's does not.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="sp">
+    <h2 id="sp">Luke · full body</h2>
+    <div class="cast" id="sprites-row"></div>
+    <p class="cap">32 × 58, feet on y = 56. Standing and pushing frames. Same cap, beard and olive oilskin as his portrait.</p>
+  </section>
+
+  <section aria-labelledby="files">
+    <h2 id="files">Files · <code>art-src/pixel/scene8/</code></h2>
+    <div class="tbl"><table>
+      <thead><tr><th>File</th><th>Size</th><th>What is on it</th></tr></thead>
+      <tbody>
+        <tr><td><code>bg_luke_far.png</code></td><td class="mono">480×270</td><td>Sky, far bank, Veyra and the tower at 2:17. Opaque.</td></tr>
+        <tr><td><code>bg_luke_water.png</code></td><td class="mono">480×270</td><td>River band only. The game scrolls its ripples and recolours them.</td></tr>
+        <tr><td><code>bg_luke_bank.png</code></td><td class="mono">480×270</td><td>Near bank, jetty, rope post, reeds.</td></tr>
+        <tr><td><code>prop_boat_villagers.png</code></td><td class="mono">64×24</td><td>Rowing boat with four villager silhouettes.</td></tr>
+        <tr><td><code>char_figure_carry.png</code></td><td class="mono">20×30</td><td>The figure with the bundle (far-bank scale). Face never drawn.</td></tr>
+        <tr><td><code>bg_watch_close.png</code></td><td class="mono">192×108</td><td>Close-up: watch at 2:31 with the tower at 2:17 behind.</td></tr>
+        <tr><td><code>char_luke_body.png</code>, <code>char_luke_push.png</code></td><td class="mono">32×58</td><td>In <code>art-src/pixel/chars/</code>.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<script>
+(() => {
+'use strict';
+// ---------------------------------------------------------------- palette
+const PAL = [
+  ['#111114','Ink','Outlines, windows, hat'],
+  ['#17141d','Night','Top of the sky'],
+  ['#26212b','Soot','Sky, Elias\'s coat'],
+  ['#302a38','Dusk','Sky, clouds'],
+  ['#3a3342','Haze','Horizon, back fog'],
+  ['#4a4252','Mist','Front fog, puddle shine'],
+  ['#3d2f26','Mud dark','Timber, doors'],
+  ['#5b4636','Mud','Walls, gate'],
+  ['#7d6450','Mud light','Lit walls, leaves'],
+  ['#48462c','Olive dark','Sick walls, shutters'],
+  ['#6f6c3f','Olive','The wrong green'],
+  ['#7a2e2b','Dried blood','Saved for the key'],
+  ['#9c907a','Bone dark','Clock face, sign letters'],
+  ['#e6d9bb','Bone','Moon, flame core'],
+  ['#8f6224','Amber dark','Scarf shadow'],
+  ['#e0a33a','Amber','Elias\'s scarf only'],
+  ['#2f6f6a','Teal dark','Light, outer ring'],
+  ['#7fe0d4','Teal','Lantern glass, symbols'],
+  ['#4fa79e','Teal mid','Light, inner ring'],
+  ['#2c2730','Stone dark','Cobble gaps, roofs'],
+  ['#423b46','Stone','Cobbles, tower'],
+  ['#5a5160','Stone light','Cobble tops'],
+  ['#1f1b25','Far','Distant roofs'],
+  ['#7d93ad','Dusty blue','Ivy accent'],
+  ['#4f5d70','Blue shade','Ivy accent shadow'],
+  ['#8a76a0','Violet','Hanna accent'],
+  ['#5a4a6a','Violet shade','Hanna accent shadow'],
+];
+const RGB = PAL.map(([h]) => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+const C = {ink:0,night:1,soot:2,dusk:3,haze:4,mist:5,mudD:6,mud:7,mudL:8,oliveD:9,olive:10,blood:11,boneD:12,bone:13,amberD:14,amber:15,tealD:16,teal:17,tealM:18,stoneD:19,stone:20,stoneL:21,far:22,blue:23,blueD:24,violet:25,violetD:26};
+// One palette step brighter (outer light) and teal-tinted (inner light).
+const LIT1 = [19,2,3,5,5,21,7,8,8,10,10,11,13,13,15,15,18,17,17,20,21,21,2,23,23,25,25];
+const LIT2 = [19,16,16,16,18,18,7,8,12,10,12,11,13,13,15,15,18,17,17,16,18,17,16,23,23,25,25];
+const BAY = [0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+const bay = (x, y) => BAY[((y & 3) << 2) | (x & 3)] / 16;
+const band = fr => Math.min(1, Math.max(0, (fr - 0.72) * 3.6));
+const rng = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const hash = n => { const r = rng(n * 9973 + 17); return r(); };
+
+// Flags: 1 = never lit (sky, distance), 2 = residue (shows teal only inside the light)
+class Buf {
+  constructor(w, h) { this.w = w; this.h = h; this.c = new Uint8Array(w * h); this.f = new Uint8Array(w * h); }
+  set(x, y, c, f = 0) { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= this.w || y >= this.h) return; const i = y * this.w + x; this.c[i] = c; this.f[i] = f; }
+  tint(x, y, c) { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= this.w || y >= this.h) return; this.c[y * this.w + x] = c; }
+  mark(x, y) { if (x < 0 || y < 0 || x >= this.w || y >= this.h) return; this.f[y * this.w + x] |= 2; }
+  rect(x, y, w, h, c, f = 0) { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) this.set(x + i, y + j, c, f); }
+  line(x0, y0, x1, y1, c, f = 0) {
+    x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+    const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let e = dx + dy;
+    for (;;) { this.set(x0, y0, c, f); if (x0 === x1 && y0 === y1) break; const e2 = 2 * e; if (e2 >= dy) { e += dy; x0 += sx; } if (e2 <= dx) { e += dx; y0 += sy; } }
+  }
+  disc(cx, cy, r, c, f = 0) { for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r + r * 0.8) this.set(cx + x, cy + y, c, f); }
+  ell(cx, cy, rx, ry, c, f = 0) { for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) if ((x * x) / (rx * rx) + (y * y) / (ry * ry) <= 1) this.set(cx + x, cy + y, c, f); }
+  copy(o) { this.c.set(o.c); this.f.set(o.f); }
+}
+
+function light(b, lx, ly, R) {
+  lx = Math.round(lx); ly = Math.round(ly);
+  for (let y = Math.max(0, ly - R); y < Math.min(b.h, ly + R); y++) {
+    for (let x = Math.max(0, lx - R); x < Math.min(b.w, lx + R); x++) {
+      const dx = x - lx, dy = (y - ly) * 1.15, d2 = dx * dx + dy * dy;
+      if (d2 > R * R) continue;
+      const i = y * b.w + x; if (b.f[i] & 1) continue;
+      const v = (1 - Math.sqrt(d2) / R) * 2.2 + (bay(x, y) - 0.5) * 0.7;
+      if (v > 1.45) b.c[i] = (b.f[i] & 2) ? C.teal : LIT2[b.c[i]];
+      else if (v > 0.6) b.c[i] = (b.f[i] & 2) ? C.tealM : LIT1[b.c[i]];
+    }
+  }
+}
+
+function blit(b, img) {
+  const d = img.data;
+  for (let i = 0, n = b.c.length; i < n; i++) { const p = RGB[b.c[i]], o = i * 4; d[o] = p[0]; d[o + 1] = p[1]; d[o + 2] = p[2]; d[o + 3] = 255; }
+}
+
+const GLYPH = { V:['101','101','101','101','010'], E:['111','100','110','100','111'], Y:['101','101','010','010','010'], R:['110','101','110','101','101'], A:['010','101','111','101','101'] };
+function text(b, s, x, y, c) { [...s].forEach((ch, k) => GLYPH[ch].forEach((row, j) => [...row].forEach((v, i) => { if (v === '1') b.set(x + k * 4 + i, y + j, c); }))); }
+const SYMBOL = ['..###..', '.#...#.', '#..#..#', '#.###.#', '#..#..#', '.#...#.', '..###..'];
+function residue(b, x, y, pat = SYMBOL) { pat.forEach((row, j) => [...row].forEach((v, i) => { if (v === '#') b.mark(x + i, y + j); })); }
+
+// ------------------------------------------------ shape-based character renderer
+// Shapes write part ids; shading = part pixels whose (x+sx, y+sy) neighbour leaves the part;
+// outline = empty pixels touching a filled one, plus seams between parts flagged `line`.
+function Figure(w, h, parts) {
+  const pid = new Int8Array(w * h).fill(-1);
+  const put = (x, y, p) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < w && y < h) pid[y * w + x] = p; };
+  const api = {
+    ell(cx, cy, rx, ry, p) { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) { const dx = (x - cx) / rx, dy = (y - cy) / ry; if (dx * dx + dy * dy <= 1.05) put(x, y, p); } },
+    rect(x, y, rw, rh, p) { for (let j = 0; j < rh; j++) for (let i = 0; i < rw; i++) put(x + i, y + j, p); },
+    poly(pts, p) {
+      const ys = pts.map(q => q[1]), y0 = Math.floor(Math.min(...ys)), y1 = Math.ceil(Math.max(...ys));
+      for (let y = y0; y <= y1; y++) for (let x = 0; x < w; x++) {
+        let inside = false; const px = x + 0.5, py = y + 0.5;
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) inside = !inside; }
+        if (inside) put(x, y, p);
+      }
+    },
+    render(sx = 2, sy = 1) {
+      const b = new Buf(w, h); b.c.fill(255);
+      const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? -1 : pid[y * w + x];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const p = at(x, y);
+        if (p < 0) { if (at(x - 1, y) >= 0 || at(x + 1, y) >= 0 || at(x, y - 1) >= 0 || at(x, y + 1) >= 0) b.c[y * w + x] = C.ink; continue; }
+        const part = parts[p];
+        let c = (at(x + sx, y + sy) !== p || at(x + Math.sign(sx), y + Math.sign(sy)) !== p) ? part.shade : part.base;
+        const l = at(x - 1, y), u = at(x, y - 1);
+        if (part.line && ((l >= 0 && l !== p && parts[l].line) || (u >= 0 && u !== p && parts[u].line))) c = C.ink;
+        b.c[y * w + x] = c;
+      }
+      return b;
+    },
+  };
+  return api;
+}
+const px = (b, pts, c) => { for (const [x, y] of pts) b.set(x, y, c); };
+
+function toCanvas(b) {
+  const c = document.createElement('canvas'); c.width = b.w; c.height = b.h;
+  const x = c.getContext('2d'), img = x.createImageData(b.w, b.h);
+  for (let i = 0; i < b.c.length; i++) { const v = b.c[i]; if (v === 255) continue; const q = RGB[v]; img.data.set([q[0], q[1], q[2], 255], i * 4); }
+  x.putImageData(img, 0, 0); return c;
+}
+// Light with any pair of tables (LIT1/LIT2 = lantern teal, LITA1/LITA2 = warm lamp)
+const LITA1 = [6,2,3,5,5,21,7,8,12,10,10,11,13,13,15,15,18,17,17,6,7,8,2,23,23,25,25];
+const LITA2 = [6,6,7,7,8,8,7,14,12,10,12,11,13,13,15,15,18,17,17,7,8,12,6,23,23,25,25];
+function lightT(b, lx, ly, R, T1, T2, sq = 1.15) {
+  lx = Math.round(lx); ly = Math.round(ly);
+  for (let y = Math.max(0, ly - R); y < Math.min(b.h, ly + R); y++) for (let x = Math.max(0, lx - R); x < Math.min(b.w, lx + R); x++) {
+    const dx = x - lx, dy = (y - ly) * sq, d2 = dx * dx + dy * dy; if (d2 > R * R) continue;
+    const i = y * b.w + x; if (b.f[i] & 1) continue; const c = b.c[i]; if (c === 255) continue;
+    const v = (1 - Math.sqrt(d2) / R) * 2.2 + (bay(x, y) - 0.5) * 0.7;
+    if (v > 1.45) b.c[i] = T2[c]; else if (v > 0.6) b.c[i] = T1[c];
+  }
+}
+// Stamp a sprite Buf (255 = transparent) into a scene Buf
+function stamp(dst, src, ox, oy, flip = false) {
+  for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) { const v = src.c[y * src.w + (flip ? src.w - 1 - x : x)]; if (v !== 255) dst.set(ox + x, oy + y, v); }
+}
+
+const W = 480, H = 270, WT = 176, WB = 222; // water band
+
+function lukeBody(push) {
+  const P = { skin: 0, beard: 1, cap: 2, coat: 3, legs: 4 };
+  const parts = [{ base: C.mudL, shade: C.mud, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.oliveD, shade: C.ink, line: true }, { base: C.olive, shade: C.oliveD, line: true }, { base: C.soot, shade: C.ink, line: true }];
+  const f = Figure(32, 58, parts), lean = push ? 3 : 0;
+  f.poly([[10, 56], [11, 36], [14, 36], [14, 56]], P.legs); f.poly([[17, 56], [18, 36], [21, 36], [22, 56]], P.legs);
+  f.poly([[8 + lean, 38], [9 + lean, 19], [23 + lean, 19], [24 + lean, 38]], P.coat);
+  f.ell(16 + lean, 11, 5, 5.5, P.skin);
+  f.poly([[11 + lean, 11], [12 + lean, 16], [16 + lean, 18], [20 + lean, 16], [21 + lean, 11], [19 + lean, 14], [13 + lean, 14]], P.beard);
+  f.poly([[10 + lean, 8], [12 + lean, 3], [16 + lean, 2], [21 + lean, 4], [23 + lean, 8]], P.cap); f.rect(10 + lean, 8, 15, 2, P.cap);
+  if (push) { f.poly([[20, 22], [30, 26], [30, 29], [20, 27]], P.coat); f.rect(29, 25, 3, 4, P.skin); }
+  else { f.rect(8, 22, 3, 14, P.coat); f.rect(22, 22, 3, 14, P.coat); f.rect(8, 35, 3, 3, P.skin); f.rect(22, 35, 3, 3, P.skin); }
+  const b = f.render(1, 1);
+  b.set(14 + lean, 11, C.ink); b.set(18 + lean, 11, C.ink); b.line(13 + lean, 10, 15 + lean, 10, C.ink); b.line(17 + lean, 10, 19 + lean, 10, C.ink);
+  b.set(21 + lean, 31, C.boneD); b.set(22 + lean, 32, C.boneD);
+  b.rect(10, 56, 5, 1, C.ink); b.rect(17, 56, 5, 1, C.ink);
+  return b;
+}
+
+function farLayer() {
+  const b = new Buf(W, H), r = rng(81), st = [C.night, C.soot, C.dusk, C.haze];
+  for (let y = 0; y < H; y++) { const tt = Math.min(2.999, (y / 170) * 3), s = Math.floor(tt), fr = tt - s; for (let x = 0; x < W; x++) b.set(x, y, band(fr) > bay(x, y) ? st[s + 1] : st[s], 1); }
+  for (let i = 0; i < 50; i++) b.set(r() * W | 0, r() * 100 | 0, r() < 0.3 ? C.boneD : C.mist, 1);
+  for (const [x, y, w] of [[260, 30, 120], [40, 54, 90]]) { b.rect(x, y, w, 3, C.dusk, 1); b.rect(x + 4, y - 1, w - 8, 1, C.haze, 1); }
+  // Veyra on the far bank, tower at 2:17
+  let x = 0; while (x < 300) { const w = 14 + (r() * 20 | 0), h = 14 + (r() * 24 | 0); b.rect(x, 170 - h, w, h + 8, C.far, 1); for (let k = 0; k < 6; k++) b.rect(x + k, 170 - h - 6 + k, w - 2 * k, 1, C.far, 1); x += w - 1; }
+  const tx = 92; b.rect(tx, 70, 22, 104, C.soot, 1); b.rect(tx + 21, 70, 1, 104, C.stone, 1);
+  for (let k = 0; k < 20; k++) { const half = Math.round(13 * k / 20); b.rect(tx + 11 - half, 50 + k, half * 2, 1, C.ink, 1); }
+  b.disc(tx + 11, 86, 7, C.ink, 1); b.disc(tx + 11, 86, 6, C.boneD, 1);
+  const ha = (2 + 17 / 60) / 12 * Math.PI * 2, ma = 17 / 60 * Math.PI * 2;
+  b.line(tx + 11, 86, tx + 11 + Math.sin(ha) * 3, 86 - Math.cos(ha) * 3, C.ink, 1); b.line(tx + 11, 86, tx + 11 + Math.sin(ma) * 5, 86 - Math.cos(ma) * 5, C.ink, 1);
+  // hills + far bank edge
+  for (let x = 300; x < W; x++) { const h = 150 + Math.round(Math.sin(x / 40) * 6 + Math.sin(x / 13) * 2); for (let y = h; y < 178; y++) b.set(x, y, C.far, 1); }
+  b.rect(0, 170, W, 6, C.stoneD, 1); b.rect(0, 170, W, 1, C.stone, 1);
+  for (let i = 0; i < 30; i++) { const x = r() * W | 0; b.line(x, 170, x + (r() * 3 | 0) - 1, 164 - r() * 6, C.ink, 1); }
+  return b;
+}
+function waterLayer(phase, reverse, tealAmt) {
+  const b = new Buf(W, H); b.c.fill(255);
+  for (let y = WT; y < WB; y++) for (let x = 0; x < W; x++) {
+    const depth = (y - WT) / (WB - WT), s = Math.sin((x + phase * (reverse ? -1 : 1) * (8 + depth * 14)) / (6 + depth * 10) + y * 1.7);
+    let c = depth < 0.15 ? C.soot : C.dusk;
+    if (s > 0.94) c = C.haze; if (s > 0.99) c = C.mist;
+    if (tealAmt > 0 && bay(x, y) < tealAmt * (0.4 + 0.3 * Math.sin(x / 9 + y))) c = s > 0.7 ? C.tealM : C.tealD;
+    b.set(x, y, c);
+  }
+  return b;
+}
+function bankLayer() {
+  const b = new Buf(W, H); b.c.fill(255); const r = rng(91);
+  for (let x = 0; x < W; x++) { const top = 220 + Math.round(Math.sin(x / 50) * 3 + (x > 300 ? (x - 300) / 30 : 0)); for (let y = top; y < H; y++) b.set(x, y, y < top + 2 ? C.ink : ((x * 5 + y * 3) % 19 === 0 || bay(x, y) < 0.1) ? C.mudD : C.mud); }
+  // jetty
+  b.rect(150, 214, 140, 5, C.mudL); b.rect(150, 219, 140, 2, C.ink); for (let x = 152; x < 290; x += 10) b.rect(x, 214, 1, 5, C.mudD);
+  for (const px of [156, 196, 236, 276]) { b.rect(px, 219, 4, 28, C.mudD); b.rect(px, 219, 1, 28, C.ink); }
+  b.rect(286, 196, 5, 24, C.mudD); b.rect(285, 195, 7, 2, C.ink); b.line(289, 202, 330, 206, C.mudL);
+  for (let i = 0; i < 60; i++) { const x = r() < 0.5 ? r() * 140 : 330 + r() * 150, h = 6 + r() * 22; b.line(x, 236, x + (r() * 4 - 2), 236 - h, r() < 0.5 ? C.oliveD : C.ink); }
+  return b;
+}
+const BOAT = (() => { const b = new Buf(64, 24); b.c.fill(255);
+  for (let k = 0; k < 8; k++) { const w = 60 - k * 3; b.rect(32 - w / 2 - 1, 15 + k, w + 2, 1, C.ink); b.rect(32 - w / 2, 15 + k, w, 1, k < 2 ? C.mudL : C.mud); }
+  for (const [x, h] of [[14, 13], [24, 15], [34, 12], [44, 14]]) { b.disc(x, 15 - h + 2, 2, C.ink); b.rect(x - 2, 15 - h + 4, 5, h - 4, C.ink); }
+  b.line(50, 13, 62, 6, C.mudD); return b; })();
+const FIG = (() => { const b = new Buf(20, 30); b.c.fill(255);
+  b.rect(7, 2, 6, 4, C.ink); b.rect(4, 6, 12, 2, C.ink); b.rect(7, 8, 6, 14, C.ink); b.rect(6, 22, 3, 7, C.ink); b.rect(11, 22, 3, 7, C.ink);
+  b.ell(5, 14, 4, 3, C.boneD); b.ell(5, 14, 3, 2, C.bone); b.rect(2, 14, 7, 1, C.boneD);
+  b.rect(14, 12, 2, 4, C.teal); return b; })();
+
+function watchClose() {
+  const b = new Buf(192, 108), r = rng(3), st = [C.night, C.soot, C.dusk, C.haze];
+  for (let y = 0; y < 108; y++) { const tt = Math.min(2.999, (y / 100) * 3), s = Math.floor(tt), fr = tt - s; for (let x = 0; x < 192; x++) b.set(x, y, band(fr) > bay(x, y) ? st[s + 1] : st[s], 1); }
+  for (let i = 0; i < 18; i++) b.set(r() * 192, r() * 50, C.mist, 1);
+  // tower, small and sharp at 2:17
+  b.rect(150, 22, 16, 86, C.soot, 1); b.rect(165, 22, 1, 86, C.stone, 1);
+  for (let k = 0; k < 14; k++) { const half = Math.round(9 * k / 14); b.rect(158 - half, 8 + k, half * 2, 1, C.ink, 1); }
+  b.disc(158, 36, 6, C.ink, 1); b.disc(158, 36, 5, C.boneD, 1);
+  const ha = (2 + 17 / 60) / 12 * Math.PI * 2, ma = 17 / 60 * Math.PI * 2;
+  b.line(158, 36, 158 + Math.sin(ha) * 2.6, 36 - Math.cos(ha) * 2.6, C.ink, 1); b.line(158, 36, 158 + Math.sin(ma) * 4.2, 36 - Math.cos(ma) * 4.2, C.ink, 1);
+  // gloved hand + watch at 2:31
+  for (let y = 70; y < 108; y++) for (let x = 20; x < 110; x++) { const d = Math.hypot((x - 60) / 46, (y - 98) / 26); if (d < 1) b.set(x, y, d > 0.93 ? C.ink : (x + y) % 17 === 0 ? C.ink : y > 96 ? C.mudD : C.mud); }
+  for (let k = 0; k < 4; k++) b.rect(28 + k * 14, 72 - (k === 0 ? 0 : 2), 11, 6, C.mud), b.rect(28 + k * 14, 77 - (k === 0 ? 0 : 2), 11, 1, C.ink);
+  const cx = 66, cy = 56, R = 26;
+  b.disc(cx, cy, R + 4, C.ink); b.disc(cx, cy, R + 3, C.amberD); b.disc(cx, cy, R + 1, C.ink); b.disc(cx, cy, R, C.bone);
+  for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) if (x * x + y * y <= R * R && x + y > R * 0.6 && bay(cx + x, cy + y) < 0.5) b.set(cx + x, cy + y, C.boneD);
+  b.rect(cx - 3, cy - R - 9, 7, 5, C.amberD); b.rect(cx - 3, cy - R - 9, 7, 1, C.ink); b.disc(cx, cy - R - 12, 3, C.ink); b.disc(cx, cy - R - 12, 2, C.amberD); b.set(cx, cy - R - 12, C.ink);
+  for (let m = 0; m < 60; m += 5) { const a = m / 60 * Math.PI * 2, s = Math.sin(a), co = -Math.cos(a); b.line(cx + s * (R - (m % 15 ? 4 : 7)), cy + co * (R - (m % 15 ? 4 : 7)), cx + s * (R - 2), cy + co * (R - 2), C.ink); }
+  const hand = (ang, len, th) => { const s = Math.sin(ang), co = -Math.cos(ang); for (let d = 0; d <= len; d += 0.5) for (let o = -(th - 1) / 2; o <= (th - 1) / 2; o++) b.set(cx + s * d + co * o, cy + co * d - s * o, C.ink); };
+  hand((2 + 31 / 60) / 12 * Math.PI * 2, 13, 3); hand(31 / 60 * Math.PI * 2, 20, 2);
+  b.line(cx - 14, cy - 18, cx - 4, cy - 6, C.boneD); b.line(cx - 4, cy - 6, cx - 7, cy + 4, C.boneD);
+  for (let k = 0; k < 14; k++) b.set(cx + 28 + k * 2, cy - 14 - k + Math.round(Math.sin(k) * 1), C.amberD);
+  return b;
+}
+
+const FAR = farLayer(), BANK = bankLayer(), WATER0 = waterLayer(0, false, 0), LUKE = lukeBody(false), LUKE_P = lukeBody(true), WATCH = watchClose();
+const LOOP = 11, PUSH = 2, TURN = 4.5, FIGT = 5.5, CRACK = 9;
+const frame = new Buf(W, H);
+function render(t) {
+  const tt = Math.min(t % LOOP, CRACK + 1.2), b = frame;
+  b.copy(FAR);
+  const flowPhase = tt < TURN ? tt * 6 : TURN * 6 - Math.max(0, tt - TURN - 0.6) * 9;
+  const reverse = false, tealAmt = tt > TURN + 0.6 ? Math.min(0.55, (tt - TURN - 0.6) * 0.4) : 0;
+  const water = waterLayer(flowPhase, reverse, tealAmt);
+  for (let i = 0; i < water.c.length; i++) if (water.c[i] !== 255) { b.c[i] = water.c[i]; b.f[i] = 0; }
+  if (tt > FIGT) { const x = 440 - (tt - FIGT) * 34; if (x > 100) stamp(b, FIG, Math.round(x), 141 + (Math.floor(tt * 6) % 2)); }
+  const bx = tt < PUSH ? 300 : 300 + (tt - PUSH) * (tt < TURN ? 18 : 18 - (tt - TURN) * 10), bob = Math.round(Math.sin(tt * 3));
+  stamp(b, BOAT, Math.round(Math.min(bx, 440)), 196 + bob);
+  for (let i = 0; i < BANK.c.length; i++) if (BANK.c[i] !== 255) { b.c[i] = BANK.c[i]; b.f[i] = 0; }
+  const pushing = tt > PUSH - 0.4 && tt < PUSH + 0.6;
+  stamp(b, pushing ? LUKE_P : LUKE, 236, 158);
+  if (tt >= CRACK) {
+    const g = Math.min(1, (tt - CRACK) / 0.25);
+    let x = 250; for (let y = 0; y < H; y++) { x += Math.round((hash(y * 13) - 0.5) * 4); if (y < H * g) { b.set(x, y, C.bone); b.set(x + 1, y, C.ink); } }
+    if (g >= 1) for (let y = 0; y < H; y++) for (let xx = W - 1; xx > 250; xx--) { const src = xx - 3; b.c[y * W + xx] = b.c[y * W + src]; }
+  }
+  return tt >= CRACK && tt < CRACK + 0.3 ? Math.round((hash(Math.floor(tt * 40)) - 0.5) * 6) : 0;
+}
+const cvA = document.getElementById('cvA'), ctxA = cvA.getContext('2d'), imgA = ctxA.createImageData(W, H);
+const cvB = document.getElementById('cvB'), ctxB = cvB.getContext('2d'), imgB = ctxB.createImageData(192, 108);
+const fb = new Buf(192, 108);
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let playing = !reduce, t = reduce ? 6.5 : 0, last = performance.now();
+function draw() {
+  const sh = render(t); blit(frame, imgA); ctxA.fillStyle = '#000'; ctxA.fillRect(0, 0, W, H); ctxA.putImageData(imgA, reduce ? 0 : sh, 0);
+  fb.copy(WATCH); const a = Math.floor(t) / 60 * Math.PI * 2; fb.line(66, 56, 66 + Math.sin(a) * 22, 56 - Math.cos(a) * 22, C.blood); fb.disc(66, 56, 2, C.ink);
+  blit(fb, imgB); ctxB.putImageData(imgB, 0, 0);
+}
+function loop(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; if (playing) { t += dt; draw(); } requestAnimationFrame(loop); }
+draw(); requestAnimationFrame(loop);
+const playBtn = document.getElementById('play'); const sync = () => { playBtn.textContent = playing ? 'Pause' : 'Play'; }; sync();
+playBtn.addEventListener('click', () => { playing = !playing; sync(); });
+document.getElementById('replay').addEventListener('click', () => { t = 0; if (!playing) draw(); });
+const row = document.getElementById('sprites-row');
+for (const [n, s] of [['standing', LUKE], ['pushing', LUKE_P], ['figure (far bank)', FIG]]) { const fig = document.createElement('figure'), c = toCanvas(s); c.style.width = (s.w * 5) + 'px'; c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Luke ' + n); fig.appendChild(c); const cap = document.createElement('figcaption'); cap.textContent = n; fig.appendChild(cap); row.appendChild(fig); }
+window.__veyra = { toCanvas, SPRITES: { 'bg_luke_far.png': FAR, 'bg_luke_water.png': WATER0, 'bg_luke_bank.png': BANK, 'prop_boat_villagers.png': BOAT, 'char_figure_carry.png': FIG, 'bg_watch_close.png': WATCH, 'char_luke_body.png': LUKE, 'char_luke_push.png': LUKE_P } };
+})();
+</script>
+</body></html>
