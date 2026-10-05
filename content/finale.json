@@ -15,6 +15,7 @@
     "narration": "I came here looking for the person who erased the village. It was me.",
     "panels": ["Nia", "The overloaded lantern", "The vanished village", "Elias facing the archive"],
     "niaEcho": "You came back.",
+    "clockLine": "The village didn't forget what happened.\nI did.",
     "closing": "I unkeyed the lantern. The anchors let go.",
     "closingSee": "Closing desk panel: the case file, the cracked lantern and Nia's hairclip (art B6).",
     "finalState": "No more loops. The silhouette is gone and Elias is fully visible."
@@ -24,7 +25,7 @@
     "outcome": "The final page briefly shows the master log being archived under Elias's real name.",
     "narration": "The truth was never missing. I was.",
     "stamp": "CASE CLOSED. Signed: Elias Vane.",
-    "panel": "The village clock advances from 2:17 to 2:18.",
+    "panel": "The master log, archived and signed under Elias's real name. (The clock moving 2:17 → 2:18 now plays for every player, after the truth panels.)",
     "finalState": "The casebook closes on a complete timeline with every required clue connected."
   },
   "summary": {

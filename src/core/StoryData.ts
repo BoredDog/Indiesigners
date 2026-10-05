@@ -142,6 +142,7 @@ export interface Finale {
     narration: string;
     panels: string[];
     niaEcho?: string; // Nia's echo, speech bubble on the Nia panel
+    clockLine?: string; // narration as the clock moves 2:17 → 2:18 (every player)
     closing?: string; // narration on the closing desk panel
     closingSee?: string;
     finalState: string;

@@ -46,8 +46,26 @@ await advance(2500);
 expect((await active()).includes('Ending'), 'Finale ends in Ending');
 await page.waitForTimeout(2500);
 await shot('ending-1-truth');
-await advance(2000);
-await shot('ending-2-summary');
+// Every player: the clock frame (2:17 → 2:18), then the closing desk, then the summary.
+await advance(2600);
+await shot('ending-2-clock');
+// Plain JS strings: tsx would inject its __name helper into named functions sent to the browser.
+const FIND_IN_ENDING = `(name) => {
+  const walk = (list) => { for (const o of list) { if (o.name === name) return o; const h = o.list && walk(o.list); if (h) return h; } return null; };
+  return walk(window.__echoes.game.scene.getScene('Ending').children.list);
+}`;
+const findInEnding = (name: string) =>
+  page.evaluate(([code, n]) => {
+    const o = new Function(`return (${code})`)()(n);
+    return o ? { angle: o.angle as number } : null;
+  }, [FIND_IN_ENDING, name] as const);
+const minute = (await findInEnding('clock:minute'))?.angle;
+expect(Math.abs(((minute ?? 0) + 360) % 360 - 108) < 1, `clock reaches 2:18 for every player (minute hand at ${minute}°)`);
+for (let i = 3; i <= 5 && !(await findInEnding('btn:PLAY AGAIN')); i++) {
+  await advance(2000);
+  await shot(`ending-${i}`);
+}
+await shot('ending-summary');
 expect(
   await page.evaluate(() => (window as any).__echoes.gameState.finale === 'complete'),
   'finale state is complete',

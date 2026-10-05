@@ -76,6 +76,18 @@ export class EndingScene extends SequenceScene {
         if (t.niaEcho) this.speech(layer, t.niaEcho, frames[0].x + frames[0].w - 190, frames[0].y + 80, { x: -110, y: 70 }, 1400);
       },
     ];
+    // Every player: the clock finally moves, 2:17 → 2:18 (from Vansh's final script).
+    list.push((layer) => {
+      this.panel(layer, PH.village, { x: 643, y: 150, w: 534, h: 300 });
+      const cx = FRAME.x + (910 - 643) * 3;
+      const cy = FRAME.y + (300 - 150) * 3;
+      const hand = this.add.rectangle(cx, cy, 15, 150, COLORS.ink).setOrigin(0.5, 1).setAngle((17 / 60) * 360).setName('clock:minute');
+      layer.add(hand);
+      this.tweens.add({ targets: hand, angle: (18 / 60) * 360, duration: dur(400) || 1, delay: dur(1400), ease: 'Back.Out' });
+      this.sfxWord(layer, 'TICK.', cx + 320, cy + 200, 70, 1500);
+      if (t.clockLine) this.narration(layer, t.clockLine, FRAME.x + 330, FRAME.y + 90);
+    });
+
     if (t.closing) {
       // Closing desk panel (art B6): the case file, the cracked lantern and Nia's hairclip.
       list.push((layer) => {
@@ -93,18 +105,11 @@ export class EndingScene extends SequenceScene {
 
     if (this.fullEvidence()) {
       const e = story.finale.epilogue;
-      // Epilogue: the clock advances one minute, 2:17 → 2:18.
+      // 100% evidence: the archived master log, finally signed (the unsigned request, closed).
       list.push((layer) => {
-        this.panel(layer, PH.village, { x: 643, y: 150, w: 534, h: 300 });
-        const cx = FRAME.x + (910 - 643) * 3;
-        const cy = FRAME.y + (300 - 150) * 3;
-        const hand = this.add.rectangle(cx, cy, 15, 150, COLORS.ink).setOrigin(0.5, 1).setAngle((17 / 60) * 360);
-        layer.add(hand);
-        this.tweens.add({ targets: hand, angle: (18 / 60) * 360, duration: dur(400), delay: 1400, ease: 'Back.Out' });
-        this.sfxWord(layer, 'TICK.', cx + 320, cy + 200, 70, 1500);
-        // The archived master log, finally signed (the unsigned request, closed).
+        this.panel(layer, PH.village, { x: 0, y: 380, w: 1920, h: 700 }).setColour(0.3, 0);
         if (e.stamp) {
-          const { doc } = this.document(layer, FRAME.x + 360, FRAME.y + 640, 520, 300, 'MASTER LOG', 'Veyra, incident night.\nArchived.', false, -4);
+          const { doc } = this.document(layer, FRAME.x + 800, FRAME.y + 520, 620, 360, 'MASTER LOG', 'Veyra, incident night.\nArchived.', false, -4);
           const stamp = this.add
             .text(0, 40, e.stamp, { ...this.sfx(40, '#b3261e'), align: 'center', wordWrap: { width: 460 } })
             .setOrigin(0.5)
