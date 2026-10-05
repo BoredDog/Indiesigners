@@ -5,14 +5,16 @@
 Status: `todo` · `doing` · `review` (PR open) · `done` · `blocked` (say why in Team HQ).
 To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/Arya just comment in Team HQ and Garv updates it.
 
+**Art (all B*/A* art tasks, G9) is scheduled for tonight; everything else is being finished today (Garv, 5 Oct).**
+
 **Scoring we're optimising for:** gameplay & mechanics 30 · theme 20 · technical stability 20 · audio-visual cohesion 20 · Hour 12 compliance 10.
 
 ## Milestones
 | ID | Milestone | Done when | Due | Status |
 |---|---|---|---|---|
 | M0 | Team setup | Repo protected, CI + Pages live, Team HQ pinned, comic layer merged | Mon 10:00 | done |
-| M1 | Mira vertical slice | On the Pages link: talk to Mira → memory page → 2 puzzles → 3 deductions → back to village | Mon 19:00 | todo |
-| M2 | Content complete | Game playable start → credits on the Pages link; autoplay test passes for all 6 witness orders | Tue 02:30 | todo |
+| M1 | Mira vertical slice | On the Pages link: talk to Mira → memory page → 2 puzzles → 3 deductions → back to village | Mon 19:00 | done (5 Oct early; with real puzzles) |
+| M2 | Content complete | Game playable start → credits on the Pages link; autoplay test passes for all 6 witness orders | Tue 02:30 | doing: playable start → credits on Pages; N8 6-order autoplay pending |
 | M3 | Feature freeze | Final art in, playtested by 2 outsiders, only bug fixes after this | Tue 12:00 | todo |
 | M4 | Submitted | itch.io page plays in a fresh browser; form + Discord done | Tue 15:00 | todo |
 
@@ -27,9 +29,9 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | G6 | `MemoryPage` scene (zoom/dim, 5 fragments, Evidence 0/5, puzzle launch, RECONSTRUCT / LEAVE MEMORY) | Mira page playable from data | Mon 16:00 | done |
 | G7 | Casebook (columns, timeline, FIGURE/NIA cards, CORROBORATES / CONTRADICTS / REVEALS threads, Figure flip) | Opens from anywhere; threads appear when both clues are known | Mon 23:00 | done |
 | G8 | Opening (6 frames) + Finale (8 frames) + Truth ending + Summary/Credits | Plays start to end from data; silhouette dissolves into young Elias | Tue 02:30 | done |
-| G9 | Import all final art; style pass (crops, halftone, transitions, title idle) | No placeholder art left | Tue 12:00 | todo |
-| G10 | README, LICENSE, CREDITS.md final, AI disclosure | Matches PLAN.md §10 | Tue 13:00 | doing |
-| G11 | itch.io upload + fresh-browser test + submit | Plays on Chrome/Firefox/Edge from itch | Tue 15:00 | todo |
+| G9 | Import all final art; style pass (crops, halftone, transitions, title idle) | No placeholder art left | Tue 12:00 | tonight (art session) |
+| G10 | README, LICENSE, CREDITS.md final, AI disclosure | Matches PLAN.md §10 | Tue 13:00 | done (README, LICENSE, CREDITS, AI disclosure); final pass with art credits |
+| G11 | itch.io upload + fresh-browser test + submit | Plays on Chrome/Firefox/Edge from itch | Tue 15:00 | todo (after art) |
 | G12 | Review, play-test and merge every PR | Each PR merged within ~1 h of opening, or feedback given | ongoing | doing |
 
 ## Nav — gameplay core  *(N6–N9 reassigned to Vansh, 5 Oct)*
@@ -48,34 +50,38 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 ## Vansh — puzzles
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
-| V1 | Puzzle JSON schema + pure-TS rules engine (move, light/ink, dial, lever/gate) + unit tests | Tests pass | Mon 13:00 | review |
-| V2 | BFS solver `tools/solve-puzzles.ts` (CI fails on an unsolvable level) | Reports par + hint path per level | Mon 13:00 | review |
-| V3 | Puzzle scene over panel art (wisp, ink shadows, rotation, undo/reset/hint/skip, win → evidence id) | `pz_tower` playable in the browser | Mon 16:00 | review |
-| V4 | Levels `pz_tower`, `pz_sis_1`, `pz_sis_3` | Solver passes, playable from Mira's page | Mon 19:00 | review |
-| V5 | Sluice/water, crate, sentinels, nodes, collapsing floor | Each mechanic has a unit test | Mon 23:00 | review |
-| V6 | Levels `pz_bro_2`, `pz_bro_3`, `pz_mom_1`, `pz_mom_3`, `pz_archive` + Archive scene | Solver passes; archive escape leads to finale | Tue 02:30 | review |
-| V7 | Difficulty tuning from playtests; stretch levels `pz_sis_2`, `pz_bro_1`, `pz_mom_2` if time | Testers finish every puzzle without skip | Tue 12:00 | review |
+| V1 | Puzzle JSON schema + pure-TS rules engine (move, light/ink, dial, lever/gate) + unit tests | Tests pass | Mon 13:00 | done |
+| V2 | BFS solver `tools/solve-puzzles.ts` (CI fails on an unsolvable level) | Reports par + hint path per level | Mon 13:00 | done |
+| V3 | Puzzle scene over panel art (wisp, ink shadows, rotation, undo/reset/hint/skip, win → evidence id) | `pz_tower` playable in the browser | Mon 16:00 | done |
+| V4 | Levels `pz_tower`, `pz_sis_1`, `pz_sis_3` | Solver passes, playable from Mira's page | Mon 19:00 | done |
+| V5 | Sluice/water, crate, sentinels, nodes, collapsing floor | Each mechanic has a unit test | Mon 23:00 | done |
+| V6 | Levels `pz_bro_2`, `pz_bro_3`, `pz_mom_1`, `pz_mom_3`, `pz_archive` + Archive scene | Solver passes; archive escape leads to finale | Tue 02:30 | done |
+| V7 | Difficulty tuning from playtests; stretch levels `pz_sis_2`, `pz_bro_1`, `pz_mom_2` if time | Testers finish every puzzle without skip | Tue 12:00 | done |
+| V8 | Teach each mechanic in its first puzzle (one-time captions) | First-time player never needs HINT on a witness's first puzzle | Mon 06:15 | done |
+| V9 | Feel: hover preview, wisp trail, ink splat on slip, catch shake (all off under Reduce Motion/Flashing) | Visible in shots-puzzle | Mon 07:15 | done |
+| V10 | Readable without colour: group shape marks on ropes/gates/sluices/nodes | Greyscale screenshot of every board readable | Mon 08:00 | done |
+| V11 | Archive escape polish: crumbling tiles, rumble, Elias lines | Archive → Finale smooth | Mon 09:00 | done |
 
 ## Bhumi — character & key art (upload to `art/incoming/bhumi/`)
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
-| B1 | Style sample: Elias silhouette (back + full outline) + rough Mira | All 5 approve in Team HQ → style locked | Mon 12:00 | todo |
-| B2 | Elias final: back-view cutout, hands + lantern staff, solid silhouette, young Elias profile | Uploaded as transparent PNG | Mon 19:00 | todo |
-| B3 | Mira neutral + 1 expression | Uploaded | Mon 19:00 | todo |
-| B4 | Arun neutral + 1, Leela neutral + 1, Nia | Uploaded | Tue 01:00 | todo |
-| B5 | Finale reveal panel (young Elias at the console) | Uploaded | Tue 02:30 | todo |
-| B6 | Title cover, 2 ending panels, fixes; `.kra` sources | Uploaded | Tue 12:00 | todo |
+| B1 | Style sample: Elias silhouette (back + full outline) + rough Mira | All 5 approve in Team HQ → style locked | Mon 12:00 | tonight (art session) |
+| B2 | Elias final: back-view cutout, hands + lantern staff, solid silhouette, young Elias profile | Uploaded as transparent PNG | Mon 19:00 | tonight (art session) |
+| B3 | Mira neutral + 1 expression | Uploaded | Mon 19:00 | tonight (art session) |
+| B4 | Arun neutral + 1, Leela neutral + 1, Nia | Uploaded | Tue 01:00 | tonight (art session) |
+| B5 | Finale reveal panel (young Elias at the console) | Uploaded | Tue 02:30 | tonight (art session) |
+| B6 | Title cover, 2 ending panels, fixes; `.kra` sources | Uploaded | Tue 12:00 | tonight (art session) |
 
 ## Arya — environment art, assets, QA (upload to `art/incoming/arya/`)
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
 | A1 | License-check fonts / ambientCG / Kenney / Outlander and log each in `CREDITS.md` | Every downloaded asset has a row with its source URL + license | Mon 13:00 | todo |
-| A2 | Village hub background (ink-noir paint-over, clock at 2:17) | Uploaded as `bg_village.*` | Mon 19:00 | todo |
-| A3 | Mira page background (classroom + clock tower interior) | Uploaded as `bg_mira.*` | Mon 19:00 | todo |
-| A4 | Props: pocket watch 2:31, bell rope, silver hairclip, lantern case "E.V." | Uploaded as transparent PNGs | Tue 01:00 | todo |
-| A5 | Arun + Leela page backgrounds | Uploaded as `bg_arun.*`, `bg_leela.*` | Tue 01:00 | todo |
+| A2 | Village hub background (ink-noir paint-over, clock at 2:17) | Uploaded as `bg_village.*` | Mon 19:00 | tonight (art session) |
+| A3 | Mira page background (classroom + clock tower interior) | Uploaded as `bg_mira.*` | Mon 19:00 | tonight (art session) |
+| A4 | Props: pocket watch 2:31, bell rope, silver hairclip, lantern case "E.V." | Uploaded as transparent PNGs | Tue 01:00 | tonight (art session) |
+| A5 | Arun + Leela page backgrounds | Uploaded as `bg_arun.*`, `bg_leela.*` | Tue 01:00 | tonight (art session) |
 | A6 | Proofread `design/script_review.html`; play-test M1 | Findings filed as `text` / `bug` issues | Tue 01:00 | todo |
-| A7 | Hidden Archive background | Uploaded as `bg_archive.*` | Tue 10:00 | todo |
+| A7 | Hidden Archive background | Uploaded as `bg_archive.*` | Tue 10:00 | tonight (art session) |
 | A8 | 2 external playtesters (Blueprint T1 log) | Log posted in Team HQ | Tue 11:30 | todo |
 | A9 | itch.io page text: description, controls, content warning, AI disclosure | Text posted in Team HQ | Tue 12:00 | todo |
 
@@ -84,11 +90,11 @@ Port in `godot/` (see `godot/README.md`). Shared data in `content/`; `npm run te
 | ID | Owner | Task | Done when | Status |
 |---|---|---|---|---|
 | GD1 | Garv | Project skeleton, content sync, StoryData / GameState / Deductions ports + headless tests | `npm run test:godot` passes (6 orders → 9/9, save round trip) | done |
-| GD2 | Garv | Comic layer in Godot: panel crops, grey→colour/halftone/ink shader, SFX word, bubbles with markup | Demo scene matches the Phaser comic demo | review |
-| GD3 | Garv | Memory page scene from `content/pages/*.json` | Mira page playable in Godot | review |
-| GD4 | Garv | Title, Village, Conversation, Deduction, Aftermath | Mira loop playable start to finish | review |
-| GD5 | Garv | Casebook | Threads + notes from GameState | todo |
+| GD2 | Garv | Comic layer in Godot: panel crops, grey→colour/halftone/ink shader, SFX word, bubbles with markup | Demo scene matches the Phaser comic demo | done |
+| GD3 | Garv | Memory page scene from `content/pages/*.json` | Mira page playable in Godot | done |
+| GD4 | Garv | Title, Village, Conversation, Deduction, Aftermath | Mira loop playable start to finish | done |
+| GD5 | Garv | Casebook | Threads + notes from GameState | done |
 | GD6 | Garv | Opening, Finale, Ending | Game completable in Godot | todo |
-| V12 | Vansh | Puzzle rules engine + solver in GDScript | 11 levels solve at the TS par in a headless test | review |
-| V13 | Vansh | Godot Puzzle scene (+ Archive) | Every level playable; returns `justFound` | review |
+| V12 | Vansh | Puzzle rules engine + solver in GDScript | 11 levels solve at the TS par in a headless test | done |
+| V13 | Vansh | Godot Puzzle scene (+ Archive) | Every level playable; returns `justFound` | done |
 | GD7 | Garv | Web export + autoplay test in Godot | Exported build plays in a browser | todo |
