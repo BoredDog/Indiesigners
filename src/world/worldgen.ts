@@ -11,12 +11,14 @@ export const SURF = 60; // street level (first solid row)
 
 export interface Prop { key: string; x: number; y: number; depth?: number; id?: string; flip?: boolean; scale?: number }
 export interface StaticLight { x: number; y: number; r: number; id?: string }
+export interface FogZone { x: number; y: number; w: number; h: number; density?: number }
 export interface World {
   fg: number[][];
   bg: number[][];
   water: boolean[][];
   props: Prop[];
   lights: StaticLight[];
+  fog: FogZone[];
   anchors: Record<string, { x: number; y: number }>; // pixel coords (x centre, y = feet / floor)
 }
 
@@ -38,6 +40,7 @@ export function generateWorld(): World {
   const water = Array.from({ length: HT }, () => new Array<boolean>(WT).fill(false));
   const props: Prop[] = [];
   const lights: StaticLight[] = [];
+  const fog: FogZone[] = [];
   const anchors: World['anchors'] = {};
   const set = (x: number, y: number, t: number) => { if (x >= 0 && x < WT && y >= 0 && y < HT) fg[y][x] = t; };
   const carve = (x0: number, y0: number, x1: number, y1: number) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.EMPTY); };
@@ -74,6 +77,7 @@ export function generateWorld(): World {
   anchors.dock = { x: px(X.dockEnd - 1), y: floorY(SURF - 1) };
   anchors.river = { x: px(X.riverL - 3), y: floorY(SURF) };
   props.push({ key: 'w_boat', x: px(X.dockEnd + 3), y: floorY(SURF) + 6, id: 'boat', depth: 4 });
+  fog.push({ x: px(X.riverL), y: floorY(SURF) - 50, w: px(X.riverR - X.riverL), h: 60 });
 
   // ---- clock tower (built from blocks; climb the plank platforms inside) ----
   const top = SURF - 32;
@@ -98,11 +102,27 @@ export function generateWorld(): World {
   anchors.towerDoor = { x: px(X.towerL) - 8, y: floorY(SURF) };
   anchors.bell = { x: px(X.towerL + 4) + 8, y: floorY(top + 2) };
   props.push({ key: 'pt_rope', x: px(X.towerL + 6), y: floorY(top + 2), scale: 0.35, id: 'rope', depth: 3 });
-  props.push({ key: 'w_clock', x: px(X.towerL + 4) + 8, y: floorY(top - 2), id: 'clock', depth: 6, scale: 1.6 });
-  lights.push({ x: px(X.towerL + 4) + 8, y: floorY(top - 4), r: 5, id: 'towerclock' });
+  // Spire + clock face on top, candle-lit arched windows and a candle on each landing inside.
+  const towerMid = px(X.towerL + 4) + 8;
+  props.push({ key: 'w_spire', x: towerMid, y: floorY(top - 2), depth: -0.5 });
+  props.push({ key: 'w_clock', x: towerMid, y: floorY(top - 2) - 14, id: 'clock', depth: 6, scale: 1.4 });
+  lights.push({ x: towerMid, y: floorY(top - 2) - 36, r: 6, id: 'towerclock' });
+  for (const wy of [SURF - 6, SURF - 15, SURF - 24]) {
+    props.push({ key: 'w_towerwin', x: towerMid, y: floorY(wy), depth: -0.5 });
+    lights.push({ x: towerMid, y: floorY(wy) - 30, r: 5 });
+  }
+  for (let i = 1; SURF - i * 3 > top + 3; i += 2) {
+    const ly = SURF - i * 3;
+    props.push({ key: 'w_candle', x: px(X.towerL + 1) + 8, y: floorY(ly), depth: 2 });
+  }
+  anchors.clock = { x: towerMid, y: floorY(top - 2) - 36 };
+  // A cold cloud that clings to the spire and spills down the tower's shoulders.
+  fog.push({ x: towerMid - 110, y: floorY(top - 11), w: 220, h: 110, density: 2.2 });
+  fog.push({ x: towerMid - 160, y: floorY(top + 1), w: 320, h: 60, density: 1.3 });
 
   // ---- houses, well, lamps, clutter ----
   props.push({ key: 'gv_cem_graveyard', x: px(X.cemetery), y: floorY(SURF), depth: -5 });
+  fog.push({ x: px(3), y: floorY(SURF) - 70, w: px(26), h: 70 });
   props.push({ key: 'gv_house-a', x: px(X.school), y: floorY(SURF), id: 'school', depth: -2 });
   props.push({ key: 'gv_house-c', x: px(X.house), y: floorY(SURF), id: 'house', depth: -2 });
   props.push({ key: 'gv_house-b', x: px(X.workshop), y: floorY(SURF), depth: -2 });
@@ -156,10 +176,12 @@ export function generateWorld(): World {
   props.push({ key: 'gv_column', x: px(X.chamber - 9), y: floorY(chamberFloor), depth: -1, scale: 0.8 });
   props.push({ key: 'gv_column', x: px(X.chamber + 9), y: floorY(chamberFloor), depth: -1, scale: 0.8, flip: true });
   anchors.chamber = { x: px(X.chamber), y: floorY(chamberFloor) };
+  fog.push({ x: px(X.chamber - 12), y: floorY(chamberFloor) - 40, w: px(24), h: 40, density: 0.8 });
   anchors.pedestal = { x: px(X.chamber) + 8, y: floorY(chamberFloor) - 22 };
+  lights.push({ x: px(X.chamber) + 8, y: floorY(chamberFloor) - 22, r: 4 }); // the Echo Lantern smoulders even before it wakes
   anchors.shaftTop = { x: px(X.well) + 8, y: floorY(SURF + 1) };
 
-  return { fg, bg, water, props, lights, anchors };
+  return { fg, bg, water, props, lights, fog, anchors };
 }
 
 /** Story hook: seal / open the well shaft (surface tiles over it). */

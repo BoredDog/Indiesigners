@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { StoryAudio } from '../story/audio';
+import { comicSettings } from '../comic';
 import { Director, type StorySave } from '../world/Director';
 import { Lighting, type LightSource } from '../world/Lighting';
 import { EPISODES } from '../world/script';
@@ -28,9 +29,10 @@ function writeStory(s: StorySave) {
 
 export interface Npc {
   sprite: Phaser.GameObjects.Sprite;
-  base: 'woman' | 'bearded' | 'oldman' | 'figure' | 'elias' | 'ivy' | 'luke' | 'hanna'; // anim prefix or ghost sprite
+  base: 'woman' | 'bearded' | 'oldman' | 'figure' | 'elias' | 'ivy' | 'luke' | 'hanna' | 'nia'; // anim prefix or ghost sprite
   ghost: boolean;
   homeY: number;
+  deco?: Phaser.GameObjects.Image; // follows the sprite (Nia's flower)
 }
 
 /**
@@ -53,6 +55,8 @@ export class StoryScene extends Phaser.Scene {
   director!: Director;
   private lighting!: Lighting;
   private parallax: { img: Phaser.GameObjects.TileSprite; f: number }[] = [];
+  private skyGrad?: Phaser.GameObjects.Image;
+  private skyFeather?: Phaser.GameObjects.Image;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private mining?: { tx: number; ty: number; t: number; crack: Phaser.GameObjects.Image };
   private glow!: Phaser.GameObjects.Image;
@@ -79,8 +83,14 @@ export class StoryScene extends Phaser.Scene {
     this.buildBackdrop();
     this.buildMap();
     this.buildProps();
+    this.buildFog();
     this.buildPlayer();
     this.lighting = new Lighting(this, this.world.fg, DEPTH.light);
+    // Warm halos on every fixed light (lamps, windows, candles, the clock) so lit things read as lit.
+    for (const l of this.world.lights) {
+      const halo = this.add.image(l.x, l.y, 'w_glow').setDepth(DEPTH.glow).setBlendMode(Phaser.BlendModes.ADD).setTint(0xffb860).setAlpha(0.32).setScale(l.r * 0.11);
+      if (!comicSettings.reduceFlashing) this.tweens.add({ targets: halo, alpha: 0.24, duration: 900 + Math.random() * 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    }
     this.glow = this.add.image(0, 0, 'w_glow').setDepth(DEPTH.glow).setBlendMode(Phaser.BlendModes.ADD).setTint(0x9fe8ff);
 
     const cam = this.cameras.main;
@@ -109,9 +119,39 @@ export class StoryScene extends Phaser.Scene {
   private buildBackdrop() {
     // Parallax (fixed to the camera, scrolled by hand): mountains, town skyline, middleground.
     const vw = W / ZOOM, vh = H / ZOOM;
+    // Night-sky gradient that continues above the skyline art (no hard edge when you climb high).
+    if (!this.textures.exists('w_skygrad')) {
+      // The bottom colour is the skyline art's own top row (with its tint), so the two meet.
+      // The town skyline is the tallest layer and has its own opaque sky band, so that is the
+      // edge the gradient has to meet.
+      const px = this.textures.getPixel(2, 0, 'gv_town_bg');
+      const tint = Phaser.Display.Color.IntegerToColor(0x7070a8);
+      const join = px ? Phaser.Display.Color.RGBToString(Math.round((px.red * tint.red) / 255), Math.round((px.green * tint.green) / 255), Math.round((px.blue * tint.blue) / 255)) : '#1a1528';
+      const t = this.textures.createCanvas('w_skygrad', 4, 256)!;
+      const c = t.getContext(), g = c.createLinearGradient(0, 0, 0, 256);
+      g.addColorStop(0, '#07060f');
+      g.addColorStop(1, join);
+      c.fillStyle = g;
+      c.fillRect(0, 0, 4, 256);
+      t.refresh();
+      // Feathers the top of the furthest skyline into the sky, so its clouds fade in rather
+      // than starting at a hard edge.
+      const f = this.textures.createCanvas('w_skyfeather', 4, 64)!;
+      const fc = f.getContext(), fg = fc.createLinearGradient(0, 0, 0, 64);
+      fg.addColorStop(0, join);
+      const jc = Phaser.Display.Color.HexStringToColor(join);
+      fg.addColorStop(1, `rgba(${jc.red},${jc.green},${jc.blue},0)`);
+      fc.fillStyle = fg;
+      fc.fillRect(0, 0, 4, 64);
+      f.refresh();
+    }
+    this.skyFeather = this.add.image(W / 2, H / 2, 'w_skyfeather').setScrollFactor(0).setDepth(DEPTH.sky + 1.5).setOrigin(0.5, 0).setDisplaySize(vw + 4, 64);
+    this.skyGrad = this.add.image(W / 2, H / 2, 'w_skygrad').setScrollFactor(0).setDepth(DEPTH.sky - 1).setDisplaySize(vw + 4, 256);
     const layer = (key: string, f: number, tint: number, alpha = 1) => {
       const src = this.textures.get(key).getSourceImage();
-      const img = this.add.tileSprite(W / 2, H / 2, vw, src.height, key).setScrollFactor(0).setDepth(DEPTH.sky + this.parallax.length).setTint(tint).setAlpha(alpha);
+      // Drawn at 2x: one copy of the art (768px) is wider than the view (640px), so no building
+      // ever appears twice in the same frame.
+      const img = this.add.tileSprite(W / 2, H / 2, vw, src.height * 2, key).setTileScale(2).setScrollFactor(0).setDepth(DEPTH.sky + this.parallax.length).setTint(tint).setAlpha(alpha);
       this.parallax.push({ img, f });
     };
     layer('gv_cem_bg', 0.04, 0x6a6aa0);
@@ -150,6 +190,30 @@ export class StoryScene extends Phaser.Scene {
     }
   }
 
+  /** Slow, eerie fog (CC0 smoke sprites) drifting through the zones the map marks. */
+  private buildFog() {
+    // smoke_10 is ring-shaped and reads as a donut, so only the soft puffs are used.
+    const tex = ['smoke_04', 'smoke_07'].filter((k) => this.textures.exists(k));
+    if (!tex.length) return;
+    this.world.fog.forEach((z, i) => {
+      const em = this.add.particles(0, 0, tex[i % tex.length], {
+        x: { min: z.x, max: z.x + z.w },
+        y: { min: z.y, max: z.y + z.h },
+        lifespan: 9000,
+        speedX: { min: -6, max: 4 },
+        speedY: { min: -3, max: 1 },
+        scale: { min: 0.25, max: 0.55 },
+        alpha: { onEmit: () => 0, onUpdate: (_p: Phaser.GameObjects.Particles.Particle, _k: string, t: number) => Math.sin(t * Math.PI) * 0.12 * (z.density ?? 1) },
+        rotate: { min: 0, max: 360 },
+        tint: [0x8a96b8, 0x9aa8c0, 0x6e7896],
+        frequency: Math.max(220, 1400 - z.w * 2),
+        advance: 9000,
+      });
+      // Above the lighting overlay: fog catches what little light there is instead of vanishing.
+      em.setDepth(DEPTH.light + 0.5);
+    });
+  }
+
   private buildPlayer() {
     const s = this.world.anchors.start;
     this.player = this.physics.add.sprite(s.x, s.y - 30, 'gv_hatman_idle').setDepth(DEPTH.actors).setOrigin(0.5, 1);
@@ -170,16 +234,24 @@ export class StoryScene extends Phaser.Scene {
   npc(base: Npc['base'], x: number, y: number, opts: { ghost?: boolean; flip?: boolean; tint?: number } = {}): Npc {
     // Ivy / Luke / Hanna use the team's pixel sprites (same faces as their portraits).
     const named = base === 'ivy' || base === 'luke' || base === 'hanna';
-    const tex = named ? `gh_${base}` : { woman: 'gv_woman_idle', bearded: 'gv_bearded_idle', oldman: 'gv_oldman_idle', figure: 'gv_figure_idle', elias: 'gv_hatman_idle' }[base];
+    // Nia is a child: the villager woman sprite at child height.
+    const tex = named ? `gh_${base}` : { woman: 'gv_woman_idle', nia: 'gv_woman_idle', bearded: 'gv_bearded_idle', oldman: 'gv_oldman_idle', figure: 'gv_figure_idle', elias: 'gv_hatman_idle' }[base];
     const sprite = this.add.sprite(x, y, tex).setOrigin(0.5, 1).setDepth(DEPTH.actors - 1).setFlipX(!!opts.flip);
-    if (!named) sprite.play(`${base}_idle`);
+    if (!named) sprite.play(`${base === 'nia' ? 'woman' : base}_idle`);
+    if (base === 'nia') sprite.setScale(0.62);
     if (opts.ghost) sprite.setTint(opts.tint ?? 0xaee8ff).setAlpha(0.85);
     else if (opts.tint) sprite.setTint(opts.tint);
     const n: Npc = { sprite, base, ghost: !!opts.ghost, homeY: y };
+    // Nia's white flower keeps its real colours even when she is a ghost: the one living thing.
+    if (base === 'nia') n.deco = this.add.image(x, y, 'w_flower').setOrigin(0.5, 1).setDepth(DEPTH.actors);
     this.npcs.push(n);
     return n;
   }
   removeNpc(n: Npc) {
+    // If the camera was watching them, it holds still where it is until the script moves it.
+    const cam = this.cameras.main;
+    if ((cam as unknown as { _follow: unknown })._follow === n.sprite) cam.stopFollow();
+    n.deco?.destroy();
     n.sprite.destroy();
     this.npcs = this.npcs.filter((m) => m !== n);
   }
@@ -249,6 +321,10 @@ export class StoryScene extends Phaser.Scene {
       if (Math.random() < 0.005) n.sprite.setAlpha(0.35);
       else n.sprite.setAlpha(Math.min(0.85, n.sprite.alpha + 0.03));
     }
+    for (const n of this.npcs) if (n.deco) {
+      const s = n.sprite;
+      n.deco.setPosition(s.x + (s.flipX ? -2 : 2), s.y - s.displayHeight + 9).setAlpha(Math.min(1, s.alpha + 0.15));
+    }
 
     // Parallax: anchored so the skyline sits on the street.
     const cam = this.cameras.main;
@@ -257,7 +333,13 @@ export class StoryScene extends Phaser.Scene {
       p.img.tilePositionX = view.x * p.f;
       const vy = SURF * TILE - view.y; // street level in view pixels
       p.img.y = H / 2 - H / ZOOM / 2 + vy - p.img.height / 2 + 6 + (1 - p.f) * 4;
-      p.img.setVisible(vy > -40);
+    }
+    // Sky gradient sits directly above the town skyline (the tallest layer).
+    const far = this.parallax[1]?.img;
+    if (far && this.skyGrad) {
+      const top = far.y - far.height / 2;
+      this.skyGrad.setDisplaySize(W / ZOOM + 4, Math.max(256, top - (H / 2 - H / ZOOM / 2) + 4)).setOrigin(0.5, 1).setPosition(W / 2, top + 2);
+      this.skyFeather?.setPosition(W / 2, top);
     }
 
     // Lighting.

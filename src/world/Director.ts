@@ -211,8 +211,23 @@ export class Director {
     cam.pan(x, y, ms, 'Sine.easeInOut');
     await this.wait(ms + 50);
   }
-  follow() {
-    this.world.cameras.main.startFollow(this.player, true, 0.12, 0.12, 0, 30);
+  /**
+   * Hands the camera back to Elias. It eases over to him first, so coming back from a pan or a
+   * watched NPC is one smooth move instead of a snap.
+   */
+  async follow(ms = 900) {
+    const cam = this.world.cameras.main;
+    cam.stopFollow();
+    const tx = this.player.x, ty = this.player.y - 30;
+    if (ms > 0 && Math.hypot(cam.midPoint.x - tx, cam.midPoint.y - ty) > 8) {
+      cam.pan(tx, ty, ms, 'Sine.easeInOut');
+      await this.wait(ms + 30);
+    }
+    cam.startFollow(this.player, true, 0.12, 0.12, 0, 30);
+  }
+  /** The camera drifts after an NPC (people running in a memory stay in frame). */
+  watch(n: Npc) {
+    this.world.cameras.main.startFollow(n.sprite, true, 0.05, 0.05, 0, 30);
   }
   flag(k: string, v: number | boolean | string = true) {
     this.save.flags[k] = v;
@@ -253,6 +268,24 @@ export class Director {
     this.scene.tweens.add({ targets: t, scale: 1, duration: 160, ease: 'Back.Out' });
     this.scene.tweens.add({ targets: t, alpha: 0, delay: 900, duration: 500, onComplete: () => t.destroy() });
     await this.wait(450);
+  }
+  /**
+   * A bell toll you can see: pale rings swell out from (x, y) in the world, and the camera
+   * shudders once. Used instead of a comic sound word.
+   */
+  async toll(x: number, y: number, rings = 3) {
+    const w = this.world;
+    w.cameras.main.shake(260, 0.0025);
+    for (let i = 0; i < rings; i++) {
+      const g = w.add.graphics().setDepth(21).setBlendMode(Phaser.BlendModes.ADD);
+      const o = { r: 6, a: 0.55 };
+      w.tweens.add({
+        targets: o, r: 90, a: 0, duration: 1500, delay: i * 220, ease: 'Sine.Out',
+        onUpdate: () => g.clear().lineStyle(2, 0xcfe6ff, o.a).strokeCircle(x, y, o.r),
+        onComplete: () => g.destroy(),
+      });
+    }
+    await this.wait(900);
   }
   /** Memory echo: teal-tinted dark, scanlines, desaturated. */
   memory(on: boolean) {
@@ -356,14 +389,19 @@ export class Director {
     this.busyUi = true;
     const ui = this.scene;
     const c = ui.add.container(0, 0).setDepth(25);
-    if (opts.prompt) {
-      c.add(panel(ui, 200, H - 300, W - 400, 120, 0.8));
-      c.add(ptext(ui, W / 2, H - 240, opts.prompt, 40, '#d8d0e8', W - 500).setOrigin(0.5));
-    }
+    // Laid out from the bottom up: buttons, then the timer bar, then the prompt, with even gaps.
     const cols = options.length > 2 ? 2 : options.length;
-    const bw = 700, bh = 84, gap = 22;
+    const bw = 720, bh = 84, gap = 24;
     const total = cols * bw + (cols - 1) * gap;
-    const top = H - 170 - Math.ceil(options.length / cols) * (bh + gap) + (opts.prompt ? 0 : 60);
+    const rows = Math.ceil(options.length / cols);
+    const top = H - 70 - rows * bh - (rows - 1) * gap;
+    if (opts.prompt) {
+      const pt = ptext(ui, W / 2, 0, opts.prompt, 40, '#d8d0e8', total - 80).setOrigin(0.5, 0).setAlign('center');
+      const ph = pt.height + 44;
+      const py = top - (opts.timer ? 48 : 28) - ph;
+      pt.setY(py + 22);
+      c.add([panel(ui, W / 2 - total / 2, py, total, ph, 0.92), pt]);
+    }
     let picked = -1;
     options.forEach((o, i) => {
       const col = i % cols, row = Math.floor(i / cols);
@@ -387,7 +425,7 @@ export class Director {
         if (limit) {
           t += this.lastDt;
           const k = Math.max(0, 1 - t / limit);
-          bar!.clear().fillStyle(0x000000, 0.5).fillRect(W / 2 - total / 2, top - 30, total, 12).fillStyle(k > 0.3 ? 0xffe08a : 0xe07070, 1).fillRect(W / 2 - total / 2, top - 30, total * k, 12);
+          bar!.clear().fillStyle(0x000000, 0.5).fillRect(W / 2 - total / 2, top - 30, total, 10).fillStyle(k > 0.3 ? 0xffe08a : 0xe07070, 1).fillRect(W / 2 - total / 2, top - 30, total * k, 10);
           if (t >= limit && picked < 0) picked = opts.silent ?? options.length - 1;
         }
         return picked >= 0;
@@ -406,9 +444,14 @@ export class Director {
     if (!this.save.remembered.includes(`${who}: ${what}`)) this.save.remembered.push(`${who} ${what}`);
     this.onSave(this.save);
     const ui = this.scene;
-    const t = ptext(ui, W - 40, 130, `${who} ${what}`, 38, '#ffe08a').setOrigin(1, 0).setAlpha(0).setDepth(30);
-    ui.tweens.add({ targets: t, alpha: 1, x: W - 60, duration: 300 });
-    ui.tweens.add({ targets: t, alpha: 0, delay: 2600, duration: 600, onComplete: () => t.destroy() });
+    // Second toast row (the evidence toast uses the first), so the two never overlap.
+    const c = ui.add.container(0, 0).setDepth(30).setAlpha(0);
+    const t = ptext(ui, 0, 0, `${who} ${what}`, 34, '#ffe08a');
+    const w = t.width + 48;
+    t.setPosition(W - 40 - w + 24, 214);
+    c.add([panel(ui, W - 40 - w, 202, w, 60, 0.92), t]);
+    ui.tweens.add({ targets: c, alpha: 1, duration: 300 });
+    ui.tweens.add({ targets: c, alpha: 0, delay: 2600, duration: 600, onComplete: () => c.destroy() });
     this.audio.tone('chime');
   }
 
@@ -448,22 +491,27 @@ export class Director {
     this.badge.setText(`+${this.unseen}`);
     const node = NODES.find((n) => n.id === id);
     const ui = this.scene;
-    const c = ui.add.container(W + 20, 130).setDepth(30);
-    const t = ptext(ui, 20, 12, `NEW ON THE BOARD:  ${node?.title ?? id}`, 34, '#bfefff');
-    c.add([panel(ui, 0, 0, t.width + 40, 60, 0.9), t]);
-    ui.tweens.add({ targets: c, x: W - t.width - 70, duration: 300, ease: 'Back.Out' });
+    const c = ui.add.container(W + 20, 126).setDepth(30);
+    const t = ptext(ui, 24, 12, `NEW EVIDENCE: ${node?.title ?? id}`, 34, '#bfefff');
+    c.add([panel(ui, 0, 0, t.width + 48, 60, 0.92), t]);
+    ui.tweens.add({ targets: c, x: W - 40 - (t.width + 48), duration: 300, ease: 'Back.Out' });
     ui.tweens.add({ targets: c, x: W + 20, delay: 2800, duration: 300, onComplete: () => c.destroy() });
   }
   /** Big lower-third the first time we meet someone. */
   async nameCard(name: string, role: string) {
     const ui = this.scene;
-    const c = ui.add.container(-700, H * 0.62).setDepth(30);
-    c.add(panel(ui, 0, 0, 640, 120, 0.95));
-    c.add(label(ui, 30, 14, name, 64));
-    c.add(ptext(ui, 32, 80, role, 32, '#bfefff'));
+    // Sized to its text: 36px padding, a gold accent bar, the role under the name with a clear gap.
+    const pad = 36;
+    const title = label(ui, pad + 14, pad - 8, name, 64).setOrigin(0, 0);
+    const sub = ptext(ui, pad + 16, pad - 8 + title.height + 4, role, 32, '#bfefff');
+    const w = Math.max(title.width, sub.width) + pad * 2 + 14;
+    const h = sub.y + sub.height + pad - 6;
+    const c = ui.add.container(-w - 40, H * 0.58).setDepth(30);
+    const bar = ui.add.rectangle(pad - 6, pad - 4, 6, h - pad * 2 + 8, 0xffe08a).setOrigin(0);
+    c.add([panel(ui, 0, 0, w, h, 0.96), bar, title, sub]);
     ui.tweens.add({ targets: c, x: 60, duration: 400, ease: 'Back.Out' });
     await this.wait(1900);
-    ui.tweens.add({ targets: c, x: -700, duration: 300, onComplete: () => c.destroy() });
+    ui.tweens.add({ targets: c, x: -w - 40, duration: 300, onComplete: () => c.destroy() });
   }
   /** Open the board on a question; resolves once the player links the right clue. */
   deduce(id: string): Promise<void> {
@@ -570,23 +618,27 @@ export class Director {
     this.objective(null);
     const c = ui.add.container(0, 0).setDepth(60);
     c.add(ui.add.rectangle(0, 0, W, H, 0x05040a, 0.96).setOrigin(0));
-    c.add(label(ui, W / 2, 130, 'INVESTIGATION COMPLETE', 90).setOrigin(0.5));
-    const ending = this.save.flags.ending === 'light' ? 'The clock moved.' : 'The loop.';
+    c.add(label(ui, W / 2, 130, 'THE END', 90).setOrigin(0.5));
+    const ending = this.save.flags.ending === 'light' ? '2:18. You remembered.' : 'Come home, Eli. You forgot again.';
     c.add(ptext(ui, W / 2, 220, `Ending: ${ending}`, 46, '#7fe0d4').setOrigin(0.5));
-    c.add(ptext(ui, W / 2 - 600, 300, 'THEY REMEMBERED', 40, '#ffe08a'));
-    c.add(ptext(ui, W / 2 - 600, 350, this.save.remembered.join('\n') || '—', 34, '#ffffff', 560));
-    c.add(ptext(ui, W / 2 + 60, 300, 'WHAT YOU SAW', 40, '#ffe08a'));
+    // Two equal cards, centred with a 40px gutter; consistent 32px inner padding.
+    const cw = 600, ch = 330, top = 290, pad = 32;
+    const card = (x: number, head: string, body: string) => {
+      c.add(panel(ui, x, top, cw, ch, 0.9));
+      c.add(ptext(ui, x + pad, top + pad - 6, head, 38, '#ffe08a'));
+      c.add(ptext(ui, x + pad, top + pad + 50, body, 34, '#ffffff', cw - pad * 2).setLineSpacing(10));
+    };
     const f = this.save.flags;
-    const seen = [
-      `${f.sawLanternIvy ? '●' : '○'} The lantern in Ivy's crowd`,
+    card(W / 2 - 20 - cw, 'THEY REMEMBERED', this.save.remembered.join('\n') || 'Nobody. You kept quiet.');
+    card(W / 2 + 20, 'WHAT YOU SAW', [
+      `${f.sawLanternIvy ? '●' : '○'} The lantern in Ivy’s crowd`,
       `${f.sawCarried ? '●' : '○'} What the figure carried`,
-      `${f.heardHanna ? '●' : '○'} Hanna almost said his name`,
-      `${f.pushedBoat ? '●' : '○'} Luke's boat got away`,
+      `${f.heardHanna ? '●' : '○'} Hanna almost said your name`,
+      `${f.pushedBoat ? '●' : '○'} You helped push Luke’s boat`,
       `Evidence found: ${this.save.found.length}`,
-    ];
-    c.add(ptext(ui, W / 2 + 60, 350, seen.join('\n'), 34, '#ffffff', 560));
-    c.add(ptext(ui, W / 2, H - 260, 'Some memories could have gone another way.', 40, '#d8d0e8').setOrigin(0.5));
-    c.add(pbutton(ui, W / 2 - 320, H - 150, 380, 80, 'PLAY AGAIN', () => this.world.scene.restart({ fresh: true })));
-    c.add(pbutton(ui, W / 2 + 120, H - 150, 300, 80, 'TITLE', () => this.world.scene.start('Title')));
+    ].join('\n'));
+    c.add(ptext(ui, W / 2, top + ch + 70, 'Some memories could have gone another way.', 38, '#d8d0e8').setOrigin(0.5));
+    c.add(pbutton(ui, W / 2 - 200, H - 150, 360, 80, 'PLAY AGAIN', () => this.world.scene.restart({ fresh: true })));
+    c.add(pbutton(ui, W / 2 + 200, H - 150, 360, 80, 'TITLE SCREEN', () => this.world.scene.start('Title')));
   }
 }

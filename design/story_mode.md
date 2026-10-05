@@ -16,19 +16,51 @@ Echoes of Sorrow told as a **Terraria-style side-view world** (Gothicvania CC0 t
 | 6 | Nia appeared out of nowhere in the final episode | Planted early: the child's toy in the prologue, the "ELI + NIA" drawing in the schoolhouse, and the small bundle the figure carries at the river. All on the board, linked to Nia at the end |
 | 7 | Every memory opened with the same QTE | Ivy: timing (steady the lantern) · Luke: mash (push the boat) · Hanna: press (reach for her) · tunnel: press (run) · chamber: mash (hold the light) |
 | 8 | The final choice didn't say what it meant | "REMEMBER: let the clock move, the ghosts can rest, I carry it" vs "FORGET: use the lantern on myself. Again." |
-| 9 | Choices felt free of consequence | "Ivy will remember that." on key choices; Hanna recalls whether you asked her name; spotting the figure (Ivy, Luke) and hearing Hanna change Elias's finale lines; the summary lists it all |
+| 9 | Choices felt free of consequence | "Ivy will remember that." on key choices; Hanna recalls whether you asked her name; spotting the figure (Ivy, Luke) and hearing Hanna change Elias's finale lines. Each ghost's goodbye in the good ending depends on what you said to them, and on whether you helped Luke push the boat. The summary lists it all |
 
 ## Evidence board (`src/world/board.ts`)
 The board is laid out in columns: **People · What they remember · The village · Questions · The figure**.
 - **Found cards** show an icon and a one-line caption. Click a card to read the detail.
-- **"?" cards** are clues you haven't found yet, each with a hint ("Climb the clock tower").
-- **Lines** appear once both ends are found. Red dashed lines mark a **contradiction** and gold lines a **revelation**.
-- **Deductions** are red question cards. Click one, then click the clue that answers it. A wrong clue gets "That doesn't fit." and a small shake. At three story beats the board opens on the question and waits:
+- **"?" cards** are clues you haven't found yet. Their hints are deliberately vague ("Somewhere in the village") so the board never spoils a find.
+- **No lines.** Lines across five columns always cut through some card, so the board draws none. Each card has a "N LINKS" tag on its top edge. Clicking a card dims everything unrelated and lights up the cards it links to. Each lit card's tag says why ("RANG, BUT NOBODY PULLED IT"). Cyan marks a link, red a **contradiction**, gold a **revelation**. The panel at the bottom repeats the links in words.
+- **Deductions** are red question cards. Click one, or the story opens it for you. The question then sits in a banner across the top. Clicking a clue only **reads** it; the **PRESENT THIS CLUE** button submits it, so nothing is guessed by accident. A wrong answer explains why it doesn't fit and costs nothing. After two wrong answers the banner shows a hint. At three story beats the board opens on the question and waits:
   1. **What does the key open?** → the lock on the well. This sends you underground.
-  2. **Did time stop at 2:17?** → Luke's 2:31 watch (or the records). This is the contradiction.
+  2. **Did time stop at 2:17?** → Luke's 2:31 watch, or the watchman's log. This is the contradiction.
   3. **Who is the figure?** → the burned photo's fourth face. The THE FIGURE card flips to ELIAS. The player makes the twist.
 
 Edit nodes, links and answers in the `NODES`, `LINKS` and `DEDUCTIONS` tables.
+
+## The throughline
+One idea ties every beat together: **Nia rings the bell, and every year her brother comes home and chooses whether to remember her.**
+
+| Planted in Episode 1 | Paid off |
+|---|---|
+| A letter in a child's hand: COME HOME, ELI | The drawing in the schoolhouse is in the same hand (Ep 1). Nia: "I don't mind writing the letter." (Finale) |
+| The bell rings, but the rope is thick with dust | Nia rings it (Finale) |
+| A wooden toy horse rolls to his boot | Nia: "You found my horse." He keeps it in the good ending |
+| Hanna: "Don't trust the first memory you see. Not even your own." | Elias erased his own memory (Ep 6) |
+| Hanna: "You always come back to this house." (Ep 4) | The forget ending is a loop, and the letter is worn from rereading |
+| Ivy: "You have the look of a boy I used to teach." (Ep 2) | Elias was Veyra's apprentice |
+| Luke: "Someone helped me push the last boat." (Ep 3) | The push QTE, and the figure carrying Nia in her blanket |
+| The blanket folded beside the plinth (Ep 5) | He carried her there himself (Ep 6) |
+
+### Timeline of the night
+| Time | What happens | Where the player sees it |
+|---|---|---|
+| ~2:05 | Elias carries Nia, wrapped in a blanket, toward the well | Luke's memory (if you watch the bank) |
+| 2:17 | The lantern wakes under the well. The bell tolls and every clock stops | Ivy's memory, Luke's memory, Ep 6 |
+| 2:17–2:31 | The night runs on for fourteen minutes: the river turns, Luke loads the boats, Hanna follows the sound to the well (2:20) | Luke's and Hanna's memories, the watchman's log |
+| 2:31 | The light takes the village. Elias cuts his hand on the cage, locks the well and drops the key in the square | Luke's watch, Ep 6 |
+| Ten years later | Found on a road with no memory and the lantern, Elias works as a ghost hunter. Every year Nia rings the bell and writes the letter | Opening, finale |
+| 2:18 | In the good ending the clock finally moves on | Finale |
+
+What happened that night, stated plainly in Episode 6: Elias tried to draw Nia's fever out with the Echo Lantern. Instead, the lantern drew in the whole village. Ivy, Luke and Hanna were caught at the edge of the light, half here. He then rewrote their memories and the records, and finally his own.
+
+## Writing style
+- Headings, buttons, banners and QTE prompts are in CAPS. Everything else is sentence case with full punctuation.
+- One name per character. Name cards use a short role in sentence case ("The boatman").
+- Use no "·" separators or em-dash asides in player-facing text; write them as full sentences instead.
+- Objectives are imperative sentences ending in a full stop ("Go to the river dock.").
 
 ## Episodes (`src/world/script.ts`)
 1. **Enter Veyra:** arrival, the bell, the toy, the figure in the window; free investigation (footprints → key, bell rope at the top of the tower, the woman in the doorway, records and photo; optional well and schoolhouse) → deduction 1.
@@ -36,8 +68,8 @@ Edit nodes, links and answers in the `NODES`, `LINKS` and `DEDUCTIONS` tables.
 3. **Luke:** the boatman; mash QTE; choose whom to watch; 2:31 vs 2:17 → deduction 2.
 4. **Hanna:** identified; her memory leads to the well; press QTE; unlock the well; **dig through the rubble**.
 5. **Under Veyra:** the vault records (memory alteration), the collapse QTE, the deepest chamber.
-6. **The true memory:** deduction 3 (who is the figure), young Elias, Nia, the network, every memory rewritten.
-7. **Finale:** remember (2:17 → 2:18, ghosts rest, dawn) or forget (the loop).
+6. **The true memory:** deduction 3 (who is the figure), young Elias, Nia's fever, the lantern takes the village, and every memory is rewritten.
+7. **Finale:** the bell rings once more and Nia appears. Then remember (2:17 → 2:18; each ghost says goodbye; dawn; Nia last) or forget (the loop restarts with a worn letter).
 
 ## Files
 | File | What it is |
@@ -51,6 +83,7 @@ Edit nodes, links and answers in the `NODES`, `LINKS` and `DEDUCTIONS` tables.
 | `tools/shots-story.ts` | Screenshot run (`npm run test:story`) |
 
 ## Known gaps
-- Ivy, Luke and Hanna have no walk animation (they're ghosts, so they float). Nia has no sprite; she only speaks.
+- Ivy, Luke and Hanna have no walk animation (they're ghosts, so they float). Nia uses the villager woman sprite scaled to child height, tinted as a ghost, with a three-pixel white flower in her hair. She has no portrait yet.
 - Rubble at the well is the only place digging is required; you can dig other dirt underground freely.
 - Text speed and skip-scene settings are not built yet.
+- Memories: the camera drifts after whoever is moving (`d.watch(npc)`), and `await d.follow()` eases back to Elias rather than snapping. Bells are shown as expanding rings (`d.toll`), never sound words.

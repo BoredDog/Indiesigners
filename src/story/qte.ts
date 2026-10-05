@@ -7,6 +7,7 @@ import Phaser from 'phaser';
 import { COLORS, FONTS, TEXT_RESOLUTION, comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import type { Director } from '../world/Director';
+import { PIX } from '../world/ui';
 
 type KeyName = 'SPACE' | 'E' | 'F';
 const DEPTH = 70;
@@ -26,13 +27,13 @@ export class Qte {
     const layer = s.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH);
     layer.add(s.add.rectangle(0, 0, W, H, 0x000000, 0.35).setOrigin(0).setInteractive());
     layer.add(label(s, W / 2, H * 0.24, prompt, 72, { color: '#e8fbff', strokeThickness: 12 }).setOrigin(0.5));
-    layer.add(s.add.text(W / 2, H * 0.24 + 70, how, { fontFamily: `"${FONTS.narration}"`, fontSize: '30px', color: '#cfe6ee', resolution: TEXT_RESOLUTION }).setOrigin(0.5));
+    layer.add(s.add.text(W / 2, H * 0.24 + 70, how, { fontFamily: PIX, fontSize: '34px', color: '#cfe6ee', resolution: TEXT_RESOLUTION }).setOrigin(0.5));
     const capW = key === 'SPACE' ? 260 : 120;
     layer.add(s.add.rectangle(W / 2 + 6, H * 0.62 + 6, capW, 100, COLORS.ink));
     const cap = s.add.rectangle(W / 2, H * 0.62, capW, 100, COLORS.paper).setStrokeStyle(6, COLORS.ink);
     const capText = s.add.text(W / 2, H * 0.62, key, { fontFamily: `"${FONTS.sfx}"`, fontSize: '54px', color: COLORS.inkCss, resolution: TEXT_RESOLUTION }).setOrigin(0.5);
     layer.add([cap, capText]);
-    layer.add(s.add.text(W / 2, H * 0.62 + 80, 'or click', { fontFamily: `"${FONTS.hand}"`, fontSize: '30px', color: '#cfe6ee', resolution: TEXT_RESOLUTION }).setOrigin(0.5));
+    layer.add(s.add.text(W / 2, H * 0.62 + 80, 'or click the mouse', { fontFamily: PIX, fontSize: '32px', color: '#cfe6ee', resolution: TEXT_RESOLUTION }).setOrigin(0.5));
     const g = s.add.graphics();
     layer.add(g);
     const pulse = () => {

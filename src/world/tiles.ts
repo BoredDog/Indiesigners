@@ -65,6 +65,8 @@ export function preloadWorld(scene: Phaser.Scene) {
   if (!scene.textures.exists('pt_lantern')) scene.load.image('pt_lantern', 'assets/pixel/props/lantern_EV.png');
   if (!scene.textures.exists('pt_watch')) scene.load.image('pt_watch', 'assets/pixel/props/pocket_watch.png');
   if (!scene.textures.exists('pt_rope')) scene.load.image('pt_rope', 'assets/pixel/props/bell_rope.png');
+  // Kenney Particle Pack (CC0) smoke for drifting fog.
+  for (const n of ['smoke_04', 'smoke_07', 'smoke_10']) if (!scene.textures.exists(n)) scene.load.image(n, `assets/story/particles/${n}.png`);
 }
 
 function canvasTex(scene: Phaser.Scene, key: string, w: number, h: number, paint: (c: CanvasRenderingContext2D) => void) {
@@ -126,19 +128,26 @@ export function buildWorldTextures(scene: Phaser.Scene) {
     c.fillStyle = '#bfefff'; c.fillRect(1, 2, 4, 6);
     c.fillStyle = '#ffffff'; c.fillRect(2, 3, 2, 3);
   });
-  canvasTex(scene, 'w_clock', 24, 24, (c) => {
-    c.fillStyle = '#1a1420'; c.beginPath(); c.arc(12, 12, 12, 0, 7); c.fill();
-    c.fillStyle = '#d8d0b0'; c.beginPath(); c.arc(12, 12, 10, 0, 7); c.fill();
-    c.fillStyle = '#1a1420';
-    for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; c.fillRect(Math.round(12 + Math.cos(a) * 8), Math.round(12 + Math.sin(a) * 8), 1, 1); }
-    c.fillRect(12, 11, 5, 2); // hour hand ≈ 2
-    c.fillRect(12, 12, 2, 7); c.fillRect(13, 15, 2, 3); // minute hand ≈ 17
+  // Clock faces with hands computed from the time, so the tower always reads exactly 2:17 (2:18 at the end).
+  canvasTex(scene, 'w_clock', 32, 32, (c) => drawClock(c, 2, 17, '#d8d0b0'));
+  canvasTex(scene, 'w_clock218', 32, 32, (c) => drawClock(c, 2, 18, '#fff4d0'));
+  // Tower spire (slate cone with a lit finial), 9 blocks wide.
+  canvasTex(scene, 'w_spire', 160, 112, (c) => {
+    for (let y = 0; y < 104; y++) {
+      const half = Math.round(4 + (y / 104) * 76);
+      c.fillStyle = y % 6 < 3 ? '#2a2638' : '#322d44';
+      c.fillRect(80 - half, 8 + y, half * 2, 1);
+      c.fillStyle = '#463e5e';
+      c.fillRect(80 - half, 8 + y, 2, 1);
+      c.fillStyle = '#15121e';
+      c.fillRect(80 + half - 2, 8 + y, 2, 1);
+    }
+    c.fillStyle = '#1a1622';
+    for (let y = 20; y < 104; y += 12) c.fillRect(80 - 1, 8 + y, 2, 6);
+    c.fillStyle = '#c8a040'; c.fillRect(79, 0, 2, 10); c.fillRect(76, 3, 8, 2);
   });
-  canvasTex(scene, 'w_clock218', 24, 24, (c) => {
-    c.fillStyle = '#1a1420'; c.beginPath(); c.arc(12, 12, 12, 0, 7); c.fill();
-    c.fillStyle = '#fff4d0'; c.beginPath(); c.arc(12, 12, 10, 0, 7); c.fill();
-    c.fillStyle = '#1a1420'; c.fillRect(12, 11, 5, 2); c.fillRect(12, 12, 2, 7); c.fillRect(13, 15, 3, 3);
-  });
+  // Candle-lit arched window, cut from the church tileset (2×4 blocks).
+  canvasTex(scene, 'w_towerwin', 32, 64, (c) => c.drawImage(src('gv_church_tiles'), 12 * TILE, 1 * TILE, 32, 64, 0, 0, 32, 64));
   canvasTex(scene, 'w_key', 8, 4, (c) => { c.fillStyle = '#b8a060'; c.fillRect(0, 0, 3, 3); c.fillRect(3, 1, 5, 1); c.fillRect(6, 2, 1, 2); c.fillStyle = '#6a1010'; c.fillRect(4, 1, 1, 1); });
   canvasTex(scene, 'w_steps', 24, 3, (c) => { c.fillStyle = 'rgba(10,6,10,0.8)'; for (let i = 0; i < 6; i++) c.fillRect(i * 4, i % 2 ? 0 : 2, 3, 1); });
   canvasTex(scene, 'w_boat', 40, 10, (c) => {
@@ -162,6 +171,22 @@ export function buildWorldTextures(scene: Phaser.Scene) {
     c.fillStyle = '#c84a6a'; c.fillRect(10, 5, 2, 4); c.fillRect(10, 3, 2, 2); // girl
     c.fillStyle = '#2a2a6a'; c.fillRect(5, 6, 5, 1); // holding hands
   });
+  // Nia's toy: a little wooden horse on a wheeled board (facing right).
+  canvasTex(scene, 'w_horse', 14, 12, (c) => {
+    c.fillStyle = '#7a4a24'; c.fillRect(3, 3, 7, 4); c.fillRect(9, 1, 3, 3); c.fillRect(11, 2, 2, 2); // body, neck, head
+    c.fillStyle = '#5a3418'; c.fillRect(4, 7, 1, 2); c.fillRect(8, 7, 1, 2); c.fillRect(2, 3, 1, 2); c.fillRect(9, 0, 1, 2); // legs, tail, ear
+    c.fillStyle = '#b8783c'; c.fillRect(3, 3, 7, 1); c.fillRect(9, 1, 3, 1);
+    c.fillStyle = '#c03030'; c.fillRect(5, 2, 3, 1); // red saddle
+    c.fillStyle = '#4a3020'; c.fillRect(1, 9, 12, 1);
+    c.fillStyle = '#2a1a10'; c.fillRect(2, 10, 2, 2); c.fillRect(10, 10, 2, 2); // wheels
+    c.fillStyle = '#111'; c.fillRect(12, 2, 1, 1); // eye
+  });
+  // A small white flower Nia wears in her hair.
+  // Tiny on purpose: a few pixels of white tucked into her hair, not a hat.
+  canvasTex(scene, 'w_flower', 3, 3, (c) => {
+    c.fillStyle = '#f4f0ff'; c.fillRect(1, 0, 1, 1); c.fillRect(0, 1, 1, 1); c.fillRect(2, 1, 1, 1); c.fillRect(1, 2, 1, 1);
+    c.fillStyle = '#ffd860'; c.fillRect(1, 1, 1, 1);
+  });
   canvasTex(scene, 'w_photo', 18, 14, (c) => {
     c.fillStyle = '#d8ccb0'; c.fillRect(0, 0, 18, 14);
     c.fillStyle = '#3a3028';
@@ -174,6 +199,32 @@ export function buildWorldTextures(scene: Phaser.Scene) {
     c.fillStyle = 'rgba(0,0,0,0.75)';
     for (const [x, y, w, h] of [[3, 3, 1, 5], [3, 7, 5, 1], [8, 2, 1, 7], [9, 9, 4, 1], [12, 9, 1, 4], [5, 11, 4, 1]]) c.fillRect(x, y, w, h);
   });
+}
+
+/** Clock face: 12 ticks and hour/minute hands drawn from the real angles. */
+function drawClock(c: CanvasRenderingContext2D, h: number, m: number, face: string) {
+  const R = 16;
+  c.fillStyle = '#1a1420'; c.beginPath(); c.arc(R, R, R, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#8a6a30'; c.beginPath(); c.arc(R, R, R - 1, 0, Math.PI * 2); c.fill();
+  c.fillStyle = face; c.beginPath(); c.arc(R, R, R - 3, 0, Math.PI * 2); c.fill();
+  c.fillStyle = '#2a2030';
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const len = i % 3 === 0 ? 3 : 2;
+    for (let r = R - 4 - len + 1; r <= R - 4; r++) c.fillRect(Math.round(R + Math.sin(a) * r - 0.5), Math.round(R - Math.cos(a) * r - 0.5), 1, 1);
+  }
+  const hand = (angle: number, len: number, w: number, color: string) => {
+    c.fillStyle = color;
+    for (let r = 0; r <= len; r += 0.5) {
+      const x = R + Math.sin(angle) * r, y = R - Math.cos(angle) * r;
+      c.fillRect(Math.round(x - w / 2), Math.round(y - w / 2), w, w);
+    }
+  };
+  const minuteA = (m / 60) * Math.PI * 2;
+  const hourA = ((h % 12) / 12 + m / 720) * Math.PI * 2;
+  hand(hourA, 7, 2, '#1a1420');
+  hand(minuteA, 11, 1, '#1a1420');
+  c.fillStyle = '#8a1a1a'; c.fillRect(R - 1, R - 1, 2, 2);
 }
 
 export function makeAnims(scene: Phaser.Scene) {
