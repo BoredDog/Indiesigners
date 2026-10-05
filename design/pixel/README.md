@@ -17,22 +17,33 @@ Preview of Scene 1: open `scene1_entering_veyra.html` in a browser. It is live a
 
 ## Scenes and owners
 
-| # | Scene (script_final) | Mockup + drafts | Final art | Wiring |
-|---|---|---|---|---|
-| 1 | Opening: entering Veyra | **done** (`art-src/pixel/scene1/`) | Vansh: backgrounds · Bhumi: Elias sheet | Vansh |
-| 2 | Opening: clock tower 2:17, DONG DONG | next | Vansh | Vansh |
-| 3 | Opening: toy rolls · figure in the window | todo | Vansh: street · Bhumi: toy, figure | Vansh |
-| 4 | Ten years ago: 5 comic panels | todo | Bhumi | Vansh |
-| 5 | Present-day village hub + 7 clues | todo | Vansh: hub + props | Vansh |
-| 6 | Unknown woman: abandoned room, rocking chair | todo | Bhumi: woman · Vansh: room | Vansh |
-| 7 | Ivy memory: schoolhouse at night | todo | Bhumi | Vansh |
-| 8 | Luke memory: river, boats, watch 2:31 | todo | Bhumi | Vansh |
-| 9 | Hanna memory: archive, hidden entrance | todo | Bhumi | Vansh |
-| 10 | Well, tunnels, lantern archive | todo | Vansh | Vansh |
-| 11 | Deepest chamber + finale (young Elias, sister) | todo | Bhumi: characters · Vansh: chamber | Vansh |
-| 12 | Title, Casebook, end screens (UI) | todo | Vansh | Vansh |
+Even split agreed in Team HQ (issue #3, comment 6002314625). Each person owns whole scenes. All wiring is Vansh's and is not counted in the hours.
 
-Split: **Vansh** gets environments, props, UI and all wiring (backgrounds, clue props, tunnels, chamber, menus). **Bhumi** gets characters and story panels (Elias walk/idle sheet + young Elias on the same outline, Ivy/Luke/Hanna/sister/unknown woman sprites and portraits, the 5 history panels, the three memory pages, finale panels).
+| # | Scene (script_final) | Mockup + drafts | Owner (final art) |
+|---|---|---|---|
+| 1 | Opening: entering Veyra | **done** · `art-src/pixel/scene1/` | Vansh |
+| 2 | Opening: clock tower 2:17, DONG DONG | **done** · `art-src/pixel/scene2/` | Vansh |
+| 3 | Opening: toy rolls · figure in the window | todo | Vansh |
+| 4 | Ten years ago: 5 comic panels | next | Bhumi |
+| 5 | Present-day village hub + 7 clues | todo | Vansh |
+| 6 | Unknown woman: room, rocking chair, woman, burned photo ×2 | todo | Vansh |
+| 7 | Ivy memory: schoolhouse at night | todo | Bhumi |
+| 8 | Luke memory: river, boats, watch 2:31 | todo | Bhumi |
+| 9 | Hanna memory: archive, hidden entrance | todo | Bhumi |
+| 10 | Well, tunnels, lantern archive | todo | Vansh |
+| 11 | Deepest chamber + finale (young Elias, sister) | todo | Bhumi |
+| 12 | Title, Casebook, end screens (UI) | todo | Vansh |
+
+Characters: **Vansh** owns the Elias walk/idle sheet, with young Elias on the same outline. **Bhumi** owns the Ivy, Luke, Hanna and sister sprites and portraits.
+
+Totals: Vansh ≈ 19 h (1, 2, 3, 5, 6, 10, 12 + Elias sheet). Bhumi ≈ 18.5 h (4, 7, 8, 9, 11 + witness/sister sprites and portraits).
+
+Order:
+- **Bhumi:** portraits (Hanna first) → 4 → 7 → 8 → 9 → 11.
+- **Vansh:** art starts after V20–V24.
+- **Design mockups:** Bhumi's scenes first, so she can start now.
+
+Files: drafts go in `art-src/pixel/scene<N>/`. Finals go in `art/incoming/<name>/` under the same file names as the drafts.
 
 ## Scene 1 files (`art-src/pixel/scene1/`)
 
@@ -46,6 +57,19 @@ Split: **Vansh** gets environments, props, UI and all wiring (backgrounds, clue 
 | `bg_veyra_residue.png` | 480×270 | Teal symbols, shown only inside the lantern light |
 | `char_elias_walk.png` | 6 × 32×58 | Walk ×4, idle ×2; feet at y=56, body centre x=13 |
 | `prop_lantern.png` | 3 × 8×12 | Flame flicker; hangs from the staff hook |
+
+## Scene 2 files (`art-src/pixel/scene2/`)
+
+| File | Size | Content |
+|---|---|---|
+| `bg_tower_sky.png` | 480×270 | Full backdrop (sky + tower), opaque |
+| `bg_tower.png` | 480×270 | Tower, belfry, clock face with hour and minute hands at 2:17, corner roofs (transparent sky) |
+| `prop_bell.png` | 48×40 | Bell, pivot at (24, 4). The game rotates it |
+| `bg_clockface_close.png` | 192×108 | Close-up face for shot 2B, no second hand |
+
+In code: the dried-blood second hand (twitches to the next tick every 1.3 s, snaps back), bell swing (two DONGs at 1.2 s and 3.4 s, damped), amber sound rings, dust off the ledges, crows scattering on the first DONG, and a 0.35 s shake. Live mockup: `scene2_clock_tower.html`.
+
+## Scene 1 notes
 
 Fog, wind, leaves and the lantern glow are done in code. Scene 1 beats: 0–1 s empty street; 1–8 s Elias walks in (≈29 px/s at 1×); ≈7 s the door symbol glows as the lantern passes; 8–10 s cut to the lantern close-up; 10 s cut to the tower (first DONG on the cut).
 
