@@ -3,16 +3,16 @@
   "title": "TICK! The Pocket Watch",
   "tip": "The sluice drains one channel and floods the other. Push the crate to move its shadow.",
   "reward": "ev_arun_tick",
-  "light": "W",
+  "light": "E",
   "shadow": 1,
-  "par": 25,
+  "par": 23,
   "tiles": [
-    "L.:...",
-    "..:S.#",
+    "G.:...",
     "..:...",
-    "~~:~~.",
-    ".C:##.",
-    "..:.G."
+    "~~:~~~",
+    ".#:C.L",
+    "..:.#.",
+    "S#:..."
   ],
   "legend": {
     "~": "water:s1",

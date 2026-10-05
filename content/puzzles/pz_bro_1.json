@@ -1,18 +1,18 @@
 {
   "id": "pz_bro_1",
   "title": "CLANK! The Emergency Sluice",
-  "tip": "A sluice drains the channel. Crates cast shadows too.",
+  "tip": "A sluice drains the channel. Push the crate: its shadow moves with it.",
   "reward": "ev_arun_clank",
   "light": "W",
   "shadow": 2,
-  "par": 11,
+  "par": 10,
   "tiles": [
-    ".S....",
-    "..#...",
-    "....#.",
-    "L~~~~~",
-    "C.....",
-    ".G...."
+    "..S#~.",
+    "..C.~.",
+    "....~.",
+    "..L.~.",
+    "..#.~.",
+    "#...~G"
   ],
   "legend": {
     "~": "water:s1",

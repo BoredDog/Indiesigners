@@ -1,18 +1,18 @@
 {
   "id": "pz_bro_3",
   "title": "CLOTH! The Silver Hairclip",
-  "tip": "Sluice, crates and the clock: each one moves the ink.",
+  "tip": "Sluice, crate and clock: each one moves the ink.",
   "reward": "ev_arun_cloth",
   "light": "N",
   "shadow": 2,
-  "par": 26,
+  "par": 23,
   "tiles": [
-    ".~S...",
-    ":::::.",
-    "D~....",
-    "C~C.L.",
-    ".~...#",
-    "..##.G"
+    "..L.~.",
+    "..#D~.",
+    "...C~.",
+    "....~#",
+    "::::::",
+    "S..#~G"
   ],
   "legend": {
     "~": "water:s1",
