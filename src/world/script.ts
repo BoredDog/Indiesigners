@@ -53,7 +53,11 @@ export const EPISODES: Episode[] = [
       // --- free investigation: 4 required, 2 optional ---
       const seen = new Set<string>();
       const need = ['footprints', 'key', 'bell', 'house'];
-      const progress = () => d.objective(`Investigate Veyra (${need.filter((k) => seen.has(k)).length}/4)  ·  walk to a ! and press E  ·  [C] board`);
+      const WHERE: Record<string, string> = { footprints: 'footprints by the tower', key: 'where the footprints end', bell: 'the bell rope (climb the clock tower)', house: 'the old house' };
+      const progress = () => {
+        const left = need.filter((k) => !seen.has(k));
+        d.objective(`Investigate Veyra (${4 - left.length}/4)${left.length ? '  ·  still to check: ' + left.map((k) => WHERE[k]).join(', ') : ''}`);
+      };
       progress();
       const steps = d.world.add.image(A.footprints.x, A.footprints.y - 1, 'w_steps').setOrigin(0.5, 1).setDepth(1);
       const key = d.world.add.image(A.footprints.x + 18, A.footprints.y - 1, 'w_key').setOrigin(0.5, 1).setDepth(1).setVisible(false);

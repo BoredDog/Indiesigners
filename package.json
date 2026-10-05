@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "typecheck": "tsc",
     "playtest:sim": "tsx tools/playtest-sim.ts",
-    "test:story": "npm run build && tsx tools/autoplay-story.ts && tsx tools/autoplay-story.ts --pick=1 --ending=forget && tsx tools/shots-story.ts",
+    "test:story": "npm run build && tsx tools/check-story-walk.ts && tsx tools/autoplay-story.ts && tsx tools/autoplay-story.ts --pick=1 --ending=forget && tsx tools/shots-story.ts",
     "test:settings": "npm run build && tsx tools/shots-textsize.ts 150",
     "test:browsers": "npm run build && tsx tools/autoplay-full.ts test-results/autoplay-firefox 0 --browser=firefox && tsx tools/autoplay-full.ts test-results/autoplay-edge 0 --browser=msedge && tsx tools/autoplay-full.ts test-results/autoplay-brave 0 --browser=brave",
     "assets": "bash tools/download-assets.sh",

@@ -84,11 +84,15 @@ export function generateWorld(): World {
   }
   for (let x = X.towerL - 1; x <= X.towerR + 1; x++) set(x, top - 1, T.STONE2);
   for (let x = X.towerL; x <= X.towerR; x++) set(x, top - 2, T.STONE2);
-  carve(X.towerL, SURF - 3, X.towerL, SURF - 1); // door on the street side
-  for (let i = 1; i <= 5; i++) {
-    const y = SURF - i * 5;
+  // Doors on both sides, so the street runs through the tower.
+  carve(X.towerL, SURF - 3, X.towerL, SURF - 1);
+  carve(X.towerR, SURF - 3, X.towerR, SURF - 1);
+  // Climbable: one-way planks every 3 blocks (a jump clears ~4), zig-zagging but overlapping in the
+  // middle column so you can also just jump straight up through them.
+  for (let i = 1; SURF - i * 3 > top + 3; i++) {
+    const y = SURF - i * 3;
     const left = i % 2 === 1;
-    for (let x = left ? X.towerL + 1 : X.towerL + 4; x <= (left ? X.towerL + 4 : X.towerR - 1); x++) set(x, y, T.PLANK);
+    for (let x = left ? X.towerL + 1 : X.towerL + 4; x <= (left ? X.towerL + 5 : X.towerR - 1); x++) set(x, y, T.PLANK);
   }
   for (let x = X.towerL + 1; x < X.towerR; x++) set(x, top + 2, T.PLANK); // bell floor
   anchors.towerDoor = { x: px(X.towerL) - 8, y: floorY(SURF) };

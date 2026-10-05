@@ -225,7 +225,7 @@ export class StoryScene extends Phaser.Scene {
     if (free) {
       if (k.A.isDown || k.LEFT.isDown) move -= 1;
       if (k.D.isDown || k.RIGHT.isDown) move += 1;
-      if ((Phaser.Input.Keyboard.JustDown(k.W) || Phaser.Input.Keyboard.JustDown(k.UP) || Phaser.Input.Keyboard.JustDown(k.SPACE)) && body.blocked.down) body.setVelocityY(-330);
+      if ((Phaser.Input.Keyboard.JustDown(k.W) || Phaser.Input.Keyboard.JustDown(k.UP) || Phaser.Input.Keyboard.JustDown(k.SPACE)) && body.blocked.down) body.setVelocityY(-360); // ≈ 4.5 blocks high
       if ((Phaser.Input.Keyboard.JustDown(k.S) || Phaser.Input.Keyboard.JustDown(k.DOWN)) && this.onPlank()) this.dropUntil = this.time.now + 250;
     }
     if (d?.autoWalk !== undefined) {
