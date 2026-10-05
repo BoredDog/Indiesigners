@@ -3,9 +3,9 @@
 **Deadline Tue 6 Oct 16:00 IST · submit by 15:00 · feature freeze 12:00.** Design and schedule live in [PLAN.md](PLAN.md); team chat is the pinned **Team HQ** issue.
 
 Status: `todo` · `doing` · `review` (PR open) · `done` · `blocked` (say why in Team HQ).
-To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/Arya just comment in Team HQ and Garv updates it.
+To pick up a task, set it to `doing`. Devs and Bhumi update this file in their PR; Arya just comments in Team HQ and Garv updates it.
 
-**Art (all B*/A* art tasks, G9) is scheduled for tonight; everything else is being finished today (Garv, 5 Oct).**
+**Art (all B*/A* art tasks, G9) is scheduled for tonight. Bhumi now has Claude Code (B0, B7–B9); everything else is being finished today (Garv, 5 Oct).**
 
 **Scoring we're optimising for:** gameplay & mechanics 30 · theme 20 · technical stability 20 · audio-visual cohesion 20 · Hour 12 compliance 10.
 
@@ -29,7 +29,7 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | G6 | `MemoryPage` scene (zoom/dim, 5 fragments, Evidence 0/5, puzzle launch, RECONSTRUCT / LEAVE MEMORY) | Mira page playable from data | Mon 16:00 | done |
 | G7 | Casebook (columns, timeline, FIGURE/NIA cards, CORROBORATES / CONTRADICTS / REVEALS threads, Figure flip) | Opens from anywhere; threads appear when both clues are known | Mon 23:00 | done |
 | G8 | Opening (6 frames) + Finale (8 frames) + Truth ending + Summary/Credits | Plays start to end from data; silhouette dissolves into young Elias | Tue 02:30 | done |
-| G9 | Import all final art; style pass (crops, halftone, transitions, title idle) | No placeholder art left | Tue 12:00 | tonight (art session) |
+| G9 | Import final background/prop art; style pass (crops, halftone, transitions, title idle). Characters/key art: Bhumi imports her own (B7/B8) | No placeholder art left | Tue 12:00 | tonight (art session) |
 | G10 | README, LICENSE, CREDITS.md final, AI disclosure | Matches PLAN.md §10 | Tue 13:00 | done (README, LICENSE, CREDITS, AI disclosure); final pass with art credits |
 | G11 | itch.io upload + fresh-browser test + submit | Plays on Chrome/Firefox/Edge from itch | Tue 15:00 | todo (after art) |
 | G12 | Review, play-test and merge every PR | Each PR merged within ~1 h of opening, or feedback given | ongoing | doing |
@@ -89,15 +89,20 @@ Applies to every B and A task below. Take from it:
   - Figure / young Elias 300×640, sharing the exact same outline
   - Nia 160×340
 
-## Bhumi — character & key art (upload to `art/incoming/bhumi/`)
+## Bhumi — character & key art, with Claude Code from 5 Oct (branch `feat/art-bhumi`)
+Bhumi now has Claude Code, so she handles the technical side of her art: importing, crops, checking it in the game, and her own PRs. She no longer waits on Garv's Claude for any of this. **The drawing is still hers** (Krita/Photopea, `.kra` sources). Her Claude does not draw or redraw characters; it handles files, code and checks. Starter prompt: PLAN.md §9.
 | ID | Task | Done when | Due | Status |
 |---|---|---|---|---|
+| B0 | Setup: Git, Node, Claude Code, clone, `npm install`, `npx playwright install chromium`, branch `feat/art-bhumi` (PLAN.md §11) | `npm run dev` shows the game locally | Mon 21:00 | todo |
 | B1 | Style sample: Elias silhouette (back + full outline) + rough Mira | All 5 approve in Team HQ → style locked | Mon 12:00 | tonight (art session) |
-| B2 | Elias final: back-view cutout, hands + lantern staff, solid silhouette, young Elias profile | Uploaded as transparent PNG | Mon 19:00 | tonight (art session) |
-| B3 | Mira neutral + 1 expression | Uploaded | Mon 19:00 | tonight (art session) |
-| B4 | Arun neutral + 1, Leela neutral + 1, Nia | Uploaded | Tue 01:00 | tonight (art session) |
-| B5 | Finale reveal panel (young Elias at the console) | Uploaded | Tue 02:30 | tonight (art session) |
-| B6 | Title cover, 2 ending panels, fixes; `.kra` sources | Uploaded | Tue 12:00 | tonight (art session) |
+| B2 | Elias final: back-view cutout, hands + lantern staff, solid silhouette, young Elias profile | In the game on her PR. Her Claude checks that `char_figure` and `char_elias_young` have the same outline (alpha-mask diff) | Mon 19:00 | tonight (art session) |
+| B3 | Mira neutral + 1 expression | In the game on her PR; conversation + memory screenshots checked | Mon 19:00 | tonight (art session) |
+| B4 | Arun neutral + 1, Leela neutral + 1, Nia | In the game on her PR; screenshots checked | Tue 01:00 | tonight (art session) |
+| B5 | Finale reveal panel (young Elias at the console) | In the Finale on her PR | Tue 02:30 | tonight (art session) |
+| B6 | Title cover, 2 ending panels, fixes; `.kra` sources | In Title/Ending on her PR; `.kra` files in `art-src/` | Tue 12:00 | tonight (art session) |
+| B7 | **Import her own art (takes the character half of G9 from Garv).** Save to `art/incoming/bhumi/` under the draft's file name and canvas size → `npm run art` → check with `tsx tools/shots-conversation.ts`, `shots-memory.ts`, `shots-sequence.ts` → PR | No character drafts from `art/incoming/claude/` left in the game; `npm run build` passes | Tue 12:00 | todo |
+| B8 | **Wire the art that has no slot yet:** the reaction expressions (`char_<witness>_react`, shown on the Conversation reaction beat), title cover, finale reveal panel, ending panels. Her Claude adds the keys to `BootScene.ART_REPLACES` / the scenes. OK to touch Title/Finale/Ending (Garv's) and Conversation (ask Vansh first in Team HQ) | Each piece shows in the game; `npm test` passes (check the exit code, not the tail) | Tue 11:00 | todo (after B3) |
+| B9 | Log her Claude use in the AI disclosure in `CREDITS.md` (what it did: import, wiring, checks; not drawing) | Line added on her PR | Tue 12:00 | todo |
 
 ## Arya — environment art, assets, QA (upload to `art/incoming/arya/`)
 | ID | Task | Done when | Due | Status |
