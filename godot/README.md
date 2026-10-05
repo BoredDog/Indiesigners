@@ -17,8 +17,11 @@ the route to a richer 2D/3D version after the jam.
 winget install GodotEngine.GodotEngine     # once (or set GODOT=/path/to/godot)
 npm run godot:sync                         # copy content/ into godot/content/
 npm run test:godot                         # headless core tests (exit 1 on failure)
+bash tools/godot.sh --headless --path godot res://tests/test_memory.tscn   # memory pages (all 3 witnesses)
 bash tools/godot.sh --path godot           # run the game window
 bash tools/godot.sh -e --path godot        # open the editor
+bash tools/godot.sh --path godot res://scenes/comic_demo.tscn   # comic layer demo (Mira's page)
+npx tsx tools/export-placeholders.ts       # re-export the Phaser placeholder art as PNGs (after npm run build)
 ```
 
 ## Map: Phaser → Godot
@@ -28,7 +31,8 @@ bash tools/godot.sh -e --path godot        # open the editor
 | `src/core/GameState.ts` + `SaveManager.ts` | `core/game_state.gd` (autoload `GameState`, `user://save.json`) | ✅ ported + tested |
 | `src/core/DeductionController.ts` | `core/deduction_controller.gd` (autoload `Deductions`) | ✅ ported + tested |
 | `src/puzzle/*` (Rules, Solver) | `puzzle/` | ⏳ V12 (Vansh) |
-| `src/comic/*` (panels, shader, bubbles, SFX) | `comic/` (+ `comic_fx.gdshader`) | ⏳ GD2 |
-| scenes Title → Village → Conversation → Memory → Deduction → Aftermath → Casebook → Archive → Finale → Ending | `scenes/*.tscn` | ⏳ GD3–GD8 |
+| `src/comic/*` (panels, shader, bubbles, SFX) | `comic/` (+ `comic_fx.gdshader`) | ✅ GD2: demo `scenes/comic_demo.tscn` |
+| `MemoryScene.ts` | `scenes/memory.tscn` (+ `core/router.gd` for scene data) | ✅ GD3: `tests/test_memory.tscn` |
+| scenes Title → Village → Conversation → Deduction → Aftermath → Casebook → Archive → Finale → Ending | `scenes/*.tscn` | ⏳ GD4–GD6 |
 
 Task list: the **Godot track** section at the bottom of `../TASKS.md`.
