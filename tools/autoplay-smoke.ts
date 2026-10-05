@@ -165,6 +165,7 @@ try {
   await click('btn:RETURN TO VILLAGE');
   await scene('Village');
   await shot('11-village-after-mira');
+  check(await find(page, 'mark:mira'), 'resolved Mira leaves a permanent evidence mark in the village (Blueprint K)');
 
   // Clock tower clue (Puzzle scene autosolves → back to Village with the evidence)
   await click('spot:tower');
