@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { Bubble, ComicButton, COLORS, comicSettings, dur, FONTS, TEXT_RESOLUTION, ts } from '../comic';
 import { casebookDeps, type CaseCard, type CaseThread } from './casebook/CasebookDeps';
+import { BEAT, makeBeatArt } from '../dev/beatArt';
+import { PHOTO_EVIDENCE, PHOTO_TEXT } from './beats/photo';
 import type { Witness } from './memory/MemoryData';
 
 export interface CasebookSceneData {
@@ -225,7 +227,8 @@ export class CasebookScene extends Phaser.Scene {
 
   private drawFigureCards(cards: CaseCard[]) {
     const deps = casebookDeps();
-    const figureSeen = deps.hasEvidence('ev_mira_staff') || cards.some((c) => c.witness !== 'mira' && c.confirmed);
+    const photo = deps.hasEvidence(PHOTO_EVIDENCE); // script §4: the burned photograph, IDENTITY UNKNOWN
+    const figureSeen = photo || deps.hasEvidence('ev_mira_staff') || cards.some((c) => c.witness !== 'mira' && c.confirmed);
     const niaSeen = deps.hasEvidence('ev_mira_clinic') || deps.hasEvidence('ev_arun_cloth');
     const x = 1640;
 
@@ -233,7 +236,17 @@ export class CasebookScene extends Phaser.Scene {
     fig.add(this.add.rectangle(6, 8, 300, 330, 0x000000, 0.35));
     fig.add(this.add.rectangle(0, 0, 300, 330, 0x1b1b20).setStrokeStyle(3, COLORS.ink));
     fig.add(this.add.circle(0, -155, 11, 0xc0392b).setStrokeStyle(3, COLORS.ink));
-    if (this.textures.exists('ph_figure') && figureSeen) {
+    if (photo) {
+      makeBeatArt(this);
+      fig.add(this.add.image(0, -10, BEAT.photo).setScale(0.3).setAngle(-3).setName('figure:photo'));
+      fig.add(
+        this.add
+          .text(0, 72, PHOTO_TEXT.unknown, this.sfxStyle(30, '#c0392b'))
+          .setOrigin(0.5)
+          .setAngle(-8)
+          .setName('figure:identity-unknown'),
+      );
+    } else if (this.textures.exists('ph_figure') && figureSeen) {
       fig.add(this.add.image(0, 20, 'ph_figure').setScale(0.42).setTintFill(0x000000));
     } else fig.add(this.add.text(0, 10, '?', this.sfxStyle(90, '#55555f')).setOrigin(0.5));
     fig.add(this.add.text(0, -140, 'THE FIGURE', this.sfxStyle(34, COLORS.paperCss)).setOrigin(0.5, 0));

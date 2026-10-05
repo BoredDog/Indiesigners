@@ -255,6 +255,16 @@ class Run {
     }
     await this.scene('Village');
     this.check(true, `opening → village (${defaultSettings ? 'default settings' : 'Reduce Motion'})`);
+    // First visit (script §4): the unknown woman, then back to the Village.
+    await this.scene('UnknownWoman');
+    await this.page.waitForFunction(() => (window as any).__unknownWoman?.line, undefined, { polling: 250, timeout: 20_000 });
+    await this.page.mouse.click(300, 500);
+    await this.click('btn:CONTINUE', 400, 30_000);
+    await this.scene('Village');
+    this.check(await this.gs<boolean>("gs.flag('metUnknownWoman')"), 'unknown woman beat → village');
+    await this.click('spot:photo');
+    await this.click('btn:CLOSE');
+    this.check(await this.gs<boolean>("gs.hasEvidence('ev_photo_burned')"), 'burned photograph found');
 
     // Clock tower Echo Path first (Blueprint F3: the first spirit-lantern use), from the village.
     await this.click('spot:tower');
@@ -300,6 +310,12 @@ class Run {
 
     await this.scene('Finale');
     await this.shot('finale');
+    // The scratched face in the burned photograph becomes young Elias during the reveal.
+    for (let k = 0; k < 40 && !(await this.find('finale:photo-revealed')); k++) {
+      await this.page.keyboard.press('Space');
+      await this.wait(500);
+    }
+    this.check(!!(await this.find('finale:photo-revealed')), 'finale: photo reveals the fourth face');
     for (let k = 0; k < 80 && !(await this.active()).includes('Ending'); k++) {
       if (await this.find('CONTINUE')) await this.click('CONTINUE', 300, 2000).catch(() => {});
       else await (this.page.keyboard.press('Space'), this.wait(500));

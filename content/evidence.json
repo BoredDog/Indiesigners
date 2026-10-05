@@ -26,6 +26,8 @@
     { "id": "ev_leela_whoom", "witness": "leela", "panel": "P5", "sfx": "WHOOM!", "text": "All village nodes activated.", "core": true, "puzzle": "pz_mom_3" },
     { "id": "ev_leela_crack", "witness": "leela", "panel": "P5", "sfx": "CRACK!", "text": "Memory field overload.", "core": false, "puzzle": null },
     { "id": "ev_leela_ash", "witness": "leela", "panel": "P6", "sfx": "ASH!", "text": "Master log: Elias activated the network.", "core": false, "puzzle": null },
-    { "id": "ev_leela_paper", "witness": "leela", "panel": "P6", "sfx": "PAPER!", "text": "Self-purge sequence.", "core": false, "puzzle": null }
+    { "id": "ev_leela_paper", "witness": "leela", "panel": "P6", "sfx": "PAPER!", "text": "Self-purge sequence.", "core": false, "puzzle": null },
+
+    { "id": "ev_photo_burned", "witness": "tower", "panel": null, "sfx": "PHOTO", "text": "Burned photograph: three villagers and a fourth lantern-carrier, face scratched out. Identity unknown.", "core": false, "puzzle": null, "note": "Final script (design/script_final.html) section 4, kept in v2 by Garv: found in the village, pinned on THE FIGURE as IDENTITY UNKNOWN." }
   ]
 }
