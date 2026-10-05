@@ -68,7 +68,9 @@ export class DeductionScene extends Phaser.Scene {
     } else {
       this.confirmBtn = button(this, 1510, 960, 'CONFIRM', () => void this.confirm(), { fontSize: 44, width: 360, fill: 0x7fe0d4 });
     }
-    button(this, 160, 1010, 'BACK', () => this.back(), { fontSize: 28, width: 180 });
+    // Way back, top-left under the title where players look for it (was a small corner button).
+    const backLabel = data.returnTo === 'Memory' ? '← BACK TO MEMORY' : '← BACK TO VILLAGE';
+    button(this, 250, 160, backLabel, () => this.back(), { fontSize: 28, width: 340 }).setName('btn:BACK');
   }
 
   private card(x: number, y: number, id: string): Phaser.GameObjects.Container {
