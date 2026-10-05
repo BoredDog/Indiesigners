@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { Bubble, ComicButton, COLORS, comicSettings, dur, FONTS, TEXT_RESOLUTION } from '../comic';
+import { Bubble, ComicButton, COLORS, comicSettings, dur, FONTS, TEXT_RESOLUTION, ts } from '../comic';
 import { casebookDeps, type CaseCard, type CaseThread } from './casebook/CasebookDeps';
 import type { Witness } from './memory/MemoryData';
 
@@ -341,10 +341,11 @@ export class CasebookScene extends Phaser.Scene {
     return { fontFamily: `"${FONTS.sfx}"`, fontSize: `${size}px`, color, resolution: TEXT_RESOLUTION };
   }
   private noteStyle(size: number): Phaser.Types.GameObjects.Text.TextStyle {
-    return { fontFamily: `"${FONTS.narration}"`, fontSize: `${size}px`, color: COLORS.inkCss, resolution: TEXT_RESOLUTION };
+    // Board notes sit on fixed cards: text size capped at 120 %.
+    return { fontFamily: `"${FONTS.narration}"`, fontSize: `${ts(size, 1.2)}px`, color: COLORS.inkCss, resolution: TEXT_RESOLUTION };
   }
   private handStyle(size: number, color: string = '#1d3557'): Phaser.Types.GameObjects.Text.TextStyle {
-    return { fontFamily: `"${FONTS.hand}"`, fontSize: `${size}px`, color, resolution: TEXT_RESOLUTION };
+    return { fontFamily: `"${FONTS.hand}"`, fontSize: `${ts(size, 1.2)}px`, color, resolution: TEXT_RESOLUTION };
   }
   private hash(s: string) {
     let h = 0;

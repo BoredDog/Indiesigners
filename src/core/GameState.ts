@@ -360,6 +360,7 @@ export class GameState extends Emitter<Events> {
   private applySettings(): void {
     comicSettings.reduceMotion = this.d.settings.reduceMotion;
     comicSettings.reduceFlashing = this.d.settings.reduceFlashing;
+    comicSettings.textScale = (this.d.settings.textSize ?? 100) / 100;
   }
 }
 

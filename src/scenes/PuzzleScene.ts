@@ -560,7 +560,7 @@ export class PuzzleScene extends Phaser.Scene {
     const ring = this.add.circle(0, 0, t * 0.22, COLORS.spiritTeal, 0.9).setStrokeStyle(4, COLORS.ink);
     const core = this.add.circle(0, 0, t * 0.1, 0xffffff, 1);
     w.add([glow, ring, core]);
-    if (!comicSettings.reduceMotion) {
+    if (!comicSettings.reduceMotion && !comicSettings.reduceFlashing) {
       this.tweens.add({ targets: glow, scale: 1.18, alpha: 0.18, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     }
     this.wisp = w;

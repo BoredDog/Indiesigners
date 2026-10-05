@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
-import { Bubble, COLORS, FONTS, TEXT_RESOLUTION, dur, impact, pageTurn } from '../comic';
+import { Bubble, COLORS, FONTS, TEXT_RESOLUTION, dur, impact, pageTurn, ts } from '../comic';
 import { DeductionController, type ConclusionKey } from '../core/DeductionController';
 import { gameState } from '../core/GameState';
 import { deduction, evidence, fmt, story, type DeductionId, type WitnessId } from '../core/StoryData';
-import { W, backdrop, button, hudIcons, label, popup } from './coreUi';
+import { backdrop, button, hudIcons, label, popup } from './coreUi';
 
 export interface DeductionData {
   deductionId: DeductionId;
@@ -45,7 +45,8 @@ export class DeductionScene extends Phaser.Scene {
     backdrop(this, 0.72);
     hudIcons(this, 'Deduction');
     label(this, 80, 40, story.ui.memory.reconstruct, 56);
-    const q = new Bubble(this, W / 2, 175, { kind: 'narration', text: d.question, maxWidth: 1100, fontSize: 38 });
+    // Kept right of the ← BACK button at any text size (capped at 115 %, wraps instead of widening).
+    const q = new Bubble(this, 1040, 175, { kind: 'narration', text: d.question, maxWidth: 960, fontSize: 38, scaleCap: 1.15 });
     this.add.existing(q);
 
     label(this, 100, 270, 'EVIDENCE', 30, { color: COLORS.spiritTealCss });
@@ -84,7 +85,7 @@ export class DeductionScene extends Phaser.Scene {
     const text = this.add
       .text(-CARD_W / 2 + 16, -CARD_H / 2 + 50, e.text, {
         fontFamily: `"${FONTS.narration}"`,
-        fontSize: '22px',
+        fontSize: `${ts(22, 1.25)}px`, // fixed-size card: text size capped at 125 %
         color: COLORS.inkCss,
         wordWrap: { width: CARD_W - 32 },
         resolution: TEXT_RESOLUTION,
@@ -107,7 +108,7 @@ export class DeductionScene extends Phaser.Scene {
     const t = this.add
       .text(0, 0, text, {
         fontFamily: `"${FONTS.speech}"`,
-        fontSize: '28px',
+        fontSize: `${ts(28, 1.25)}px`,
         fontStyle: 'bold',
         color: COLORS.inkCss,
         align: 'center',

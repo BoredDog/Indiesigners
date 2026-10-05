@@ -175,7 +175,7 @@ export class SfxWord extends Phaser.GameObjects.Container {
 
   /** Evidence card positioned below the word (or at `cardAt`), clamped inside `area`. */
   private evidenceCard(dy: number): Bubble {
-    const card = new Bubble(this.scene, 0, 0, { kind: 'evidence', text: this.opts.evidence ?? '', maxWidth: 280, fontSize: 21 });
+    const card = new Bubble(this.scene, 0, 0, { kind: 'evidence', text: this.opts.evidence ?? '', maxWidth: 280, fontSize: 21, scaleCap: 1.25 });
     const { area, cardAt } = this.opts;
     // Work in panel-local coordinates (this container sits at x,y in the panel overlay).
     let cx = cardAt ? cardAt.x : this.x;
