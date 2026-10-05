@@ -3,7 +3,8 @@ import { attachComicFx, COLORS, comicSettings, dur, impact, RichText, FONTS, TEX
 import { gameState } from '../core/GameState';
 import { story } from '../core/StoryData';
 import { PH } from '../dev/placeholders';
-import { BEAT, makeBeatArt } from '../dev/beatArt';
+import { makeBeatArt } from '../dev/beatArt';
+import { photoImage } from './beats/photo';
 import { FRAME, SequenceScene, type FrameBuilder } from './sequence/SequenceScene';
 
 /**
@@ -220,8 +221,8 @@ export class FinaleScene extends SequenceScene {
         makeBeatArt(this);
         const px = FRAME.x + 380;
         const py = FRAME.y + 430;
-        const scratched = this.add.image(px, py, BEAT.photo).setScale(0.42).setAngle(-4).setName('finale:photo');
-        const revealed = this.add.image(px, py, BEAT.photoRevealed).setScale(0.42).setAngle(-4).setAlpha(0).setName('finale:photo-revealed');
+        const scratched = photoImage(this, px, py, false, 378, -4).img.setName('finale:photo');
+        const revealed = photoImage(this, px, py, true, 378, -4).img.setAlpha(0).setName('finale:photo-revealed');
         layer.add([scratched, revealed]);
         this.tweens.add({ targets: revealed, alpha: 1, duration: dur(2600), delay: 900, ease: 'Sine.InOut' });
         const fx = attachComicFx(young);

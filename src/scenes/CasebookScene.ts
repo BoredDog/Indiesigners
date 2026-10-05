@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
 import { Bubble, ComicButton, COLORS, comicSettings, dur, FONTS, TEXT_RESOLUTION, ts } from '../comic';
 import { casebookDeps, type CaseCard, type CaseThread } from './casebook/CasebookDeps';
-import { BEAT, makeBeatArt } from '../dev/beatArt';
-import { PHOTO_EVIDENCE, PHOTO_TEXT } from './beats/photo';
+import { makeBeatArt } from '../dev/beatArt';
+import { PX, hasPixel } from '../pixel/pixel';
+import { PHOTO_EVIDENCE, PHOTO_TEXT, photoImage } from './beats/photo';
 import type { Witness } from './memory/MemoryData';
 
 export interface CasebookSceneData {
@@ -46,8 +47,13 @@ export class CasebookScene extends Phaser.Scene {
     this.cardPos.clear();
     const deps = casebookDeps();
 
-    this.add.tileSprite(0, 0, 1920, 1080, 'cork').setOrigin(0).setTint(0xd9b27c).setInteractive();
-    this.add.rectangle(0, 0, 1920, 1080).setOrigin(0).setStrokeStyle(28, 0x3b2a1a);
+    if (hasPixel(this, 'ui_casebook_bg')) {
+      // Pixel corkboard (design/pixel scene 12): drawn at ×4, frame included in the art.
+      this.add.image(0, 0, PX('ui_casebook_bg')).setOrigin(0).setScale(4).setInteractive();
+    } else {
+      this.add.tileSprite(0, 0, 1920, 1080, 'cork').setOrigin(0).setTint(0xd9b27c).setInteractive();
+      this.add.rectangle(0, 0, 1920, 1080).setOrigin(0).setStrokeStyle(28, 0x3b2a1a);
+    }
 
     this.add.text(60, 36, 'CASEBOOK', this.sfxStyle(64, COLORS.paperCss)).setDepth(5);
     this.add
@@ -238,7 +244,7 @@ export class CasebookScene extends Phaser.Scene {
     fig.add(this.add.circle(0, -155, 11, 0xc0392b).setStrokeStyle(3, COLORS.ink));
     if (photo) {
       makeBeatArt(this);
-      fig.add(this.add.image(0, -10, BEAT.photo).setScale(0.3).setAngle(-3).setName('figure:photo'));
+      fig.add(photoImage(this, 0, -10, false, 270, -3).img.setName('figure:photo'));
       fig.add(
         this.add
           .text(0, 72, PHOTO_TEXT.unknown, this.sfxStyle(30, '#c0392b'))
