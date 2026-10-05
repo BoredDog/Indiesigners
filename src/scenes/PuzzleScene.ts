@@ -40,6 +40,8 @@ export class PuzzleScene extends Phaser.Scene {
   private done = false;
   private queued?: Dir;
   private explained = new Set<string>();
+  /** True once the first-time mechanic captions are done (tests wait on it). */
+  teachDone = false;
   private hoverG!: Phaser.GameObjects.Graphics;
 
   private tile = 100;
@@ -72,6 +74,7 @@ export class PuzzleScene extends Phaser.Scene {
     this.done = false;
     this.queued = undefined;
     this.explained.clear();
+    this.teachDone = false;
     this.crates.clear();
     this.sentinels = [];
     this.dialHands = [];
@@ -158,13 +161,18 @@ export class PuzzleScene extends Phaser.Scene {
   /** V8: one rule caption per mechanic the first time it appears (saved via gameState flags). */
   private async teach() {
     const fresh = this.mechanics().filter((m) => !gameState.flag(`pz_taught_${m}`));
-    if (!fresh.length || this.done) return;
+    if (!fresh.length || this.done) {
+      this.teachDone = true;
+      return;
+    }
     this.busy = true;
     for (const m of fresh) {
       await popup(this, T.teach[m], [T.teachOk]);
       gameState.setFlag(`pz_taught_${m}`);
     }
+    this.queued = undefined; // keys pressed while a caption was open must not fire later
     this.busy = false;
+    this.teachDone = true;
   }
 
   // ------------------------------------------------------------------ public test hooks
@@ -883,6 +891,7 @@ export class PuzzleScene extends Phaser.Scene {
   /** Jump to a state without animating the turn (undo / reset / rewind). */
   private restore(s: State) {
     this.state = s;
+    this.queued = undefined;
     this.tweens.killTweensOf(this.wisp);
     this.wisp.setPosition(this.cx(s.pos), this.cy(s.pos)).setScale(1).setAlpha(1);
     // Rebuild crate bookkeeping from positions.
@@ -935,6 +944,7 @@ export class PuzzleScene extends Phaser.Scene {
     if (this.busy || this.done) return;
     this.busy = true;
     const choice = await popup(this, T.skipConfirm, [T.skip, T.back]);
+    this.queued = undefined;
     this.busy = false;
     if (choice === T.skip) this.finish(true);
   }

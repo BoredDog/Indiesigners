@@ -45,6 +45,11 @@ async function waitScene(key: string, timeout = 10_000) {
 }
 /** Headless WebGL runs at a few fps: wait for the scene to finish animating before the next input. */
 const idle = () => page.waitForFunction(() => !(window as any).__puzzle?.busy, undefined, { timeout: 10_000 });
+/** Waits (up to 15 s) until a GameState expression is true: the page rebuild + 350 ms reveal can be slow under swiftshader. */
+const until = (code: string) =>
+  page
+    .waitForFunction((c) => new Function('gs', `return ${c}`)((window as any).__echoes.gameState), code, { timeout: 15_000 })
+    .catch(() => {});
 const gs = <T>(code: string) =>
   page.evaluate((c) => new Function('gs', `return ${c}`)((window as any).__echoes.gameState), code) as Promise<T>;
 
@@ -55,21 +60,23 @@ function route(l: LevelFile) {
   return { q: `puzzleId=${l.id}&evidenceId=${ev.id}&witness=${ev.witness}&returnTo=Memory`, back: 'Memory', ev: ev.id };
 }
 
-/** Clicks through any open popups (first-time mechanic captions); returns how many. */
+/** Clicks through the first-time mechanic captions until the scene says teaching is done; returns how many. */
 async function dismissPopups(): Promise<number> {
   let n = 0;
-  for (let k = 0; k < 10; k++) {
-    await page.waitForTimeout(350);
-    const clicked = await page.evaluate(() => {
+  for (let k = 0; k < 40; k++) {
+    const st = await page.evaluate(() => {
       const p = (window as any).__puzzle;
       const layer = p?.children.list.find((o: any) => o.name === 'popup');
       const b = layer?.list.find((o: any) => o.name === 'btn:GOT IT');
-      if (!b) return false;
-      b.emit('click');
-      return true;
+      if (b) {
+        b.emit('click');
+        return 'clicked';
+      }
+      return p?.teachDone ? 'done' : 'waiting';
     });
-    if (!clicked) break;
-    n++;
+    if (st === 'done') break;
+    if (st === 'clicked') n++;
+    await page.waitForTimeout(250);
   }
   return n;
 }
@@ -105,8 +112,8 @@ try {
     await page.evaluate((m) => (window as any).__puzzle.play(m), moves.slice(-1));
     await page.waitForTimeout(500);
     await shot(`${l.id}-2-solved`);
-    await waitScene(r.back, 8000).catch(() => {});
-    await page.waitForTimeout(1200);
+    await waitScene(r.back, 15_000).catch(() => {});
+    await until(r.ev ? `gs.hasEvidence('${r.ev}')` : `gs.flag('archiveEscaped')`);
     const scenes = await activeScene(page);
     check(scenes.includes(r.back), `${l.id}: solution wins and returns to ${r.back} (active: ${scenes.join(',')})`);
     if (r.ev) check(await gs<boolean>(`gs.hasEvidence('${r.ev}')`), `${l.id}: ${r.ev} recovered`);
@@ -160,8 +167,8 @@ try {
     const b = p.children.list.find((o: any) => o.name === 'popup').list.find((o: any) => o.name === 'btn:SKIP');
     b.emit('click');
   });
-  await waitScene(r.back, 8000).catch(() => {});
-  await page.waitForTimeout(1200);
+  await waitScene(r.back, 15_000).catch(() => {});
+  if (r.ev) await until(`gs.hasEvidence('${r.ev}')`);
   check(r.ev ? await gs<boolean>(`gs.hasEvidence('${r.ev}')`) : true, 'skip still recovers the fragment');
 
   // Archive flow: intro beat → ESCAPE → pz_archive → escaped beat → CONTINUE → Finale.
@@ -185,7 +192,12 @@ try {
   await dismissPopups();
   await page.evaluate(() => (window as any).__puzzle.solve());
   await waitScene('Archive');
-  await page.waitForTimeout(1500);
+  await until(`gs.flag('archiveEscaped')`);
+  await page.waitForFunction(
+    () => (window as any).__echoes.game.scene.getScene('Archive').children.list.some((o: any) => o.name === 'btn:CONTINUE'),
+    undefined,
+    { timeout: 15_000 },
+  );
   await shot('archive-2-escaped');
   check(await gs<boolean>(`gs.flag('archiveEscaped')`), 'archive escape recorded');
   await clickBtn('Archive', 'btn:CONTINUE');
@@ -195,7 +207,7 @@ try {
   // Missing level → straight back with the fragment (contract).
   await page.goto('http://localhost:4183/?scene=Puzzle&puzzleId=pz_missing&evidenceId=ev_mira_bell&witness=mira&returnTo=Memory');
   await waitScene('Memory');
-  await page.waitForTimeout(1200);
+  await until(`gs.hasEvidence('ev_mira_bell')`);
   check(await gs<boolean>(`gs.hasEvidence('ev_mira_bell')`), 'missing level hands the fragment straight back');
 } catch (e) {
   failed++;
