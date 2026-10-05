@@ -40,7 +40,9 @@ func _play(w: String) -> void:
 	for id in m.words:
 		var word: SfxWord = m.words[id]
 		if word.locked:
-			word.locked_clicked.emit(word)  # → unlock fallback (no Puzzle scene yet)
+			# The real Puzzle scene exists now (V13), so locked_clicked would leave this page via Router.
+			# Unlock directly here; the puzzle round trip is tested in test_puzzle_scene / test_loop.
+			word.unlock()
 		ok(not word.locked, "%s: %s unlocked" % [w, id])
 		word.pop()
 	await get_tree().process_frame
