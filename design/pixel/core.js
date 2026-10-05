@@ -80,3 +80,61 @@ function text(b, s, x, y, c) { [...s].forEach((ch, k) => GLYPH[ch].forEach((row,
 const SYMBOL = ['..###..', '.#...#.', '#..#..#', '#.###.#', '#..#..#', '.#...#.', '..###..'];
 function residue(b, x, y, pat = SYMBOL) { pat.forEach((row, j) => [...row].forEach((v, i) => { if (v === '#') b.mark(x + i, y + j); })); }
 
+// ------------------------------------------------ shape-based character renderer
+// Shapes write part ids; shading = part pixels whose (x+sx, y+sy) neighbour leaves the part;
+// outline = empty pixels touching a filled one, plus seams between parts flagged `line`.
+function Figure(w, h, parts) {
+  const pid = new Int8Array(w * h).fill(-1);
+  const put = (x, y, p) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < w && y < h) pid[y * w + x] = p; };
+  const api = {
+    ell(cx, cy, rx, ry, p) { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) { const dx = (x - cx) / rx, dy = (y - cy) / ry; if (dx * dx + dy * dy <= 1.05) put(x, y, p); } },
+    rect(x, y, rw, rh, p) { for (let j = 0; j < rh; j++) for (let i = 0; i < rw; i++) put(x + i, y + j, p); },
+    poly(pts, p) {
+      const ys = pts.map(q => q[1]), y0 = Math.floor(Math.min(...ys)), y1 = Math.ceil(Math.max(...ys));
+      for (let y = y0; y <= y1; y++) for (let x = 0; x < w; x++) {
+        let inside = false; const px = x + 0.5, py = y + 0.5;
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) inside = !inside; }
+        if (inside) put(x, y, p);
+      }
+    },
+    render(sx = 2, sy = 1) {
+      const b = new Buf(w, h); b.c.fill(255);
+      const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? -1 : pid[y * w + x];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const p = at(x, y);
+        if (p < 0) { if (at(x - 1, y) >= 0 || at(x + 1, y) >= 0 || at(x, y - 1) >= 0 || at(x, y + 1) >= 0) b.c[y * w + x] = C.ink; continue; }
+        const part = parts[p];
+        let c = (at(x + sx, y + sy) !== p || at(x + Math.sign(sx), y + Math.sign(sy)) !== p) ? part.shade : part.base;
+        const l = at(x - 1, y), u = at(x, y - 1);
+        if (part.line && ((l >= 0 && l !== p && parts[l].line) || (u >= 0 && u !== p && parts[u].line))) c = C.ink;
+        b.c[y * w + x] = c;
+      }
+      return b;
+    },
+  };
+  return api;
+}
+const px = (b, pts, c) => { for (const [x, y] of pts) b.set(x, y, c); };
+
+function toCanvas(b) {
+  const c = document.createElement('canvas'); c.width = b.w; c.height = b.h;
+  const x = c.getContext('2d'), img = x.createImageData(b.w, b.h);
+  for (let i = 0; i < b.c.length; i++) { const v = b.c[i]; if (v === 255) continue; const q = RGB[v]; img.data.set([q[0], q[1], q[2], 255], i * 4); }
+  x.putImageData(img, 0, 0); return c;
+}
+// Light with any pair of tables (LIT1/LIT2 = lantern teal, LITA1/LITA2 = warm lamp)
+const LITA1 = [6,2,3,5,5,21,7,8,12,10,10,11,13,13,15,15,18,17,17,6,7,8,2,23,23,25,25];
+const LITA2 = [6,6,7,7,8,8,7,14,12,10,12,11,13,13,15,15,18,17,17,7,8,12,6,23,23,25,25];
+function lightT(b, lx, ly, R, T1, T2, sq = 1.15) {
+  lx = Math.round(lx); ly = Math.round(ly);
+  for (let y = Math.max(0, ly - R); y < Math.min(b.h, ly + R); y++) for (let x = Math.max(0, lx - R); x < Math.min(b.w, lx + R); x++) {
+    const dx = x - lx, dy = (y - ly) * sq, d2 = dx * dx + dy * dy; if (d2 > R * R) continue;
+    const i = y * b.w + x; if (b.f[i] & 1) continue; const c = b.c[i]; if (c === 255) continue;
+    const v = (1 - Math.sqrt(d2) / R) * 2.2 + (bay(x, y) - 0.5) * 0.7;
+    if (v > 1.45) b.c[i] = T2[c]; else if (v > 0.6) b.c[i] = T1[c];
+  }
+}
+// Stamp a sprite Buf (255 = transparent) into a scene Buf
+function stamp(dst, src, ox, oy, flip = false) {
+  for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) { const v = src.c[y * src.w + (flip ? src.w - 1 - x : x)]; if (v !== 255) dst.set(ox + x, oy + y, v); }
+}
