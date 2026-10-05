@@ -21,12 +21,12 @@ const check = (cond: unknown, msg: string) => {
 const shot = (name: string) => page.screenshot({ path: `${outDir}/${name}.png` });
 const wait = (ms: number) => page.waitForTimeout(ms);
 
-/** Wait until `key` is the active (running) scene. */
+/** Wait until `key` is the active (running) scene. Interval polling: rAF polling is throttled on a busy machine. */
 async function scene(key: string) {
   await page.waitForFunction(
     (k) => (window as any).__echoes?.game.scene.getScenes(true).some((s: any) => s.scene.key === k),
     key,
-    { timeout: 10_000 },
+    { polling: 250, timeout: 10_000 },
   );
   await wait(800);
 }
