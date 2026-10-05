@@ -83,14 +83,3 @@ Fog, wind, leaves and the lantern glow are done in code. Scene 1 beats: 0–1 s 
 The coding session's `feat/village-clues` puts the clue hotspots at these 1920×1080 positions. Divide by 4 for the pixel canvas. The pixel hub keeps the clock tower at (910, 300) → (227.5, 75).
 
 footprints 1040,875 · key 1172,885 · bell 910,228 · tower clock 910,385 · records 1345,770 · symbols 220,770 (+ tower door 868,700, well 1236,700) · recorder 1722,790 · well 1180,760 · burned photo 1040,1000 · witnesses 470,760 / 760,1010 / 1500,790.
-
-## Echo Paths boards (`art-src/pixel/puzzle/`, preview `puzzle_tiles.html`)
-
-16×16 tiles at ×4 = 64 px cells. `pz_tiles.png` 128×64, 8 per row, order:
-`floor, floor_b, void, start, goal, goal_b, dial, collapse, collapse_gone, pillar, crate, gate_closed, gate_open, water_a, water_b, water_dry, lever_off, lever_on, sluice_off, sluice_on, node_off, node_on, switch_plate, floor_crack, pillar_lit, crate_lit, goal_reached, dial_arrow, void_edge, floor_moss` (+2 blank).
-- Draw `floor` under gate/lever/dial/goal/start/pillar first, then the tile.
-- `pz_shadow.png` 16×16 dithered ink goes over shadowed cells (skip pits).
-- `pz_group_markers.png` 16×4: four 4×4 markers (g1 blood, g2 blue, g3 violet, g4 olive), drawn at tile (+1,+1) on gates and switches.
-- `pz_wisp.png` 2×16×16 (0.3 s, 1 px bob); `pz_sentinel.png` 8×16×16 = N,E,S,W × 2 frames.
-- `pz_board_frame_9s.png` 24×24, slice 8; the board sits 8 px inside, 16 px from the frame's outer edge.
-- `goal`/`goal_b` alternate every 0.6 s; `dial_arrow` shows the light direction (rotate in code).
