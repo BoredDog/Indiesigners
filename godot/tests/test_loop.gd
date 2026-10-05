@@ -165,8 +165,8 @@ func _run() -> void:
 	Router.goto("village")
 	village = await _scene("Village")
 	ok(village.get_node_or_null("Spot_record") != null, "THE RECORD hotspot appears")
-	await _press_popup()  # archive unlocked announcement
-	await _press_popup()  # archive/finale not ported yet → CLOSE
+	await _press_popup()  # archive unlocked announcement → enters the Archive
+	ok(await _scene("Archive") != null, "THE RECORD opens the Archive")
 
 	# Continue from the title restores the save.
 	var snap := JSON.stringify(GameState.snapshot())
