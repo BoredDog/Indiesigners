@@ -15,6 +15,8 @@ var opening: Dictionary = {}
 var finale: Dictionary = {}
 var casebook: Array = []
 var memory: Dictionary = {}
+## A2 final accusation (content/accusation.json): slots, conclusions, reactions, feedback.
+var accusation: Dictionary = {}
 
 var _evidence_by_id: Dictionary = {}
 var _deduction_by_id: Dictionary = {}
@@ -31,6 +33,7 @@ func _init() -> void:
 	finale = _load("finale")
 	casebook = _load("casebook_notes").get("cards", [])
 	memory = _load("memory_text").get("pages", {})
+	accusation = _load("accusation")
 	for e in evidence_list:
 		_evidence_by_id[e.id] = e
 	for d in deductions:
@@ -120,4 +123,20 @@ func validate() -> Array[String]:
 			for e in q.requires:
 				if not is_evidence_id(e):
 					problems.append("%s: unknown evidence %s" % [q.id, e])
+	# A2: each slot accepts a core clue from its own witness (always found by 9/9), one right answer.
+	for s in accusation.get("slots", []):
+		var core_ok := false
+		for e in s.accept:
+			if not is_evidence_id(e):
+				problems.append("accusation %s: unknown evidence %s" % [s.witness, e])
+			elif _evidence_by_id[e].witness == s.witness and _evidence_by_id[e].core:
+				core_ok = true
+		if not core_ok:
+			problems.append("accusation %s: accepts no core clue from that page (could soft-lock)" % s.witness)
+	var conclusions: Array = accusation.get("conclusions", [])
+	if conclusions.filter(func(c): return c.get("correct", false)).size() != 1:
+		problems.append("accusation: needs exactly one correct conclusion")
+	for c in conclusions:
+		if not accusation.get("reactions", {}).has(c.id):
+			problems.append("accusation: no reaction for %s" % c.id)
 	return problems

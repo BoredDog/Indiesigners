@@ -2,7 +2,8 @@ extends SceneTree
 ## Godot equivalent of tools/check-links.ts, through the real scenes and Router: every
 ## puzzle-locked fragment on every memory page opens the real Puzzle, the solver's solution is
 ## played move by move (first-time captions dismissed), and the evidence must come back to the
-## page revealed + saved. Then Archive → pz_archive → back in Archive with the escape recorded.
+## page revealed + saved. Then Archive → pz_archive → back in Archive with the escape recorded
+## → CONTINUE → Accusation (A2).
 ## Run after --import:  godot --headless --path godot -s res://tests/test_puzzle_links.gd
 ## (A SceneTree script, so it survives Router's scene changes; autoloads are looked up by node.)
 
@@ -91,7 +92,11 @@ func _run() -> void:
 	ok(await wait_scene("Puzzle"), "archive opens pz_archive")
 	await play_solution(current_scene)
 	ok(await wait_scene("Archive"), "escape returns to the archive")
-	ok(gs.flag("archiveEscaped") and current_scene.find_child("btn_CONTINUE", true, false) != null, "escape recorded, CONTINUE to the Finale shown")
+	var cont: Button = current_scene.find_child("btn_CONTINUE", true, false)
+	ok(gs.flag("archiveEscaped") and cont != null, "escape recorded, CONTINUE shown")
+	if cont:
+		cont.pressed.emit()
+		ok(await wait_scene("Accusation"), "Archive escape → Accusation (A2)")
 
 	print("%d link check(s) failed" % failed if failed else "All Godot puzzle link checks passed.")
 	quit(1 if failed else 0)

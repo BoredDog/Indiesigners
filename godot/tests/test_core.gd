@@ -49,12 +49,23 @@ func _run() -> void:
 	ok(Deductions.is_available("sis_1"), "sis_1 available with its evidence")
 	ok(Deductions.available("mira").any(func(d): return d.id == "sis_1"), "available() lists sis_1")
 
-	# Wrong conclusion / missing card / irrelevant card -> unsupported, no state change
+	# B1: wrong conclusion / missing card / irrelevant card -> closeness feedback, no state change
+	var cl: Dictionary = StoryData.ui.closeness
 	var wrong := Deductions.attempt("sis_1", req, "wrong_0")
-	ok(not wrong.ok and wrong.message == StoryData.ui.popups.unsupported.text, "wrong conclusion -> unsupported")
-	ok(not Deductions.attempt("sis_1", req.slice(1), "correct").ok, "missing a card -> unsupported")
+	ok(not wrong.ok and wrong.message == cl.cardsFitConclusionWrong, "B1: right cards, wrong conclusion -> evidence fits, conclusion doesn't")
+	var missing_one := Deductions.attempt("sis_1", req.slice(1), "correct")
+	ok(not missing_one.ok and "1 clue is missing" in missing_one.message, "B1: right conclusion, one card short -> %s" % JSON.stringify(missing_one.get("message")))
 	GameState.add_evidence("ev_arun_splash")
-	ok(not Deductions.attempt("sis_1", req + ["ev_arun_splash"], "correct").ok, "irrelevant extra card -> unsupported")
+	var extra_one := Deductions.attempt("sis_1", req + ["ev_arun_splash"], "correct")
+	ok(not extra_one.ok and "1 card doesn't belong" in extra_one.message, "B1: right conclusion, an irrelevant card -> %s" % JSON.stringify(extra_one.get("message")))
+	var some_fit := Deductions.attempt("sis_1", [req[0], "ev_arun_splash"], "wrong_1")
+	ok(not some_fit.ok and String(some_fit.message).begins_with("1 of your clues fits"), "B1: wrong conclusion, one card fits -> %s" % JSON.stringify(some_fit.get("message")))
+	var none_fit := Deductions.attempt("sis_1", ["ev_arun_splash"], "wrong_1")
+	ok(not none_fit.ok and none_fit.message == Deductions.unsupported(), "B1: nothing fits -> does not support")
+	ok(Deductions.closeness("sis_1", [], "") == cl.nothingYet, "B1: nothing picked -> pick first")
+	var never_names := RegEx.create_from_string("ev_|wrong_|correct")
+	for r in [wrong, missing_one, extra_one, some_fit]:
+		ok(never_names.search(r.message) == null, "B1 feedback never names a card or option")
 	ok(GameState.deduction_state("sis_1") == "open", "failed attempts do not confirm")
 
 	# Right -> confirmed, unlocks, no recursion, no thread with one endpoint
@@ -113,3 +124,37 @@ func _run() -> void:
 		ok(GameState.all_deductions_confirmed(), "%s: 9/9" % label)
 		ok(GameState.thread_ids().size() == StoryData.threads.size(), "%s: all threads" % label)
 		ok(GameState.finale() == "ready", "%s: finale ready" % label)
+
+	# A2 final accusation: with only core evidence (9/9), every slot can be answered.
+	var a: Dictionary = StoryData.accusation
+	var core_only := {}
+	for s in a.slots:
+		for e in s.accept:
+			if StoryData.is_evidence_id(e) and StoryData.evidence(e).core and not core_only.has(s.witness):
+				core_only[s.witness] = e
+	ok((a.slots as Array).all(func(s): return Accusation.cards(s.witness).has(core_only.get(s.witness, ""))), "A2: a core clue is pickable in every slot after 9/9")
+	var right_id := ""
+	var wrong_ids: Array = []
+	for c in a.conclusions:
+		if c.get("correct", false):
+			right_id = c.id
+		else:
+			wrong_ids.append(c.id)
+	ok(not Accusation.check({}, right_id).ok, "A2: no picks -> pick first")
+	ok(not Accusation.check(core_only, "").ok, "A2: no conclusion -> pick first")
+	for id in wrong_ids:
+		var r := Accusation.check(core_only, id)
+		ok(not r.ok and String(r.message).begins_with(a.reactions[id]), "A2: \"%s\" -> its own nudge" % id)
+	# One slot off: a known card of the first slot's page that the slot doesn't accept.
+	var first_slot: Dictionary = a.slots[0]
+	var off: Array = Accusation.cards(first_slot.witness).filter(func(e): return not (first_slot.accept as Array).has(e))
+	ok(not off.is_empty(), "A2: the first slot has a card it doesn't accept")
+	if not off.is_empty():
+		var off_clue := core_only.duplicate()
+		off_clue[first_slot.witness] = off[0]
+		var unproven := Accusation.check(off_clue, right_id)
+		var prove_it := StoryData.fmt(a.feedback.rightButUnproven, {"n": 1, "verb": "proves"})
+		ok(not unproven.ok and unproven.message == prove_it, "A2: right answer, one clue off -> %s" % JSON.stringify(unproven.get("message")))
+	ok(not GameState.flag("accused"), "A2: failed attempts change nothing")
+	var done := Accusation.accuse(core_only, right_id)
+	ok(done.ok and GameState.flag("accused"), "A2: right clues + the right answer -> accused flag set")
