@@ -83,3 +83,9 @@ Fog, wind, leaves and the lantern glow are done in code. Scene 1 beats: 0–1 s 
 The coding session's `feat/village-clues` puts the clue hotspots at these 1920×1080 positions. Divide by 4 for the pixel canvas. The pixel hub keeps the clock tower at (910, 300) → (227.5, 75).
 
 footprints 1040,875 · key 1172,885 · bell 910,228 · tower clock 910,385 · records 1345,770 · symbols 220,770 (+ tower door 868,700, well 1236,700) · recorder 1722,790 · well 1180,760 · burned photo 1040,1000 · witnesses 470,760 / 760,1010 / 1500,790.
+
+## Elias extra frames (`art-src/pixel/chars/`, preview `elias_frames.html`)
+
+- `char_elias_raise.png`: 144×58 = 3 frames of 48×58 (idle → half → raised). The staff stays planted and tips forward. Lantern hook per frame: (25,2) · (36,4) · (46,8). Play at 0.12 s per frame; grow the light while it's held.
+- `char_elias_look.png`: 64×58 = 2 frames of 32×58 (quarter turn, half turn). A jaw sliver shows under the brim, never the eyes. Hook (25,2) on both frames.
+- Same anchor as `char_elias_walk`: body x 13, feet y 56. Hang `prop_lantern` top-centre on the hook.
