@@ -39,6 +39,6 @@ npx tsx tools/export-placeholders.ts       # re-export the Phaser placeholder ar
 | `MemoryScene.ts` | `scenes/memory.tscn` (+ `core/router.gd` for scene data) | ✅ GD3: `tests/test_memory.tscn` |
 | Title, Village, Conversation, Deduction, Aftermath (+ `coreUi.ts`) | `scenes/{title,village,conversation,deduction,aftermath}`, `core_ui.gd`, `popup_layer.gd` | ✅ GD4: `tests/test_loop.tscn` |
 | Casebook | `scenes/casebook` | ✅ GD5: `tests/test_casebook.tscn` |
-| Opening, Finale, Ending | `scenes/*.tscn` | ⏳ GD6 |
+| `src/scenes/sequence/*.ts` (Opening, Finale, Ending) | `scenes/opening.tscn`, `finale.tscn`, `ending.tscn` (base `sequence_scene.gd`) | ✅ GD6: 6 / 8 / truth + epilogue (100% evidence) + summary; New Game → Opening, Archive → Finale → Ending → Title / Play Again |
 
 Task list: the **Godot track** section at the bottom of `../TASKS.md`.

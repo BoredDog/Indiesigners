@@ -94,7 +94,7 @@ Port in `godot/` (see `godot/README.md`). Shared data in `content/`; `npm run te
 | GD3 | Garv | Memory page scene from `content/pages/*.json` | Mira page playable in Godot | done |
 | GD4 | Garv | Title, Village, Conversation, Deduction, Aftermath | Mira loop playable start to finish | done |
 | GD5 | Garv | Casebook | Threads + notes from GameState | done |
-| GD6 | Garv | Opening, Finale, Ending | Game completable in Godot | todo |
+| GD6 | Garv | Opening, Finale, Ending | Game completable in Godot | done (PR) |
 | V12 | Vansh | Puzzle rules engine + solver in GDScript | 11 levels solve at the TS par in a headless test | done |
 | V13 | Vansh | Godot Puzzle scene (+ Archive) | Every level playable; returns `justFound` | done |
 | GD7 | Garv | Web export + autoplay test in Godot | Exported build plays in a browser | todo |
