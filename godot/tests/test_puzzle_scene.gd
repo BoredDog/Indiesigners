@@ -15,9 +15,9 @@ func ok(cond: bool, msg: String) -> void:
 		printerr("FAIL ", msg)
 
 
-func spawn(params: Dictionary) -> Node:
+func spawn(params: Dictionary, scene := "res://scenes/puzzle.tscn") -> Node:
 	PuzzleScene.request = params
-	var s: Node = load("res://scenes/puzzle.tscn").instantiate()
+	var s: Node = load(scene).instantiate()
 	s.instant = true
 	add_child(s)
 	return s
@@ -42,6 +42,16 @@ func _run() -> void:
 		var got := PuzzleScene.take_result()
 		ok(last == "win" and got.get("solved") == id and got.get("justFound") == ev, "%s: solution wins and returns %s (last %s)" % [id, ev, last])
 		s.queue_free()
+
+	# V16: the 3D board plays every level the same way (same rules, same contract).
+	for f in files:
+		var id3: String = f.trim_suffix(".json")
+		var s3 := spawn({"puzzleId": id3, "evidenceId": "ev_x"}, "res://scenes/puzzle3d.tscn")
+		var moves3: Array = Solver.solve(s3.level).moves
+		var last3: String = s3.play("".join(moves3))
+		var got3 := PuzzleScene.take_result()
+		ok(last3 == "win" and got3.get("solved") == id3 and s3.find_child("Board3D", true, false) != null, "3D %s: solution wins on the diorama board" % id3)
+		s3.queue_free()
 
 	# Controls
 	var s := spawn({"puzzleId": "pz_sis_1", "evidenceId": "ev_mira_resonance", "witness": "mira"})

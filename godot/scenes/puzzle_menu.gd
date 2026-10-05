@@ -3,6 +3,7 @@ extends Control
 ## Open with: godot --path godot res://scenes/puzzle_menu.tscn
 
 const PuzzleScene := preload("res://scenes/puzzle.gd")
+const Puzzle3D := preload("res://scenes/puzzle3d.gd")
 
 
 func _ready() -> void:
@@ -31,14 +32,21 @@ func _ready() -> void:
 		var b := Button.new()
 		b.text = "%s   %s" % [id, ev.get("sfx", "THE RECORD")]
 		b.add_theme_font_size_override("font_size", 30)
-		b.pressed.connect(func():
-			PuzzleScene.open(get_tree(), {
-				"puzzleId": id,
-				"evidenceId": ev.get("id", ""),
-				"witness": ev.get("witness", ""),
-				"returnTo": "res://scenes/puzzle_menu.tscn",
-			}))
-		box.add_child(b)
+		var p := {
+			"puzzleId": id,
+			"evidenceId": ev.get("id", ""),
+			"witness": ev.get("witness", ""),
+			"returnTo": "res://scenes/puzzle_menu.tscn",
+		}
+		b.pressed.connect(func(): PuzzleScene.open(get_tree(), p))
+		var row := HBoxContainer.new()
+		row.add_child(b)
+		var b3 := Button.new()
+		b3.text = "3D"
+		b3.add_theme_font_size_override("font_size", 30)
+		b3.pressed.connect(func(): Puzzle3D.open3d(get_tree(), p))  # V16 diorama board
+		row.add_child(b3)
+		box.add_child(row)
 
 
 func _evidence_for(puzzle_id: String) -> Dictionary:
