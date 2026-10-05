@@ -263,14 +263,14 @@ export class CasebookScene extends Phaser.Scene {
     }
 
     // THE CASE REQUEST (script v2 d7): pinned from the start, the reason I came to Veyra.
-    const req = this.add.container(x, 205).setAngle(-2).setName('card:case_request');
-    req.add(this.add.rectangle(6, 8, 300, 170, 0x000000, 0.35));
-    req.add(this.add.rectangle(0, 0, 300, 170, 0xfff6c9).setStrokeStyle(3, COLORS.ink));
-    req.add(this.add.circle(0, -76, 11, 0xc0392b).setStrokeStyle(3, COLORS.ink));
-    req.add(this.add.text(0, -60, 'THE CASE REQUEST', this.sfxStyle(28, COLORS.inkCss)).setOrigin(0.5, 0));
+    const req = this.add.container(x, 192).setAngle(-2).setName('card:case_request');
+    req.add(this.add.rectangle(6, 8, 300, 156, 0x000000, 0.35));
+    req.add(this.add.rectangle(0, 0, 300, 156, 0xfff6c9).setStrokeStyle(3, COLORS.ink));
+    req.add(this.add.circle(0, -70, 11, 0xc0392b).setStrokeStyle(3, COLORS.ink));
+    req.add(this.add.text(0, -56, 'THE CASE REQUEST', this.sfxStyle(28, COLORS.inkCss)).setOrigin(0.5, 0));
     req.add(
       this.add
-        .text(0, 26, deps.sideNote('case_request'), { ...this.handStyle(24), align: 'center', wordWrap: { width: 270 } })
+        .text(0, 24, deps.sideNote('case_request'), { ...this.handStyle(24), align: 'center', wordWrap: { width: 270 } })
         .setOrigin(0.5),
     );
   }

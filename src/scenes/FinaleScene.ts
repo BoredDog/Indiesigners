@@ -189,18 +189,21 @@ export class FinaleScene extends SequenceScene {
         const line = f[5].prop ?? '';
         const { doc, text } = this.document(layer, FRAME.x + 700, FRAME.y + 470, 620, 330, 'CASE REQUEST', '', true, -3);
         const prog = { k: 0 };
-        this.tweens.add({
+        // The player may click on before the pen finishes: the frame (and this text) is then destroyed.
+        const write = this.tweens.add({
           targets: prog,
           k: line.length,
           duration: dur(1800),
           delay: 500,
-          onUpdate: () => text.setText(line.slice(0, Math.floor(prog.k))),
+          onUpdate: () => text.active && text.setText(line.slice(0, Math.floor(prog.k))),
           onComplete: () => {
+            if (!text.active) return;
             text.setText(line);
             // Folded small and slipped into the case lining.
             this.tweens.add({ targets: doc, x: kase.x - 40, y: kase.y - 10, scale: 0.18, angle: 8, alpha: 0.9, duration: dur(900), delay: 700, ease: 'Cubic.In' });
           },
         });
+        layer.once(Phaser.GameObjects.Events.DESTROY, () => write.remove());
         this.narration(layer, n(5), FRAME.x + 330, FRAME.y + 70);
         this.sfxWord(layer, f[5].sfx, FRAME.x + 260, FRAME.y + 800, 64, 600);
       },
