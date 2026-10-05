@@ -157,9 +157,11 @@ try {
     await click('btn:CONFIRM');
     await click('btn:CONFIRM', 1800);
     if (i === 0) await shot('09-deduction-confirmed');
-    // CONTINUE fades in; a click that lands mid-fade is dropped, so retry until Memory is back.
-    for (let tries = 0; tries < 3 && !(await activeScene('Memory')); tries++) {
-      if (await find(page, 'btn:CONTINUE')) await click('btn:CONTINUE');
+    // CONFIRM (hypothesis popup) and CONTINUE both fade in; a click that lands mid-fade is dropped.
+    // So press whichever is on screen until Memory is back (up to ~20 s).
+    for (let tries = 0; tries < 40 && !(await activeScene('Memory')); tries++) {
+      if (await find(page, 'btn:CONTINUE')) await click('btn:CONTINUE', 400);
+      else if (await find(page, 'btn:CONFIRM')) await click('btn:CONFIRM', 1800);
       else await wait(500);
     }
     await scene('Memory');
