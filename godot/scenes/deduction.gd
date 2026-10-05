@@ -1,7 +1,8 @@
 extends Control
 ## RECONSTRUCT screen (port of DeductionScene.ts, Blueprint D1/E/M): pick evidence cards + one
-## conclusion. Wrong → "does not support" popup, no penalty. Right → CONFIRMED stamp, reaction,
-## then back to the memory page (Router.data.returnTo == "memory") or the village.
+## conclusion. Wrong → closeness feedback (B1: what's off, never which card), no penalty (A5).
+## Right → CONFIRMED stamp, reaction, then back to the memory page (Router.data.returnTo ==
+## "memory") or the village.
 
 const CARD := Vector2(480, 124)
 
@@ -138,7 +139,7 @@ func confirm() -> void:
 		return
 	var ui: Dictionary = StoryData.ui.popups
 	if conclusion == "" or selected.is_empty():
-		await _modal(ui.unsupported.text, ui.unsupported.buttons)
+		await _modal(Deductions.closeness(deduction_id, selected, conclusion), ui.unsupported.buttons)
 		return
 	var clues := selected.map(func(e): return StoryData.evidence(e).text)
 	var hyp := ""
