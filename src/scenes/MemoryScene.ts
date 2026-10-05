@@ -547,6 +547,22 @@ export class MemoryScene extends Phaser.Scene {
         h: 540,
         crops: [[900, 600, 640, 320], [920, 620, 500, 280], [0, 680, 1920, 240], [400, 480, 1100, 260], [300, 240, 240, 220], [0, 1080, 1920, 1080]],
       },
+      // Scene 9: Hanna in the archive by lamplight, the hidden shelf door; below it (y 1080..2160)
+      // the lantern chamber: the figure at the Echo Lantern and Hanna reaching out ("Stop.").
+      leela: {
+        layers: [
+          { name: 'bg_archive' },
+          { name: 'prop_shelf_door', x: 392, y: 94 },
+          { name: 'char_hanna_body', x: 260, y: 156 },
+          { name: 'bg_chamber', y: 270 },
+          { name: 'bg_chamber_residue', y: 270 },
+          { name: 'char_figure_back', x: 262, y: 414 },
+          { name: 'char_hanna_reach', x: 70, y: 414 },
+        ],
+        h: 540,
+        glow: { x: 252, y: 166, r: 55, color: COLORS.amber, alpha: 0.3 },
+        crops: [[0, 0, 1920, 1080], [880, 520, 520, 420], [1480, 320, 420, 560], [0, 1120, 960, 600], [880, 1560, 560, 520], [160, 1560, 560, 520]],
+      },
     };
     const def = PAGES[w];
     if (!def) return undefined;
