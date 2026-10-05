@@ -6,8 +6,8 @@ the route to a richer 2D/3D version after the jam.
 
 ## Rules of the port
 - **One source of truth for story data:** `../content/*.json` (and `content/puzzles`, `content/pages`).
-  Godot can only read inside `res://`, so `godot/content/` is a **copy**: run `npm run godot:sync`
-  after editing content. `npm run test:godot` fails if the copy is stale.
+  Godot can only read inside `res://`, so `godot/content/` and `godot/assets/` are **generated copies,
+  not committed**: run `npm run godot:sync` before opening the editor (`npm run test:godot` syncs for you).
 - **Same rules as the Phaser build.** Each core script is a port of its TS counterpart, and
   `tests/test_core.gd` repeats `tools/check-core.ts` (all 6 witness orders → 9/9, save round trip…).
 - Renderer: **GL Compatibility** (web export to itch works without WebGPU).
@@ -16,7 +16,7 @@ the route to a richer 2D/3D version after the jam.
 ```bash
 winget install GodotEngine.GodotEngine     # once (or set GODOT=/path/to/godot)
 npm run godot:sync                         # copy content/ into godot/content/
-npm run test:godot                         # headless core tests (exit 1 on failure)
+npm run test:godot                         # sync + every headless Godot test (exit 1 on failure)
 bash tools/godot.sh --headless --path godot res://tests/test_memory.tscn   # memory pages (all 3 witnesses)
 bash tools/godot.sh --headless --path godot res://tests/test_loop.tscn     # Title → … → Aftermath playthrough
 bash tools/godot.sh --path godot -- --scene=memory --witness=arun          # dev shortcut into any scene
