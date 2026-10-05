@@ -37,7 +37,7 @@ const TEXT := {
 	"hint": "The lantern shows the next steps.",
 	"hint_none": "No path from here. Reset the memory.",
 	"solved": "FRAGMENT RECOVERED",
-	"controls": "Click a neighbouring tile or use the arrow keys / WASD.\nZ = undo · R = reset",
+	"controls": "Click a tile next to you\nor use arrows / WASD.\nZ undo  ·  R reset",
 	"teach": {
 		"light": "LIGHT AND INK: Pillars cast shadows away from the light. Shadow is ink, erased memory. The wisp cannot enter it.",
 		"dial": "CLOCK DIAL: Step on it to turn the light a quarter turn. Every shadow moves. If ink lands on you, the memory slips.",
@@ -203,7 +203,10 @@ func _build_ui() -> void:
 			_hint_btn = btn
 		elif b[0] == "SKIP":
 			_skip_btn = btn
-	layer.add_child(_label(TEXT.controls, 18, Vector2(RAIL_X - 130, 740), 260, Color(PAPER, 0.75), font))
+	# Short fixed lines, no autowrap: a wrapped label could grow past the screen edge.
+	var controls := _label(TEXT.controls, 18, Vector2(RAIL_X - 130, 740), 260, Color(PAPER, 0.75), font)
+	controls.autowrap_mode = TextServer.AUTOWRAP_OFF
+	layer.add_child(controls)
 	_toast = _label("", 22, Vector2(RAIL_X - 130, 860), 260, PAPER, font)
 	layer.add_child(_toast)
 	if str(level.tip) != "":
