@@ -1,43 +1,35 @@
 {
   "id": "pz_mom_2",
   "title": "CLICK! The Network Link",
-  "tip": "A network node switches several gates at once.",
+  "tip": "Two nodes share one gate. An echo guards the last corner. Mind the clock.",
   "reward": "ev_leela_click",
-  "light": "E",
-  "shadow": 1,
-  "par": 12,
+  "light": "N",
+  "shadow": 2,
+  "par": 19,
   "tiles": [
-    "._.#..",
-    "___b__",
-    ".A....",
-    "G_....",
-    "._M..L",
-    "._..S."
+    "....S#",
+    ".L._..",
+    "..#_D.",
+    "M..A..",
+    "._b__.",
+    "..G_.#"
   ],
   "legend": {
     "A": "gate:g1",
     "b": "gate:g2:open",
     "L": "node:g1,g2",
-    "M": "lever:g2"
+    "M": "node:g2"
   },
   "sentinels": [
     {
       "path": [
         [
-          3,
-          2
-        ],
-        [
-          3,
-          3
-        ],
-        [
-          3,
-          4
-        ],
-        [
-          3,
+          0,
           5
+        ],
+        [
+          0,
+          4
         ]
       ]
     }
