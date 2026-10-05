@@ -51,7 +51,14 @@ export function button(
 }
 
 /** Dimmed village backdrop used behind conversations/pages until real art lands. */
-export function backdrop(scene: Phaser.Scene, dim = 0.55): void {
+export function backdrop(scene: Phaser.Scene, dim = 0.55, pixel?: string): void {
+  // A pixel background (design/pixel, 480×270) when given and loaded: already lit for its scene,
+  // so it only gets a light dim for text contrast.
+  if (pixel && scene.textures.exists(`px_${pixel}`)) {
+    scene.add.image(0, 0, `px_${pixel}`).setOrigin(0).setScale(4).setName('backdrop');
+    if (dim > 0) scene.add.rectangle(0, 0, W, H, COLORS.ink, Math.min(dim, 0.25)).setOrigin(0);
+    return;
+  }
   scene.add.image(0, 0, PH.village).setOrigin(0).setDisplaySize(W, H);
   if (dim > 0) scene.add.rectangle(0, 0, W, H, COLORS.ink, dim).setOrigin(0);
 }

@@ -42,7 +42,7 @@ export class DeductionScene extends Phaser.Scene {
     const d = deduction(data.deductionId);
     const done = gameState.deductionState(d.id) === 'confirmed';
 
-    backdrop(this, 0.72);
+    backdrop(this, 0.72, 'bg_deduction_desk');
     hudIcons(this, 'Deduction');
     label(this, 80, 40, story.ui.memory.reconstruct, 56);
     // Kept right of the ← BACK button at any text size (capped at 115 %, wraps instead of widening).

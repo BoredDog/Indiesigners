@@ -26,6 +26,7 @@ export class AftermathScene extends Phaser.Scene {
     const threads = gameState.takeAftermathThreads();
 
     this.cameras.main.setBackgroundColor(COLORS.ink);
+    if (this.textures.exists('px_bg_aftermath_dawn')) this.add.image(0, 0, 'px_bg_aftermath_dawn').setOrigin(0).setScale(4); // pixel dawn behind the page
     this.add.image(PAGE.x, PAGE.y, 'paper').setOrigin(0).setDisplaySize(PAGE.w, PAGE.h);
     label(this, 60, 30, ui.title, 64);
     hudIcons(this, 'Aftermath');
