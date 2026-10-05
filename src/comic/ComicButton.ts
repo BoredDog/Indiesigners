@@ -24,6 +24,7 @@ export class ComicButton extends Phaser.GameObjects.Container {
         fontSize: `${fontSize}px`,
         color: opts.textColor ?? COLORS.inkCss,
         resolution: TEXT_RESOLUTION,
+        padding: { x: 6, y: 2 }, // Bangers leans right: without it the last letter is clipped ("GOT I1")
       })
       .setOrigin(0.5);
     const w = opts.width ?? this.text.width + 48;

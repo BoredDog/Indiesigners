@@ -8,6 +8,7 @@ import openingJson from '../../content/opening.json';
 import finaleJson from '../../content/finale.json';
 import casebookJson from '../../content/casebook_notes.json';
 import memoryJson from '../../content/memory_text.json';
+import accusationJson from '../../content/accusation.json';
 
 export const WITNESSES = ['mira', 'arun', 'leela'] as const;
 export type WitnessId = (typeof WITNESSES)[number];
@@ -81,6 +82,7 @@ export interface Popup {
 
 export interface UiText {
   popups: Record<string, Popup>;
+  closeness: Record<'cardsFitConclusionWrong' | 'conclusionRightMissing' | 'conclusionRightExtra' | 'conclusionRightMissingAndExtra' | 'someCardsFit' | 'nothingYet', string>;
   title: Record<'logo' | 'subtitle' | 'cta' | 'continue' | 'newGame' | 'settings' | 'credits', string>;
   tutorial: { firstClueCaption: string };
   village: Record<string, string>;
@@ -150,6 +152,18 @@ export interface MemoryPageText {
   panels: MemoryPanelText[];
 }
 
+export interface AccusationText {
+  title: string;
+  question: string;
+  intro: string;
+  archiveClue: { title: string; text: string };
+  slots: { witness: WitnessId; label: string; accept: string[] }[];
+  conclusions: { id: string; text: string; correct?: boolean }[];
+  reactions: Record<string, string>;
+  feedback: Record<'pickFirst' | 'rightButUnproven' | 'andCluesOff', string>;
+  buttons: Record<'accuse' | 'retry' | 'continue', string>;
+}
+
 const evidenceList = (evidenceJson as unknown as { evidence: Evidence[] }).evidence;
 const deductionList = (deductionsJson as unknown as { deductions: Deduction[] }).deductions;
 const threadList = (threadsJson as unknown as { threads: Thread[] }).threads;
@@ -164,6 +178,7 @@ export const story = {
   finale: finaleJson as unknown as Finale,
   casebook: (casebookJson as unknown as { cards: CasebookCard[] }).cards,
   memory: (memoryJson as unknown as { pages: Record<WitnessId, MemoryPageText> }).pages,
+  accusation: accusationJson as unknown as AccusationText,
 } as const;
 
 const evidenceById = new Map(evidenceList.map((e) => [e.id, e]));
@@ -229,5 +244,15 @@ export function validateStory(): string[] {
     for (const q of story.dialogue[w].questions) q.requires.forEach((e) => known(e, q.id));
     for (const p of story.memory[w].panels) p.evidence.forEach((e) => known(e, `${w} ${p.id}`));
   }
+  // A2: each slot accepts a core clue from its own witness (always found by 9/9), one right answer.
+  const acc = story.accusation;
+  for (const s of acc.slots) {
+    s.accept.forEach((e) => known(e, `accusation ${s.witness}`));
+    if (!s.accept.some((e) => evidenceById.get(e)?.witness === s.witness && evidenceById.get(e)?.core)) {
+      problems.push(`accusation ${s.witness}: accepts no core clue from that page (could soft-lock)`);
+    }
+  }
+  if (acc.conclusions.filter((c) => c.correct).length !== 1) problems.push('accusation: needs exactly one correct conclusion');
+  for (const c of acc.conclusions) if (!acc.reactions[c.id]) problems.push(`accusation: no reaction for ${c.id}`);
   return problems;
 }

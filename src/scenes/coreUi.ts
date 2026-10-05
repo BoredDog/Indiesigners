@@ -29,6 +29,7 @@ export function label(
     stroke: COLORS.inkCss,
     strokeThickness: Math.max(4, size / 6),
     resolution: TEXT_RESOLUTION,
+    padding: { x: 6, y: 2 }, // Bangers leans right: keeps the last letter from being clipped
     ...opts,
   });
 }

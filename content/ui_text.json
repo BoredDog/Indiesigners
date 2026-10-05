@@ -18,6 +18,15 @@
     "truthRevealed": { "when": "Silhouette and master record are revealed", "text": "The investigator was part of the case.", "buttons": ["CONTINUE"] },
     "endingSummary": { "when": "After the truth ending", "text": "Investigation complete.", "buttons": ["BACK TO TITLE", "PLAY AGAIN"] }
   },
+  "closeness": {
+    "_when": "B1: a wrong deduction says how close it was, never which card or option (Golden Idol style)",
+    "cardsFitConclusionWrong": "The evidence fits.\nYour conclusion doesn't.",
+    "conclusionRightMissing": "Right idea, but it isn't proven yet:\n{missing} missing.",
+    "conclusionRightExtra": "Right idea, but {extra} {extraWord} belong.",
+    "conclusionRightMissingAndExtra": "Right idea, but {extra} {extraWord} belong\nand {missing} missing.",
+    "someCardsFit": "{fit} of your clues {fitWord}.\nThe conclusion doesn't. Look again.",
+    "nothingYet": "Pick the clues and one conclusion first."
+  },
   "title": {
     "logo": "ECHOES OF SORROW",
     "subtitle": "The village remembers you",

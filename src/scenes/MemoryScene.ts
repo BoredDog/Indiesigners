@@ -13,7 +13,7 @@ import {
   type PageDef,
 } from '../comic';
 import { makePlaceholders } from '../dev/placeholders';
-import { MEMORY_PAGES, type FragmentDef, type Witness } from './memory/MemoryData';
+import { MEMORY_PAGES, type FragmentDef, type ResidueDef, type Witness } from './memory/MemoryData';
 import { memoryDeps } from './memory/MemoryDeps';
 
 export interface MemorySceneData {
@@ -40,6 +40,13 @@ export class MemoryScene extends Phaser.Scene {
   private leaveBtn!: ComicButton;
   private hint!: Phaser.GameObjects.Text;
   private toastText?: Phaser.GameObjects.Text;
+  // A1 spirit-light: a teal light that follows the pointer and reveals residue + light-only clues.
+  private lightOn = false;
+  private lightHeld = false;
+  private lightGlow?: Phaser.GameObjects.Image;
+  private lanternBtn?: ComicButton;
+  private residue: Phaser.GameObjects.Text[] = [];
+  private lightWords = new Map<string, SfxWord>();
 
   constructor() {
     super('Memory');
@@ -57,6 +64,10 @@ export class MemoryScene extends Phaser.Scene {
   create(data: MemorySceneData = {}) {
     this.witness = data.witness ?? 'mira';
     this.words.clear();
+    this.lightWords.clear();
+    this.residue = [];
+    this.lightOn = false;
+    this.lightHeld = false;
     const def = MEMORY_PAGES[this.witness];
     if (!def) {
       this.toast(`No memory page for ${this.witness} yet.`);
@@ -93,6 +104,7 @@ export class MemoryScene extends Phaser.Scene {
     });
 
     for (const f of def.fragments) this.addFragment(f, data.justFound);
+    this.addResidue(def.residue ?? []);
     this.refreshPanelsColour(false);
 
     this.buildRail(def.title, readOnly);
@@ -104,6 +116,8 @@ export class MemoryScene extends Phaser.Scene {
     // Esc closes a zoomed panel first; otherwise it opens the pause menu like every other screen.
     this.input.keyboard?.on('keydown-ESC', () => (this.page.focused ? this.page.unfocus() : this.openMenu()));
     this.input.keyboard?.on('keydown-C', () => this.openCasebook());
+    this.input.keyboard?.on('keydown-L', () => (this.lightHeld = true));
+    this.input.keyboard?.on('keyup-L', () => (this.lightHeld = false));
     (window as unknown as { __memory: MemoryScene }).__memory = this;
   }
 
@@ -125,16 +139,94 @@ export class MemoryScene extends Phaser.Scene {
     });
     this.page.panel(f.panel).overlay.add(word);
     this.words.set(f.evidence, word);
+    // A1: a light-only clue stays invisible (and unclickable) until the spirit-light finds it.
+    if (f.light && !known) {
+      word.setAlpha(0).setData('light', true);
+      this.lightWords.set(f.evidence, word);
+    }
 
     if (known) word.pop(true);
-    else if (f.first) word.pulse();
+    else if (f.first && !f.light) word.pulse();
 
     word.on('reveal', () => {
+      this.lightWords.delete(f.evidence);
+      word.setAlpha(1);
       deps.addEvidence(f.evidence);
       this.refreshPanelsColour(true);
       this.refreshHud();
     });
     word.on('locked', () => this.openPuzzle(f));
+  }
+
+  // ---------------------------------------------------------------- A1 spirit-light
+
+  /** Teal residue written on the panels: invisible until the spirit-light passes over it. */
+  private addResidue(list: ResidueDef[]) {
+    for (const r of list) {
+      const panel = this.page.panel(r.panel);
+      const t = this.add
+        .text(r.fx * panel.frameW, r.fy * panel.frameH, r.text, {
+          fontFamily: `"${FONTS.hand}"`,
+          fontSize: `${r.size ?? 48}px`,
+          fontStyle: 'bold',
+          color: COLORS.spiritTealCss,
+          stroke: COLORS.inkCss,
+          strokeThickness: 4,
+          resolution: TEXT_RESOLUTION,
+        })
+        .setOrigin(0.5)
+        .setAngle(r.angle ?? 0)
+        .setAlpha(0)
+        .setName(`residue:${r.text}`);
+      panel.overlay.add(t);
+      this.residue.push(t);
+    }
+  }
+
+  get lit(): boolean {
+    return this.lightOn || this.lightHeld;
+  }
+
+  /** Toggle the lantern (the rail button; L held does the same while pressed). Exposed for tests. */
+  setLight(on: boolean) {
+    this.lightOn = on;
+    this.lanternBtn?.setLabel(on ? 'LANTERN: ON' : 'LANTERN (L)');
+  }
+
+  private ensureGlow(): Phaser.GameObjects.Image {
+    if (!this.textures.exists('spirit_glow')) {
+      const size = 440;
+      const tex = this.textures.createCanvas('spirit_glow', size, size)!;
+      const ctx = tex.getContext();
+      const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      g.addColorStop(0, 'rgba(127,224,212,0.42)');
+      g.addColorStop(0.55, 'rgba(127,224,212,0.16)');
+      g.addColorStop(1, 'rgba(127,224,212,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+      tex.refresh();
+    }
+    this.lightGlow ??= this.add.image(0, 0, 'spirit_glow').setBlendMode(Phaser.BlendModes.ADD).setDepth(40).setVisible(false);
+    return this.lightGlow;
+  }
+
+  update() {
+    if (!this.page) return;
+    const glow = this.ensureGlow();
+    const lit = this.lit;
+    glow.setVisible(lit);
+    const p = this.input.activePointer;
+    if (lit) glow.setPosition(p.worldX, p.worldY);
+    // Full strength within ~half the radius, fading out to the edge of the light.
+    const R = 200;
+    const reveal = (o: Phaser.GameObjects.Text | Phaser.GameObjects.Container) => {
+      if (!lit) return o.setAlpha(0);
+      const m = o.getWorldTransformMatrix();
+      const d = Phaser.Math.Distance.Between(m.tx, m.ty, p.worldX, p.worldY);
+      o.setAlpha(Phaser.Math.Clamp((R - d) / (R * 0.5), 0, 1));
+    };
+    for (const t of this.residue) reveal(t);
+    for (const w of this.lightWords.values()) reveal(w);
   }
 
   private openPuzzle(f: FragmentDef) {
@@ -202,6 +294,12 @@ export class MemoryScene extends Phaser.Scene {
         .on('click', () => this.toVillage()),
     );
 
+    // A1 spirit-light: toggle here, or hold L. Under the light, hidden residue and clues appear.
+    this.lanternBtn = new ComicButton(this, RAIL_X, 225, { label: 'LANTERN (L)', width: 220, fontSize: 26, fill: COLORS.spiritTeal })
+      .setName('btn:LANTERN')
+      .on('click', () => this.setLight(!this.lightOn));
+    this.add.existing(this.lanternBtn);
+
     // "What next" hint so a half-finished page never leaves the player guessing.
     this.hint = this.add
       .text(RAIL_X, 540, '', {
@@ -262,6 +360,10 @@ export class MemoryScene extends Phaser.Scene {
           ? 'Evidence complete.\nRECONSTRUCT what happened.'
           : `Deductions ${confirmed}/${deductions.length}.\nFind more evidence: click the loud words.${lockedLeft ? '\n◆ = behind an Echo Path: click it to enter.' : ''}`,
     );
+    // A1: point at the lantern while a light-only clue on this page is still hidden.
+    if (def.fragments.some((f) => f.light && !deps.hasEvidence(f.evidence))) {
+      this.hint.setText(`${this.hint.text}\n✦ Something hides here. Raise the LANTERN.`);
+    }
   }
 
   /** First deduction whose required evidence is all known and that isn't confirmed yet. */

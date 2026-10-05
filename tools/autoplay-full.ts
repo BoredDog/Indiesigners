@@ -1,6 +1,6 @@
 // N8: plays the whole game to the summary screen for all 6 witness orders, through the real UI:
 // Title → New Game → Opening → Village → (Conversation → Memory → real Puzzles → Deduction ×3 →
-// Aftermath) ×3 → clock tower → THE RECORD → Archive → pz_archive → Finale → Ending summary.
+// Aftermath) ×3 → clock tower → THE RECORD → Archive → pz_archive → Accusation → Finale → Ending summary.
 // Puzzles are played move by move with the solver's solution (no autosolve). Each order runs in its
 // own browser context (own save), a few in parallel. Order 1 runs with default settings; the rest
 // with Reduce Motion on, which also proves that setting end to end and keeps the suite fast.
@@ -14,6 +14,8 @@ import { solve } from '../src/puzzle/Solver';
 import type { LevelFile } from '../src/puzzle/types';
 import deductionsJson from '../content/deductions.json';
 import dialogueJson from '../content/dialogue.json';
+import accusationJson from '../content/accusation.json';
+import evidenceJson from '../content/evidence.json';
 
 type Witness = 'mira' | 'arun' | 'leela';
 const ORDERS: Witness[][] = [
@@ -39,6 +41,8 @@ for (const f of ['pz_tower', 'pz_sis_1', 'pz_sis_2', 'pz_sis_3', 'pz_bro_1', 'pz
   const file = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'content', 'puzzles', `${f}.json`), 'utf8')) as LevelFile;
   SOLUTIONS.set(f, solve(parseLevel(file))!.moves.join(''));
 }
+const ACCUSATION = accusationJson as { slots: { accept: string[] }[]; conclusions: { id: string; correct?: boolean }[] };
+const EVIDENCE = evidenceJson.evidence as { id: string; core: boolean }[];
 const DEDUCTIONS = deductionsJson.deductions as { id: string; witness: Witness; requiredEvidence: string[] }[];
 
 // Browser-side lookup: topmost visible object by name, or a Text whose text is `label` (ComicButtons
@@ -166,7 +170,16 @@ class Run {
         const r = s.game.canvas.getBoundingClientRect();
         return { x: r.left + (m.tx * r.width) / 1920, y: r.top + (m.ty * r.height) / 1080 };
       }, id);
+      const lightOnly = await this.page.evaluate((e) => !!(window as any).__memory.words.get(e).getData('light'), id);
+      if (lightOnly) {
+        // A1: only visible under the spirit-light. Raise the LANTERN (rail button), then sweep the
+        // pointer onto the clue like a player would; it shows a frame later, then click it.
+        await this.click('btn:LANTERN', 200);
+        await this.page.mouse.move(p.x, p.y);
+        await this.wait(300);
+      }
       await this.page.mouse.click(p.x, p.y);
+      if (lightOnly) await this.click('btn:LANTERN', 200);
       if (st === 'locked') {
         await this.puzzle('Memory');
         await this.page.waitForFunction(() => (window as any).__memory?.page, undefined, { polling: 250, timeout: 20_000 });
@@ -273,6 +286,17 @@ class Run {
     await this.puzzle('Archive');
     this.check(await this.gs<boolean>("gs.flag('archiveEscaped')"), 'archive escaped');
     await this.click('btn:CONTINUE', 400, 30_000);
+
+    // A2: the accusation. One supporting clue per witness, then "The investigator. Me."
+    await this.scene('Accusation');
+    for (const slot of ACCUSATION.slots) {
+      const pick = slot.accept.find((e) => EVIDENCE.find((x) => x.id === e)?.core)!;
+      await this.click(`acc:${pick}`, 150);
+    }
+    await this.click(`accuse:${ACCUSATION.conclusions.find((c) => c.correct)!.id}`, 150);
+    await this.click('btn:ACCUSE', 600);
+    await this.click('btn:CONTINUE', 400, 30_000);
+    this.check(await this.gs<boolean>("gs.flag('accused')"), 'accused: "The investigator. Me."');
 
     await this.scene('Finale');
     await this.shot('finale');

@@ -3,6 +3,7 @@
 import { gameState } from './GameState';
 import {
   deduction,
+  fmt,
   deductionsOf,
   evidenceOf,
   story,
@@ -73,7 +74,38 @@ export const DeductionController = {
   },
 
   /**
-   * Confirm the hypothesis. Wrong → "The evidence does not support…" with no penalty (A5).
+   * B1 closeness feedback for a wrong attempt (Golden Idol style): says whether the cards or the
+   * conclusion are the problem, and how many cards fit or are missing, never which ones.
+   */
+  closeness(id: DeductionId, selected: string[], conclusion: ConclusionKey | undefined): string {
+    const c = story.ui.closeness;
+    if (!conclusion || selected.length === 0) return c.nothingYet;
+    const d = deduction(id);
+    const allowed = new Set([...d.requiredEvidence, ...d.supportingEvidence]);
+    const picked = new Set(selected);
+    const missing = d.requiredEvidence.filter((e) => !picked.has(e)).length;
+    const extra = [...picked].filter((e) => !allowed.has(e)).length;
+    const fit = [...picked].filter((e) => d.requiredEvidence.includes(e)).length;
+    const n = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
+    const words = {
+      missing: n(missing, 'clue is', 'clues are'),
+      extra: String(extra),
+      extraWord: extra === 1 ? "card doesn't" : "cards don't",
+      fit: String(fit),
+      fitWord: fit === 1 ? 'fits' : 'fit',
+    };
+    if (conclusion === 'correct') {
+      if (missing && extra) return fmt(c.conclusionRightMissingAndExtra, words);
+      if (extra) return fmt(c.conclusionRightExtra, words);
+      if (missing) return fmt(c.conclusionRightMissing, words);
+      return UNSUPPORTED; // right cards + conclusion but evidence not known (can't happen via the UI)
+    }
+    if (!missing && !extra) return c.cardsFitConclusionWrong;
+    return fit ? fmt(c.someCardsFit, words) : UNSUPPORTED;
+  },
+
+  /**
+   * Confirm the hypothesis. Wrong → closeness feedback (B1), no penalty (A5).
    * Right → deduction confirmed, its authored unlocks and threads applied, autosaved.
    */
   attempt(id: DeductionId, selected: string[], conclusion: ConclusionKey): AttemptResult {
@@ -81,7 +113,7 @@ export const DeductionController = {
       const d = deduction(id);
       return { ok: true, deduction: d, reaction: d.reaction, unlocks: [], threads: [] };
     }
-    if (!this.check(id, selected, conclusion)) return { ok: false, message: UNSUPPORTED };
+    if (!this.check(id, selected, conclusion)) return { ok: false, message: this.closeness(id, selected, conclusion) };
     const d = deduction(id);
     const threadIds = gameState.confirmDeduction(id);
     return {

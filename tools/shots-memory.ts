@@ -25,8 +25,17 @@ async function screenPos(page: Page, expr: string) {
     return { x: r.left + (m.tx * r.width) / 1920, y: r.top + (m.ty * r.height) / 1080 };
   }, expr);
 }
+async function lanternOn() {
+  await page.waitForFunction(() => (window as any).__echoes.game.scene.isActive('Memory') && (window as any).__memory?.page, undefined, { polling: 100, timeout: 20_000 });
+  await page.waitForTimeout(300);
+  await page.evaluate(() => (window as any).__memory.setLight(true));
+}
 async function clickObj(expr: string) {
   const p = await screenPos(page, expr);
+  // Hover first (like a player sweeping the lantern): a light-only clue shows under the pointer
+  // a frame later; clicking blind would hit the panel behind it and zoom the panel instead.
+  await page.mouse.move(p.x, p.y);
+  await page.waitForTimeout(150);
   await page.mouse.click(p.x, p.y);
   await page.waitForTimeout(700);
 }
@@ -52,10 +61,17 @@ await shot('02-page');
 const ids: string[] = await page.evaluate(() => [...(window as any).__memory.words.keys()]);
 for (const id of ids) {
   const word = `s.words.get(${JSON.stringify(id)})`;
+  // A1: lantern on, so light-only clues show. A puzzle round trip rebuilds the page (light off),
+  // so wait for the page to be back first.
+  await lanternOn();
   await clickObj(word); // locked words open the Puzzle, which autosolves and returns with the fragment
   const locked = await page.evaluate((code) => new Function('s', `return ${code}.revealed`)((window as any).__memory), word);
-  if (!locked) await clickObj(word);
+  if (!locked) {
+    await lanternOn();
+    await clickObj(word);
+  }
 }
+await page.evaluate(() => (window as any).__memory.setLight(false));
 await page.waitForTimeout(800);
 await shot('03-all-found');
 console.log('after fragments:', await state());

@@ -251,6 +251,7 @@
     },
     {
       "evidence": "ev_mira_erased_entry",
+      "light": true,
       "panel": "P6",
       "x": 640,
       "y": 230,
@@ -272,5 +273,9 @@
         "y": 70
       }
     }
+  ],
+  "residue": [
+    {"panel": "P5", "fx": 0.82, "fy": 0.22, "text": "E.V.", "size": 54, "angle": -8},
+    {"panel": "P2", "fx": 0.18, "fy": 0.78, "text": "2:31", "size": 40, "angle": 6}
   ]
 }

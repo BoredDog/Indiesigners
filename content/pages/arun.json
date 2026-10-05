@@ -243,6 +243,7 @@
     },
     {
       "evidence": "ev_arun_hiss",
+      "light": true,
       "panel": "P5",
       "x": 165,
       "y": 143
@@ -253,5 +254,9 @@
       "x": 165,
       "y": 143
     }
+  ],
+  "residue": [
+    {"panel": "P4", "fx": 0.8, "fy": 0.78, "text": "E.V.", "size": 54, "angle": 7},
+    {"panel": "P6", "fx": 0.7, "fy": 0.3, "text": "NIA", "size": 46, "angle": -5}
   ]
 }

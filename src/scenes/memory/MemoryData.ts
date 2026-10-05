@@ -20,6 +20,17 @@ interface FragmentLayout {
   size?: number;
   angle?: number;
   card?: { x: number; y: number }; // where the evidence card goes (panel-local); default: below the word
+  light?: boolean; // A1: only visible under the spirit-light (optional evidence only)
+}
+
+/** A1: hidden teal residue shown only under the spirit-light. fx/fy = fraction of the panel. */
+export interface ResidueDef {
+  panel: string;
+  fx: number;
+  fy: number;
+  text: string;
+  size?: number;
+  angle?: number;
 }
 
 /** Placement + story data, as the Memory scene uses it. */
@@ -50,6 +61,7 @@ export interface MemoryPageData {
   closingNarration: string;
   bubbles: BubbleDef[];
   fragments: FragmentDef[];
+  residue?: ResidueDef[];
 }
 
 type PageFile = Omit<MemoryPageData, 'fragments'> & { fragments: FragmentLayout[] };
