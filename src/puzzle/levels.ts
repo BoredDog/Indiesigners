@@ -35,4 +35,23 @@ export const PUZZLE_TEXT = {
   solved: 'FRAGMENT RECOVERED',
   controls: 'Click a neighbouring tile or use the arrow keys / WASD.  Z = undo · R = reset',
   light: 'LIGHT',
+  // V8: shown once per mechanic, the first time a board with it opens (any witness order).
+  teach: {
+    light: 'LIGHT AND INK: Pillars cast shadows away from the light. Shadow is ink, erased memory. The wisp cannot enter it.',
+    dial: 'CLOCK DIAL: Step on it to turn the light a quarter turn. Every shadow moves. If ink lands on you, the memory slips.',
+    lever: 'BELL ROPE: Step on a rope to open or close the gates that share its colour and mark.',
+    sluice: 'SLUICE: Step on the wheel to drain or flood every channel that shares its colour and mark.',
+    crate: 'CRATE: Walk into a crate to push it. Crates cast shadows too.',
+    sentinel: 'MEMORY ECHO: Echoes take one step after each of yours. Never end a move on one, or on the red square it faces.',
+    node: 'NETWORK NODE: A node switches every gate whose mark it shows, all at once.',
+    collapse: 'CRACKED FLOOR: It falls away the moment you step off it.',
+  } as Record<string, string>,
+  teachOk: 'GOT IT',
+  // First time a move is blocked for each reason (once per board).
+  blocked: {
+    ink: 'Ink is erased memory. Move the light to move the shadows.',
+    gate: 'A closed gate. Its rope or node opens it.',
+    water: 'Flooded. A sluice drains this channel.',
+    crate: 'The crate will not move that way.',
+  } as Record<string, string>,
 } as const;

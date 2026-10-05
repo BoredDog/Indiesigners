@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { attachComicFx, Bubble, COLORS, comicSettings, dur, FONTS, impact, pageTurn, TEXT_RESOLUTION } from '../comic';
+import { gameState } from '../core/GameState';
 import { PH, makePlaceholders } from '../dev/placeholders';
 import { getLevel, PUZZLE_TEXT as T } from '../puzzle/levels';
 import { initialState, inkTiles, neighbour, sentinelAt, step, xy, gateOpen, waterDry } from '../puzzle/Rules';
@@ -38,6 +39,10 @@ export class PuzzleScene extends Phaser.Scene {
   private busy = false;
   private done = false;
   private queued?: Dir;
+  private explained = new Set<string>();
+  /** True once the first-time mechanic captions are done (tests wait on it). */
+  teachDone = false;
+  private hoverG!: Phaser.GameObjects.Graphics;
 
   private tile = 100;
   private ox = 0;
@@ -45,7 +50,7 @@ export class PuzzleScene extends Phaser.Scene {
   private terrain!: Phaser.GameObjects.Graphics;
   private ink!: Phaser.GameObjects.Graphics;
   private overlay!: Phaser.GameObjects.Graphics; // danger tiles, hint markers, hover
-  private dialHands: Phaser.GameObjects.Graphics[] = [];
+  private dialHands: (Phaser.GameObjects.Graphics | Phaser.GameObjects.Text)[] = []; // per-dial objects rebuilt with the terrain
   private wisp!: Phaser.GameObjects.Container;
   private crates = new Map<number, Phaser.GameObjects.Container>();
   private sentinels: Phaser.GameObjects.Container[] = [];
@@ -68,6 +73,8 @@ export class PuzzleScene extends Phaser.Scene {
     this.busy = false;
     this.done = false;
     this.queued = undefined;
+    this.explained.clear();
+    this.teachDone = false;
     this.crates.clear();
     this.sentinels = [];
     this.dialHands = [];
@@ -98,8 +105,10 @@ export class PuzzleScene extends Phaser.Scene {
     this.terrain = this.add.graphics();
     this.ink = this.add.graphics();
     this.overlay = this.add.graphics();
+    this.hoverG = this.add.graphics().setDepth(15);
     this.buildGoal();
     this.buildEntities();
+    this.moveSentinels(0, 0);
     this.buildLightGlyph();
     this.buildRail();
     this.buildInput();
@@ -109,7 +118,7 @@ export class PuzzleScene extends Phaser.Scene {
       const tip = new Bubble(this, PANEL.x + PANEL.w / 2, PANEL.y + 58, {
         kind: 'narration',
         text: level.tip,
-        maxWidth: 1100,
+        maxWidth: 1420,
         fontSize: 26,
       });
       this.add.existing(tip.appear(100));
@@ -128,6 +137,42 @@ export class PuzzleScene extends Phaser.Scene {
 
     this.cameras.main.fadeIn(dur(200), 0, 0, 0);
     (window as unknown as { __puzzle: PuzzleScene }).__puzzle = this;
+    this.time.delayedCall(250, () => void this.teach());
+    this.startDust();
+  }
+
+  /** Mechanics on this board, in teaching order. */
+  mechanics(): string[] {
+    const c = this.level.cells;
+    const has = (k: string) => c.some((x) => x.k === k);
+    const sw = (kind: string) => c.some((x) => x.k === 'switch' && x.kind === kind);
+    const out: string[] = [];
+    if (has('pillar') || this.level.crates.length) out.push('light');
+    if (has('dial')) out.push('dial');
+    if (sw('lever')) out.push('lever');
+    if (sw('sluice')) out.push('sluice');
+    if (this.level.crates.length) out.push('crate');
+    if (this.level.sentinels.length) out.push('sentinel');
+    if (sw('node')) out.push('node');
+    if (has('collapse')) out.push('collapse');
+    return out;
+  }
+
+  /** V8: one rule caption per mechanic the first time it appears (saved via gameState flags). */
+  private async teach() {
+    const fresh = this.mechanics().filter((m) => !gameState.flag(`pz_taught_${m}`));
+    if (!fresh.length || this.done) {
+      this.teachDone = true;
+      return;
+    }
+    this.busy = true;
+    for (const m of fresh) {
+      await popup(this, T.teach[m], [T.teachOk]);
+      gameState.setFlag(`pz_taught_${m}`);
+    }
+    this.queued = undefined; // keys pressed while a caption was open must not fire later
+    this.busy = false;
+    this.teachDone = true;
   }
 
   // ------------------------------------------------------------------ public test hooks
@@ -198,6 +243,34 @@ export class PuzzleScene extends Phaser.Scene {
     return GROUP_COLORS[g % GROUP_COLORS.length];
   }
 
+  /**
+   * V10: every group also has a shape (circle, triangle, square, diamond, cross) so a rope and its
+   * gates match without relying on colour. Drawn in ink on a paper disc.
+   */
+  private mark(g: Phaser.GameObjects.Graphics, group: number, x: number, y: number, r: number, disc = true) {
+    if (disc) {
+      g.fillStyle(COLORS.paper, 1).fillCircle(x, y, r * 1.45);
+      g.lineStyle(3, COLORS.ink, 1).strokeCircle(x, y, r * 1.45);
+    }
+    g.fillStyle(COLORS.ink, 1);
+    switch (group % 5) {
+      case 0:
+        g.fillCircle(x, y, r * 0.8);
+        break;
+      case 1:
+        g.fillTriangle(x, y - r, x + r, y + r * 0.8, x - r, y + r * 0.8);
+        break;
+      case 2:
+        g.fillRect(x - r * 0.75, y - r * 0.75, r * 1.5, r * 1.5);
+        break;
+      case 3:
+        g.fillTriangle(x, y - r, x + r, y, x, y + r).fillTriangle(x, y - r, x - r, y, x, y + r);
+        break;
+      default:
+        g.fillRect(x - r, y - r * 0.3, r * 2, r * 0.6).fillRect(x - r * 0.3, y - r, r * 0.6, r * 2);
+    }
+  }
+
   private drawTerrain() {
     const g = this.terrain;
     const t = this.tile;
@@ -261,6 +334,18 @@ export class PuzzleScene extends Phaser.Scene {
           hand.fillStyle(COLORS.ink, 1).fillCircle(0, 0, 6);
           hand.setRotation((s.light * Math.PI) / 2);
           this.dialHands.push(hand);
+          // Each quarter turn moves the frozen clock on 14 minutes: 2:17 → 2:31 (Arun's watch) → … (PLAN §12 C4).
+          const turns = (s.light - this.level.light + 4) % 4;
+          const mins = 17 + turns * 14;
+          const label = this.add
+            .text(x + t / 2, y + t / 2 + r * 0.42, `2:${String(mins).padStart(2, '0')}`, {
+              fontFamily: `"${FONTS.narration}"`,
+              fontSize: `${Math.round(t * 0.12)}px`,
+              color: COLORS.inkCss,
+              resolution: TEXT_RESOLUTION,
+            })
+            .setOrigin(0.5);
+          this.dialHands.push(label);
           return;
         }
         case 'gate': {
@@ -269,11 +354,13 @@ export class PuzzleScene extends Phaser.Scene {
           if (gateOpen(c, s)) {
             g.fillStyle(col, 0.9).fillRect(x + 8, y + 8, 12, t - 16).fillRect(x + t - 20, y + 8, 12, t - 16);
             g.lineStyle(3, COLORS.ink, 1).strokeRect(x + 8, y + 8, 12, t - 16).strokeRect(x + t - 20, y + 8, 12, t - 16);
+            this.mark(g, c.group, x + t / 2, y + t / 2, t * 0.09);
           } else {
             g.fillStyle(COLORS.charcoal, 1).fillRect(x + 8, y + 8, t - 16, t - 16);
             g.fillStyle(col, 1);
             for (let k = 0; k < 4; k++) g.fillRect(x + 14 + k * ((t - 34) / 3), y + 10, 8, t - 20);
             g.lineStyle(4, COLORS.ink, 1).strokeRect(x + 8, y + 8, t - 16, t - 16);
+            this.mark(g, c.group, x + t / 2, y + t / 2, t * 0.09);
           }
           return;
         }
@@ -294,6 +381,7 @@ export class PuzzleScene extends Phaser.Scene {
             }
           }
           g.lineStyle(2, COLORS.ink, 0.6).strokeRect(x + 2, y + 2, t - 4, t - 4);
+          this.mark(g, c.group, x + t * 0.8, y + t * 0.8, t * 0.06);
           return;
         }
         case 'switch': {
@@ -306,6 +394,7 @@ export class PuzzleScene extends Phaser.Scene {
             g.lineStyle(3, 0xc9a66b, 1).lineBetween(cxp, y + 8, cxp, cyp + t * 0.12);
             g.fillStyle(col, 1).fillCircle(cxp, cyp + t * 0.2, t * 0.14);
             g.lineStyle(4, COLORS.ink, 1).strokeCircle(cxp, cyp + t * 0.2, t * 0.14);
+            this.mark(g, c.groups[0], cxp, cyp + t * 0.2, t * 0.07, false);
           } else if (c.kind === 'sluice') {
             const col = this.groupColor(c.groups[0]);
             const r = t * 0.3;
@@ -315,7 +404,9 @@ export class PuzzleScene extends Phaser.Scene {
               const a = (k / 4) * Math.PI * 2 + Math.PI / 4;
               g.lineStyle(5, COLORS.ink, 1).lineBetween(cxp, cyp, cxp + Math.cos(a) * r, cyp + Math.sin(a) * r);
             }
-            g.fillStyle(col, 1).fillCircle(cxp, cyp, 8);
+            g.fillStyle(col, 1).fillCircle(cxp, cyp, t * 0.1);
+            if (c.groups.length === 1) this.mark(g, c.groups[0], cxp, cyp, t * 0.06, false);
+            else c.groups.forEach((grp, k) => this.mark(g, grp, cxp + (k - (c.groups.length - 1) / 2) * t * 0.3, cyp - r - t * 0.02, t * 0.06));
           } else {
             const r = t * 0.3;
             g.fillStyle(COLORS.spiritTeal, 0.35).fillCircle(cxp, cyp, r + 8);
@@ -323,7 +414,10 @@ export class PuzzleScene extends Phaser.Scene {
             g.lineStyle(4, COLORS.spiritTeal, 1).strokeCircle(cxp, cyp, r);
             c.groups.forEach((grp, k) => {
               const a = (k / c.groups.length) * Math.PI * 2 - Math.PI / 2;
-              g.fillStyle(this.groupColor(grp), 1).fillCircle(cxp + Math.cos(a) * r * 0.55, cyp + Math.sin(a) * r * 0.55, 9);
+              const mx = cxp + Math.cos(a) * r * 0.5;
+              const my = cyp + Math.sin(a) * r * 0.5;
+              g.fillStyle(this.groupColor(grp), 1).fillCircle(mx, my, t * 0.09);
+              this.mark(g, grp, mx, my, t * 0.05, false);
             });
           }
           return;
@@ -342,9 +436,10 @@ export class PuzzleScene extends Phaser.Scene {
     this.children.moveAbove(g, old);
     const t = this.tile;
     for (const i of inkTiles(this.level, this.state)) {
+      if (this.level.cells[i].k === 'void' || this.state.collapsed.includes(i)) continue; // ink over a pit reads as noise
       const x = this.ox + (i % this.level.w) * t;
       const y = this.oy + Math.floor(i / this.level.w) * t;
-      g.fillStyle(COLORS.ink, 0.94);
+      g.fillStyle(COLORS.ink, 0.84); // objects under the ink stay faintly visible: a hint to move the light
       const pts: Phaser.Math.Vector2[] = [];
       const n = 14;
       for (let k = 0; k < n; k++) {
@@ -565,15 +660,32 @@ export class PuzzleScene extends Phaser.Scene {
     const bw = this.level.w * this.tile;
     const bh = this.level.h * this.tile;
     const zone = this.add.zone(this.ox, this.oy, bw, bh).setOrigin(0).setInteractive({ useHandCursor: true }).setName('board');
-    zone.on('pointerup', (p: Phaser.Input.Pointer) => {
+    const dirAt = (p: Phaser.Input.Pointer): Dir | undefined => {
       const tx = Math.floor((p.x - this.ox) / this.tile);
       const ty = Math.floor((p.y - this.oy) / this.tile);
       const [wx, wy] = xy(this.level, this.state.pos);
       const dx = tx - wx;
       const dy = ty - wy;
-      if (Math.abs(dx) + Math.abs(dy) !== 1) return;
-      this.tryMove(dx === 1 ? 'E' : dx === -1 ? 'W' : dy === 1 ? 'S' : 'N');
+      if (Math.abs(dx) + Math.abs(dy) !== 1) return undefined;
+      return dx === 1 ? 'E' : dx === -1 ? 'W' : dy === 1 ? 'S' : 'N';
+    };
+    zone.on('pointerup', (p: Phaser.Input.Pointer) => {
+      const d = dirAt(p);
+      if (d) this.tryMove(d);
     });
+    // Hover: outline the neighbouring tile under the cursor (teal = you can go, grey = blocked).
+    zone.on('pointermove', (p: Phaser.Input.Pointer) => {
+      this.hoverG.clear();
+      const d = dirAt(p);
+      if (!d || this.done) return;
+      const i = neighbour(this.level, this.state.pos, d);
+      const ok = step(this.level, this.state, d).event !== 'blocked';
+      const x = this.ox + (i % this.level.w) * this.tile;
+      const y = this.oy + Math.floor(i / this.level.w) * this.tile;
+      this.hoverG.lineStyle(6, ok ? COLORS.spiritTeal : 0x777777, ok ? 1 : 0.6).strokeRect(x + 5, y + 5, this.tile - 10, this.tile - 10);
+      if (ok) this.previewInk(d);
+    });
+    zone.on('pointerout', () => this.hoverG.clear());
     const keys: Record<string, Dir> = {
       UP: 'N', W: 'N', DOWN: 'S', S: 'S', LEFT: 'W', A: 'W', RIGHT: 'E', D: 'E',
     };
@@ -593,7 +705,12 @@ export class PuzzleScene extends Phaser.Scene {
       return;
     }
     const r = step(this.level, this.state, d);
-    if (r.event === 'blocked') return this.bump(d);
+    if (r.event === 'blocked') {
+      this.explain(r.reason);
+      return this.bump(d);
+    }
+    this.hoverG.clear();
+    this.trail(this.state.pos);
     this.drawOverlay();
     this.history.push(this.state);
     const prev = this.state;
@@ -661,27 +778,112 @@ export class PuzzleScene extends Phaser.Scene {
     });
   }
 
-  private crumble(i: number) {
-    const bits = this.add.graphics().setDepth(25);
-    bits.fillStyle(COLORS.paper, 1);
-    for (let k = 0; k < 6; k++) bits.fillRect(this.cx(i) - 30 + (k % 3) * 22, this.cy(i) - 20 + Math.floor(k / 3) * 22, 16, 16);
-    this.tweens.add({ targets: bits, alpha: 0, y: 30, scale: 0.6, duration: dur(380), onComplete: () => bits.destroy() });
+  /**
+   * Shadow preview (PLAN §12 C1, after Felix the Reaper): if this move turns the light or pushes a
+   * crate, show where the ink will fall afterwards as faint dashed blots.
+   */
+  private previewInk(d: Dir) {
+    const r = step(this.level, this.state, d);
+    if (!r.rotated && !r.pushed) return;
+    const now = inkTiles(this.level, this.state);
+    const next = inkTiles(this.level, r.state);
+    const t = this.tile;
+    for (const i of next) {
+      if (now.has(i) || this.level.cells[i].k === 'void') continue;
+      const x = this.ox + (i % this.level.w) * t;
+      const y = this.oy + Math.floor(i / this.level.w) * t;
+      this.hoverG.fillStyle(COLORS.ink, 0.35).fillRect(x + 10, y + 10, t - 20, t - 20);
+      this.hoverG.lineStyle(3, COLORS.ink, 0.8);
+      for (let k = 0; k < 4; k++) this.hoverG.lineBetween(x + 10 + k * ((t - 20) / 4), y + 10, x + 10 + k * ((t - 20) / 4) + (t - 20) / 8, y + 10);
+    }
+    for (const i of now) {
+      if (next.has(i) || this.level.cells[i].k === 'void') continue;
+      const x = this.ox + (i % this.level.w) * t;
+      const y = this.oy + Math.floor(i / this.level.w) * t;
+      this.hoverG.lineStyle(4, COLORS.amber, 0.9).strokeRect(x + 12, y + 12, t - 24, t - 24); // this ink will lift
+    }
   }
 
-  /** Slip / caught: ink swallows the wisp, then the memory rewinds one step (counts toward HINT/SKIP). */
+  /** One-time rule reminder the first time a move is blocked for a given reason. */
+  private explain(reason: string | undefined) {
+    const msg = reason && T.blocked[reason];
+    if (!msg || this.explained.has(reason)) return;
+    this.explained.add(reason);
+    this.toast(msg);
+  }
+
+  /** Fading lantern motes where the wisp has been. */
+  private trail(from: number) {
+    if (comicSettings.reduceMotion) return;
+    for (let k = 0; k < 3; k++) {
+      const mote = this.add
+        .circle(this.cx(from) + Phaser.Math.Between(-14, 14), this.cy(from) + Phaser.Math.Between(-14, 14), Phaser.Math.Between(5, 9), COLORS.spiritTeal, 0.7)
+        .setDepth(38);
+      this.tweens.add({ targets: mote, alpha: 0, scale: 0.3, y: mote.y - 12, duration: 500 + k * 120, onComplete: () => mote.destroy() });
+    }
+  }
+
+  /** Cracked floor gives way: the tile drops and spins into the dark, dust puffs, the room rumbles. */
+  private crumble(i: number) {
+    if (comicSettings.reduceMotion) return;
+    const t = this.tile;
+    const slab = this.add.container(this.cx(i), this.cy(i)).setDepth(25);
+    slab.add([
+      this.add.rectangle(0, 0, t - 6, t - 6, COLORS.paper).setStrokeStyle(3, COLORS.ink),
+      this.add.line(0, 0, -t * 0.3, -t * 0.25, t * 0.1, t * 0.05, COLORS.ink).setLineWidth(3).setOrigin(0),
+      this.add.line(0, 0, t * 0.1, t * 0.05, t * 0.3, t * 0.3, COLORS.ink).setLineWidth(3).setOrigin(0),
+    ]);
+    this.tweens.add({ targets: slab, scale: 0.15, angle: 35, alpha: 0, y: slab.y + t * 0.25, duration: 420, ease: 'Quad.In', onComplete: () => slab.destroy() });
+    for (let k = 0; k < 6; k++) {
+      const puff = this.add.circle(this.cx(i) + Phaser.Math.Between(-t / 2, t / 2), this.cy(i) + Phaser.Math.Between(-t / 3, t / 2), Phaser.Math.Between(6, 12), 0x9a958a, 0.7).setDepth(26);
+      this.tweens.add({ targets: puff, y: puff.y - Phaser.Math.Between(10, 30), alpha: 0, scale: 1.8, duration: 500 + k * 60, onComplete: () => puff.destroy() });
+    }
+    if (!comicSettings.reduceFlashing) this.cameras.main.shake(140, 0.0025);
+  }
+
+  /** Archive collapse ambience: grit falling across the board (boards with cracked floor only). */
+  private startDust() {
+    if (comicSettings.reduceMotion || !this.level.cells.some((c) => c.k === 'collapse')) return;
+    const bw = this.level.w * this.tile;
+    this.time.addEvent({
+      delay: 260,
+      loop: true,
+      callback: () => {
+        const grit = this.add.rectangle(this.ox + Math.random() * bw, this.oy - 20, 4, 4 + Math.random() * 6, 0xb8b2a4, 0.8).setDepth(48);
+        this.tweens.add({ targets: grit, y: this.oy + this.level.h * this.tile + 20, alpha: 0.2, duration: 1400 + Math.random() * 900, onComplete: () => grit.destroy() });
+      },
+    });
+  }
+
+  /** Slip / caught: ink splashes over the wisp, then the memory rewinds one step (counts toward HINT/SKIP). */
   private rewind(kind: 'slip' | 'caught') {
     this.fails++;
-    const blot = this.add.circle(this.wisp.x, this.wisp.y, this.tile * 0.2, kind === 'slip' ? COLORS.ink : 0xc0392b, 0.9).setDepth(60);
     this.toast(kind === 'slip' ? T.slip : T.caught);
-    this.tweens.add({
-      targets: blot,
-      scale: 3,
-      alpha: 0,
-      duration: dur(450),
+    if (kind === 'caught') impact(this); // no-op under Reduce Motion / Reduce Flashing
+    const back = () => {
+      this.restore(this.history.pop()!);
+      this.busy = false;
+    };
+    if (comicSettings.reduceMotion) return back();
+    const color = kind === 'slip' ? COLORS.ink : 0xc0392b;
+    const splat = this.add.graphics().setDepth(60).setPosition(this.wisp.x, this.wisp.y);
+    splat.fillStyle(color, 0.95).fillCircle(0, 0, this.tile * 0.34);
+    for (let k = 0; k < 9; k++) {
+      const a = (k / 9) * Math.PI * 2 + Math.sin(k * 3.7);
+      const d = this.tile * (0.3 + 0.18 * ((k * 7) % 5) / 4);
+      splat.fillCircle(Math.cos(a) * d, Math.sin(a) * d, this.tile * (0.07 + 0.05 * (k % 3)));
+    }
+    splat.setScale(0.15);
+    this.tweens.add({ targets: this.wisp, scale: 0.4, alpha: 0.4, duration: 200 });
+    this.tweens.chain({
+      targets: splat,
+      tweens: [
+        { scale: 1, duration: 220, ease: 'Back.Out' },
+        { alpha: 0, duration: 280, delay: 120 },
+      ],
       onComplete: () => {
-        blot.destroy();
-        this.restore(this.history.pop()!);
-        this.busy = false;
+        splat.destroy();
+        back();
       },
     });
   }
@@ -689,8 +891,9 @@ export class PuzzleScene extends Phaser.Scene {
   /** Jump to a state without animating the turn (undo / reset / rewind). */
   private restore(s: State) {
     this.state = s;
+    this.queued = undefined;
     this.tweens.killTweensOf(this.wisp);
-    this.wisp.setPosition(this.cx(s.pos), this.cy(s.pos));
+    this.wisp.setPosition(this.cx(s.pos), this.cy(s.pos)).setScale(1).setAlpha(1);
     // Rebuild crate bookkeeping from positions.
     const boxes = [...this.crates.values()];
     this.crates.clear();
@@ -741,6 +944,7 @@ export class PuzzleScene extends Phaser.Scene {
     if (this.busy || this.done) return;
     this.busy = true;
     const choice = await popup(this, T.skipConfirm, [T.skip, T.back]);
+    this.queued = undefined;
     this.busy = false;
     if (choice === T.skip) this.finish(true);
   }
