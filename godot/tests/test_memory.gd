@@ -5,6 +5,7 @@ extends Node
 ## Run: godot --headless --path godot res://tests/test_memory.tscn
 
 var failed := 0
+var _reached_end := false
 
 
 func ok(cond: bool, msg: String) -> void:
@@ -18,6 +19,8 @@ func _ready() -> void:
 	for w in StoryData.WITNESSES:
 		await _play(w)
 	await _just_found()
+	_reached_end = true
+	ok(_reached_end, "test reached its last check (no script error mid-run)")
 	print("%d check(s) failed" % failed if failed else "All Godot memory checks passed.")
 	get_tree().quit(1 if failed else 0)
 

@@ -4,6 +4,7 @@ extends Node
 ## Run: godot --headless --path godot res://tests/test_casebook.tscn
 
 var failed := 0
+var _reached_end := false
 
 
 func ok(cond: bool, msg: String) -> void:
@@ -23,6 +24,7 @@ func _start() -> void:
 	get_parent().remove_child(self)
 	root.add_child(self)
 	await _run()
+	ok(_reached_end, "test reached its last check (no script error mid-run)")
 	print("%d check(s) failed" % failed if failed else "All Godot casebook checks passed.")
 	get_tree().quit(1 if failed else 0)
 
@@ -58,3 +60,4 @@ func _run() -> void:
 		await get_tree().process_frame
 	var cur := get_tree().current_scene
 	ok(cur.name == "Memory" and cur.witness == "mira", "CLOSE returns to Mira's memory page")
+	_reached_end = true
