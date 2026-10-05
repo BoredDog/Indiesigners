@@ -39,8 +39,8 @@ Draft order (design chat):
 6. scene 2 (**done**) + scene 6 (**done** · `art-src/pixel/scene6/`, preview `scene6_abandoned_room.html`. Chair pivot is bottom-centre (20,43), placed at (246,222), rocking ±4° and decaying after she vanishes at 4.5 s; woman at (230,180))
 7. scene 9 (**done** · `art-src/pixel/scene9/` + `chars/char_figure_back.png`, `char_hanna_reach.png`, preview `scene9_hanna_memory.html`. Shelf door hinges on its left edge at (392,94); stairs layer shows behind it; chamber symbols pulse teal from `bg_chamber_residue`)
 8. scene 10 tileset (**done** · `art-src/pixel/scene10/`: `tiles_underground.png` 8×4 tiles of 16×16 + residue sheet, sample `bg_tunnel.png`, well lock close-up, `prop_key_turn.png` = 3 frames of 24×24. Underground darkness: everything beyond ~50 px from the lantern dithers down one step, then to ink, by ~180 px; see `scene10_under_veyra.html`)
-9. scene 11
-10. young Elias
+9. scene 11 (**done** · `art-src/pixel/scene11/panel_*.png`: bedside, network, confront, erase, alone. Preview `scene11_fourth_person.html`)
+10. young Elias (**done** · `chars/portrait_elias_young.png`, `chars/char_elias_young.png`, plus `char_sister_bed.png` and `char_sister_ghost.png`)
 
 Scene 1 is **done**. Scenes 3 and 4 follow.
 
