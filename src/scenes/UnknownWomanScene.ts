@@ -3,6 +3,7 @@ import { Bubble, COLORS, SfxWord, comicSettings, dur, pageTurn } from '../comic'
 import { gameState } from '../core/GameState';
 import { BEAT, makeBeatArt } from '../dev/beatArt';
 import { button } from './coreUi';
+import { PX, hasPixel } from '../pixel/pixel';
 
 // Script beat (design/script_final.html §4, kept in v2 by Garv, 5 Oct): the first time Elias walks
 // into Veyra, an unknown woman in an abandoned room warns him, then is simply gone. She is Leela,
@@ -25,6 +26,7 @@ export class UnknownWomanScene extends Phaser.Scene {
   private woman!: Phaser.GameObjects.Image;
   private chair!: Phaser.GameObjects.Image;
   private line?: Bubble;
+  private pixel = false;
 
   constructor() {
     super('UnknownWoman');
@@ -33,10 +35,18 @@ export class UnknownWomanScene extends Phaser.Scene {
   create() {
     this.step = 0;
     makeBeatArt(this);
-    this.add.image(0, 0, BEAT.room).setOrigin(0).setDisplaySize(1920, 1080);
-    // The chair rocks around its rockers, so pivot near the floor.
-    this.chair = this.add.image(900, 900, BEAT.chair).setOrigin(0.5, 0.92);
-    this.woman = this.add.image(900, 860, BEAT.woman).setOrigin(0.5, 1).setScale(0.95).setName('unknownWoman');
+    this.pixel = hasPixel(this, 'bg_room', 'prop_rocking_chair', 'char_woman_sitting');
+    if (this.pixel) {
+      // Pixel scene 6 at ×4: chair pivots on its rockers (20, 43) at (246, 222); she sits at (230, 180).
+      this.add.image(0, 0, PX('bg_room')).setOrigin(0).setScale(4);
+      this.chair = this.add.image(246 * 4, 222 * 4, PX('prop_rocking_chair')).setOrigin(20 / 40, 43 / 44).setScale(4);
+      this.woman = this.add.image(230 * 4, 180 * 4, PX('char_woman_sitting')).setOrigin(0).setScale(4).setName('unknownWoman');
+    } else {
+      this.add.image(0, 0, BEAT.room).setOrigin(0).setDisplaySize(1920, 1080);
+      // The chair rocks around its rockers, so pivot near the floor.
+      this.chair = this.add.image(900, 900, BEAT.chair).setOrigin(0.5, 0.92);
+      this.woman = this.add.image(900, 860, BEAT.woman).setOrigin(0.5, 1).setScale(0.95).setName('unknownWoman');
+    }
     this.cameras.main.fadeIn(dur(500), 0, 0, 0);
 
     // Click anywhere / Space / Enter advances.
@@ -68,7 +78,8 @@ export class UnknownWomanScene extends Phaser.Scene {
       this.woman.setVisible(false);
       this.line.destroy();
       if (!comicSettings.reduceMotion) {
-        this.tweens.add({ targets: this.chair, angle: { from: -7, to: 7 }, duration: 900, yoyo: true, repeat: 3, ease: 'Sine.InOut', onComplete: () => this.chair.setAngle(0) });
+        const a = this.pixel ? 4 : 7; // pixel spec: ±4°
+        this.tweens.add({ targets: this.chair, angle: { from: -a, to: a }, duration: 900, yoyo: true, repeat: 3, ease: 'Sine.InOut', onComplete: () => this.chair.setAngle(0) });
       }
       const creak = new SfxWord(this, 1180, 640, { text: UNKNOWN_WOMAN_TEXT.creak, size: 70, angle: -6, burst: false });
       this.add.existing(creak);

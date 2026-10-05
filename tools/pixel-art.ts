@@ -37,10 +37,19 @@ if (isMain) {
   const finals: string[] = [];
   for (const f of walk(IN)) {
     const name = basename(f, extname(f));
-    if (extname(f).toLowerCase() === '.png' && source.has(name)) {
-      source.set(name, f);
-      finals.push(name);
+    if (extname(f).toLowerCase() !== '.png' || !source.has(name)) continue;
+    // A final must be drawn on the draft's canvas (1×). Anything else is older full-size art that
+    // happens to share the name (e.g. the comic-style bg_village): leave the draft in place.
+    const [a, b] = await Promise.all([sharp(source.get(name)!).metadata(), sharp(f).metadata()]).catch((e) => {
+      console.warn(`! cannot read ${relative('.', f)} or its draft: ${e.message}`);
+      return [{ width: -1 }, { width: -2 }] as { width?: number; height?: number }[];
+    });
+    if (a.width !== b.width || a.height !== b.height) {
+      console.warn(`! ${relative('.', f)} is ${b.width}×${b.height}, the pixel draft is ${a.width}×${a.height}: not used as its final`);
+      continue;
     }
+    source.set(name, f);
+    finals.push(name);
   }
   const manifest: Record<string, { file: string; w: number; h: number; final: boolean }> = {};
   const rows: string[] = [];

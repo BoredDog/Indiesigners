@@ -10,6 +10,7 @@ export const PX = (name: string) => `px_${name}`;
 const SHEETS: Record<string, [number, number]> = {
   char_elias_walk: [32, 58], // walk ×4, idle ×2; feet at y = 56, body centre x = 13
   prop_lantern: [8, 12], // 3 flame frames
+  prop_key_turn: [24, 24], // 0° / 45° / 90°
 };
 
 /** Boot: queue every pixel layer listed in the manifest. Missing manifest = no pixel art yet. */
@@ -105,4 +106,36 @@ export function lanternLight(stage: PixelStage, follow: () => { x: number; y: nu
     core.setPosition(p.x, p.y);
     if (shape) shape.clear().fillStyle(0xffffff).fillCircle(p.x, p.y, r * 0.8);
   };
+}
+
+/**
+ * Bakes pixel layers into one texture `key` at ×`scale` (crisp), for screens that crop panels out
+ * of a single background (the memory pages). Layers are drawn in order; `x, y` are canvas pixels
+ * (top-left). `glow` adds a soft additive light pool (e.g. a lamp). Returns false if a layer is missing.
+ */
+export function bakePixel(
+  scene: Phaser.Scene,
+  key: string,
+  layers: { name: string; x?: number; y?: number; scale?: number }[],
+  opts: { w?: number; h?: number; scale?: number; glow?: { x: number; y: number; r: number; color: number; alpha: number } } = {},
+): boolean {
+  if (scene.textures.exists(key)) return true;
+  if (!layers.every((l) => scene.textures.exists(PX(l.name)))) return false;
+  const { w = 480, h = 270, scale = 4 } = opts;
+  const rt = scene.make.renderTexture({ width: w * scale, height: h * scale }, false);
+  for (const l of layers) {
+    const img = scene.make.image({ x: (l.x ?? 0) * scale, y: (l.y ?? 0) * scale, key: PX(l.name) }, false).setOrigin(0).setScale(l.scale ?? scale);
+    rt.draw(img);
+    img.destroy();
+  }
+  if (opts.glow) {
+    const g = opts.glow;
+    const c = scene.make.graphics({}, false);
+    for (let k = 6; k >= 1; k--) c.fillStyle(g.color, g.alpha / 6).fillCircle(g.x * scale, g.y * scale, (g.r * scale * k) / 6);
+    rt.draw(c);
+    c.destroy();
+  }
+  rt.saveTexture(key);
+  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+  return true;
 }
