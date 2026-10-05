@@ -45,11 +45,37 @@ export class Bubble extends Phaser.GameObjects.Container {
       align: isBox ? 'left' : 'center',
     });
 
-    const padX = isBox ? 18 : 30;
-    const padY = isBox ? 14 : 22;
-    const w = this.content.textWidth + padX * 2;
-    const h = this.content.textHeight + padY * 2;
+    // Pixel text boxes (design/pixel/CONVERSATION.md): 24×24 9-slices, slice 5, drawn at ×4 and
+    // stretched only in whole art pixels. Shouts keep the comic burst.
+    const skin = { narration: 'ui_caption_9s', evidence: 'ui_caption_9s', speech: 'ui_speech_9s', thought: 'ui_thought_9s', shout: '' }[opts.kind];
+    const pixel = !!skin && scene.textures.exists(`px_${skin}`) && scene.game.renderer.type === Phaser.WEBGL;
+    const padX = pixel ? (isBox ? 40 : 48) : isBox ? 18 : 30;
+    const padY = pixel ? (isBox ? 32 : 40) : isBox ? 14 : 22;
+    let w = this.content.textWidth + padX * 2;
+    let h = this.content.textHeight + padY * 2;
     this.content.setPosition(-this.content.textWidth / 2, -this.content.textHeight / 2);
+
+    if (pixel) {
+      w = Math.ceil(w / 4) * 4;
+      h = Math.ceil(h / 4) * 4;
+      const box = scene.add.nineslice(0, 0, `px_${skin}`, undefined, w / 4, h / 4, 5, 5, 5, 5).setScale(4);
+      const parts: Phaser.GameObjects.GameObject[] = [box];
+      if (opts.kind === 'evidence') parts.push(scene.add.rectangle(-w / 2 + 14, 0, 4, h - 40, COLORS.spiritTeal)); // recovered evidence rule
+      const tail = opts.tail;
+      if (tail && opts.kind === 'speech') {
+        const side = tail.x < 0 ? 'l' : 'r';
+        const key = scene.textures.exists(`px_ui_speech_tail_${side}`) ? `px_ui_speech_tail_${side}` : 'px_ui_speech_tail_l';
+        const up = tail.y < -h / 2;
+        const t = scene.add.image(side === 'l' ? -w / 2 + 80 : w / 2 - 80, up ? -h / 2 + 4 : h / 2 - 4, key).setOrigin(0.5, up ? 1 : 0).setScale(4).setFlipY(up);
+        parts.unshift(t);
+      } else if (tail && opts.kind === 'thought' && scene.textures.exists('px_ui_thought_trail')) {
+        const t = scene.add.image(Math.sign(tail.x || 1) * (w / 2 - 60), h / 2 - 4, 'px_ui_thought_trail').setOrigin(0.5, 0).setScale(4).setFlipX(tail.x < 0);
+        parts.unshift(t);
+      }
+      this.add([...parts, this.content]);
+      this.setSize(w, h);
+      return;
+    }
 
     const g = scene.add.graphics();
     this.draw(g, opts, w, h);
