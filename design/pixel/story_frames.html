@@ -1,0 +1,829 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body><title>The Last Pages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one dark "night file" column. The mockup sits on top, then the facts a painter and a coder need, in order of use. */
+:root{
+  --bg:#141118; --panel:#1c1821; --line:#2f2936; --fg:#e6d9bb; --muted:#9c907a;
+  --amber:#e0a33a; --teal:#7fe0d4;
+  --f-display:"Pixelify Sans", "Courier New", monospace;
+  --f-body:"Spectral", Georgia, serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:17px/1.6 var(--f-body);margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font:700 clamp(40px,7vw,68px)/1 var(--f-display);margin:10px 0 8px;letter-spacing:.02em;text-wrap:balance}
+h1 .t{color:var(--teal)}
+h2{font:700 26px/1.15 var(--f-display);margin:0 0 12px;letter-spacing:.03em;text-wrap:balance}
+p{margin:0 0 12px;max-width:68ch}
+.lede{color:var(--muted);font-style:italic}
+section{border-top:1px solid var(--line);padding-block:28px;display:grid;gap:14px}
+section:first-of-type{border-top:0}
+.stage{position:relative;background:#000;border:2px solid #000;outline:1px solid var(--line);max-width:100%}
+.stage canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
+.stage .grid{position:absolute;inset:0;width:100%;height:100%;image-rendering:auto;pointer-events:none}
+.cap{font:13px/1.5 var(--f-mono);color:var(--muted);max-width:none}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls .sep{width:1px;height:22px;background:var(--line);margin-inline:4px}
+button,.chip{font:500 13px/1 var(--f-mono);color:var(--fg);background:var(--panel);border:1px solid var(--line);padding:8px 11px;cursor:pointer;border-radius:2px}
+button:hover,.chip:hover{border-color:var(--muted)}
+button:focus-visible,.chip:focus-within{outline:2px solid var(--teal);outline-offset:2px}
+.chip{display:inline-flex;gap:7px;align-items:center;user-select:none}
+.chip input{accent-color:var(--teal);margin:0}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+.two>*{min-width:0}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border-bottom:1px solid var(--line);padding:8px 10px 8px 0;text-align:left;vertical-align:top}
+th{font:500 11px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td code,p code,li code{font:13px var(--f-mono);color:var(--teal);overflow-wrap:anywhere}
+td.mono{font:13px/1.5 var(--f-mono);white-space:nowrap;font-variant-numeric:tabular-nums}
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.sw{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center;font:12px/1.3 var(--f-mono)}
+.sw i{width:28px;height:28px;border:1px solid #000;display:block}
+.sw b{font-weight:500;color:var(--fg);display:block}
+.sw span{color:var(--muted)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.rule{background:var(--panel);border:1px solid var(--line);padding:14px}
+.rule h3{font:700 16px/1.2 var(--f-display);margin:0 0 6px;letter-spacing:.03em}
+.rule p{font-size:15px;margin:0;color:#cfc3a6}
+.amber{color:var(--amber)} .teal{color:var(--teal)}
+ol.steps{margin:0;padding-left:22px;display:grid;gap:8px;max-width:72ch}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.tool{border:1px solid var(--line);padding:12px;background:var(--panel)}
+.tool a{font:700 17px var(--f-display);color:var(--teal);text-decoration:none;letter-spacing:.03em}
+.tool a:hover{text-decoration:underline}
+.tool p{font-size:14px;margin:6px 0 0;color:#cfc3a6}
+.tag{font:500 10px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--amber);color:var(--amber);padding:3px 5px;margin-left:6px;vertical-align:2px}
+#copyMsg{font:12px var(--f-mono);color:var(--teal)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.cast{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.cast figure{margin:0;display:grid;gap:6px;justify-items:center}
+.cast canvas{image-rendering:pixelated;image-rendering:crisp-edges;max-width:100%;height:auto;background:var(--panel);outline:1px solid var(--line)}
+.cast figcaption{font:12px var(--f-mono);color:var(--muted)}
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Echoes of Sorrow · Story frames</div>
+    <h1>The Last <span class="t">Pages</span></h1>
+    <p class="lede">Every story frame still in the comic style: the archive's way in and way out, the finale frames not covered by scene 11, the four truth panels, the closing desk, the 100 % master log, and opening frame 4.</p>
+  </header>
+  <section aria-labelledby="g"><h2 id="g">Frames</h2><div id="panels" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:14px"></div></section>
+  <section aria-labelledby="m"><h2 id="m">Which file goes where</h2><div class="tbl"><table><thead><tr><th>Screen · frame</th><th>File</th><th>Notes</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+</div>
+<script>
+(() => {
+'use strict';
+// ---------------------------------------------------------------- palette
+const PAL = [
+  ['#111114','Ink','Outlines, windows, hat'],
+  ['#17141d','Night','Top of the sky'],
+  ['#26212b','Soot','Sky, Elias\'s coat'],
+  ['#302a38','Dusk','Sky, clouds'],
+  ['#3a3342','Haze','Horizon, back fog'],
+  ['#4a4252','Mist','Front fog, puddle shine'],
+  ['#3d2f26','Mud dark','Timber, doors'],
+  ['#5b4636','Mud','Walls, gate'],
+  ['#7d6450','Mud light','Lit walls, leaves'],
+  ['#48462c','Olive dark','Sick walls, shutters'],
+  ['#6f6c3f','Olive','The wrong green'],
+  ['#7a2e2b','Dried blood','Saved for the key'],
+  ['#9c907a','Bone dark','Clock face, sign letters'],
+  ['#e6d9bb','Bone','Moon, flame core'],
+  ['#8f6224','Amber dark','Scarf shadow'],
+  ['#e0a33a','Amber','Elias\'s scarf only'],
+  ['#2f6f6a','Teal dark','Light, outer ring'],
+  ['#7fe0d4','Teal','Lantern glass, symbols'],
+  ['#4fa79e','Teal mid','Light, inner ring'],
+  ['#2c2730','Stone dark','Cobble gaps, roofs'],
+  ['#423b46','Stone','Cobbles, tower'],
+  ['#5a5160','Stone light','Cobble tops'],
+  ['#1f1b25','Far','Distant roofs'],
+  ['#7d93ad','Dusty blue','Ivy accent'],
+  ['#4f5d70','Blue shade','Ivy accent shadow'],
+  ['#8a76a0','Violet','Hanna accent'],
+  ['#5a4a6a','Violet shade','Hanna accent shadow'],
+];
+const RGB = PAL.map(([h]) => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)));
+const C = {ink:0,night:1,soot:2,dusk:3,haze:4,mist:5,mudD:6,mud:7,mudL:8,oliveD:9,olive:10,blood:11,boneD:12,bone:13,amberD:14,amber:15,tealD:16,teal:17,tealM:18,stoneD:19,stone:20,stoneL:21,far:22,blue:23,blueD:24,violet:25,violetD:26};
+// One palette step brighter (outer light) and teal-tinted (inner light).
+const LIT1 = [19,2,3,5,5,21,7,8,8,10,10,11,13,13,15,15,18,17,17,20,21,21,2,23,23,25,25];
+const LIT2 = [19,16,16,16,18,18,7,8,12,10,12,11,13,13,15,15,18,17,17,16,18,17,16,23,23,25,25];
+const BAY = [0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+const bay = (x, y) => BAY[((y & 3) << 2) | (x & 3)] / 16;
+const band = fr => Math.min(1, Math.max(0, (fr - 0.72) * 3.6));
+const rng = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const hash = n => { const r = rng(n * 9973 + 17); return r(); };
+
+// Flags: 1 = never lit (sky, distance), 2 = residue (shows teal only inside the light)
+class Buf {
+  constructor(w, h) { this.w = w; this.h = h; this.c = new Uint8Array(w * h); this.f = new Uint8Array(w * h); }
+  set(x, y, c, f = 0) { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= this.w || y >= this.h) return; const i = y * this.w + x; this.c[i] = c; this.f[i] = f; }
+  tint(x, y, c) { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= this.w || y >= this.h) return; this.c[y * this.w + x] = c; }
+  mark(x, y) { if (x < 0 || y < 0 || x >= this.w || y >= this.h) return; this.f[y * this.w + x] |= 2; }
+  rect(x, y, w, h, c, f = 0) { for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) this.set(x + i, y + j, c, f); }
+  line(x0, y0, x1, y1, c, f = 0) {
+    x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+    const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let e = dx + dy;
+    for (;;) { this.set(x0, y0, c, f); if (x0 === x1 && y0 === y1) break; const e2 = 2 * e; if (e2 >= dy) { e += dy; x0 += sx; } if (e2 <= dx) { e += dx; y0 += sy; } }
+  }
+  disc(cx, cy, r, c, f = 0) { for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r + r * 0.8) this.set(cx + x, cy + y, c, f); }
+  ell(cx, cy, rx, ry, c, f = 0) { for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) if ((x * x) / (rx * rx) + (y * y) / (ry * ry) <= 1) this.set(cx + x, cy + y, c, f); }
+  copy(o) { this.c.set(o.c); this.f.set(o.f); }
+}
+
+function light(b, lx, ly, R) {
+  lx = Math.round(lx); ly = Math.round(ly);
+  for (let y = Math.max(0, ly - R); y < Math.min(b.h, ly + R); y++) {
+    for (let x = Math.max(0, lx - R); x < Math.min(b.w, lx + R); x++) {
+      const dx = x - lx, dy = (y - ly) * 1.15, d2 = dx * dx + dy * dy;
+      if (d2 > R * R) continue;
+      const i = y * b.w + x; if (b.f[i] & 1) continue;
+      const v = (1 - Math.sqrt(d2) / R) * 2.2 + (bay(x, y) - 0.5) * 0.7;
+      if (v > 1.45) b.c[i] = (b.f[i] & 2) ? C.teal : LIT2[b.c[i]];
+      else if (v > 0.6) b.c[i] = (b.f[i] & 2) ? C.tealM : LIT1[b.c[i]];
+    }
+  }
+}
+
+function blit(b, img) {
+  const d = img.data;
+  for (let i = 0, n = b.c.length; i < n; i++) { const p = RGB[b.c[i]], o = i * 4; d[o] = p[0]; d[o + 1] = p[1]; d[o + 2] = p[2]; d[o + 3] = 255; }
+}
+
+const GLYPH = { V:['101','101','101','101','010'], E:['111','100','110','100','111'], Y:['101','101','010','010','010'], R:['110','101','110','101','101'], A:['010','101','111','101','101'] };
+function text(b, s, x, y, c) { [...s].forEach((ch, k) => GLYPH[ch].forEach((row, j) => [...row].forEach((v, i) => { if (v === '1') b.set(x + k * 4 + i, y + j, c); }))); }
+const SYMBOL = ['..###..', '.#...#.', '#..#..#', '#.###.#', '#..#..#', '.#...#.', '..###..'];
+function residue(b, x, y, pat = SYMBOL) { pat.forEach((row, j) => [...row].forEach((v, i) => { if (v === '#') b.mark(x + i, y + j); })); }
+
+// ------------------------------------------------ shape-based character renderer
+// Shapes write part ids; shading = part pixels whose (x+sx, y+sy) neighbour leaves the part;
+// outline = empty pixels touching a filled one, plus seams between parts flagged `line`.
+function Figure(w, h, parts) {
+  const pid = new Int8Array(w * h).fill(-1);
+  const put = (x, y, p) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < w && y < h) pid[y * w + x] = p; };
+  const api = {
+    ell(cx, cy, rx, ry, p) { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) { const dx = (x - cx) / rx, dy = (y - cy) / ry; if (dx * dx + dy * dy <= 1.05) put(x, y, p); } },
+    rect(x, y, rw, rh, p) { for (let j = 0; j < rh; j++) for (let i = 0; i < rw; i++) put(x + i, y + j, p); },
+    poly(pts, p) {
+      const ys = pts.map(q => q[1]), y0 = Math.floor(Math.min(...ys)), y1 = Math.ceil(Math.max(...ys));
+      for (let y = y0; y <= y1; y++) for (let x = 0; x < w; x++) {
+        let inside = false; const px = x + 0.5, py = y + 0.5;
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) inside = !inside; }
+        if (inside) put(x, y, p);
+      }
+    },
+    render(sx = 2, sy = 1) {
+      const b = new Buf(w, h); b.c.fill(255);
+      const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? -1 : pid[y * w + x];
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const p = at(x, y);
+        if (p < 0) { if (at(x - 1, y) >= 0 || at(x + 1, y) >= 0 || at(x, y - 1) >= 0 || at(x, y + 1) >= 0) b.c[y * w + x] = C.ink; continue; }
+        const part = parts[p];
+        let c = (at(x + sx, y + sy) !== p || at(x + Math.sign(sx), y + Math.sign(sy)) !== p) ? part.shade : part.base;
+        const l = at(x - 1, y), u = at(x, y - 1);
+        if (part.line && ((l >= 0 && l !== p && parts[l].line) || (u >= 0 && u !== p && parts[u].line))) c = C.ink;
+        b.c[y * w + x] = c;
+      }
+      return b;
+    },
+  };
+  return api;
+}
+const px = (b, pts, c) => { for (const [x, y] of pts) b.set(x, y, c); };
+
+function toCanvas(b) {
+  const c = document.createElement('canvas'); c.width = b.w; c.height = b.h;
+  const x = c.getContext('2d'), img = x.createImageData(b.w, b.h);
+  for (let i = 0; i < b.c.length; i++) { const v = b.c[i]; if (v === 255) continue; const q = RGB[v]; img.data.set([q[0], q[1], q[2], 255], i * 4); }
+  x.putImageData(img, 0, 0); return c;
+}
+// Light with any pair of tables (LIT1/LIT2 = lantern teal, LITA1/LITA2 = warm lamp)
+const LITA1 = [6,2,3,5,5,21,7,8,12,10,10,11,13,13,15,15,18,17,17,6,7,8,2,23,23,25,25];
+const LITA2 = [6,6,7,7,8,8,7,14,12,10,12,11,13,13,15,15,18,17,17,7,8,12,6,23,23,25,25];
+function lightT(b, lx, ly, R, T1, T2, sq = 1.15) {
+  lx = Math.round(lx); ly = Math.round(ly);
+  for (let y = Math.max(0, ly - R); y < Math.min(b.h, ly + R); y++) for (let x = Math.max(0, lx - R); x < Math.min(b.w, lx + R); x++) {
+    const dx = x - lx, dy = (y - ly) * sq, d2 = dx * dx + dy * dy; if (d2 > R * R) continue;
+    const i = y * b.w + x; if (b.f[i] & 1) continue; const c = b.c[i]; if (c === 255) continue;
+    const v = (1 - Math.sqrt(d2) / R) * 2.2 + (bay(x, y) - 0.5) * 0.7;
+    if (v > 1.45) b.c[i] = T2[c]; else if (v > 0.6) b.c[i] = T1[c];
+  }
+}
+// Stamp a sprite Buf (255 = transparent) into a scene Buf
+function stamp(dst, src, ox, oy, flip = false) {
+  for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) { const v = src.c[y * src.w + (flip ? src.w - 1 - x : x)]; if (v !== 255) dst.set(ox + x, oy + y, v); }
+}
+
+// ================================================================ SHOT 1A
+const W = 480, H = 270;
+
+function drawSky(b) {
+  const st = [C.night, C.soot, C.dusk, C.haze];
+  for (let y = 0; y < 206; y++) {
+    const tt = Math.min(2.999, (y / 175) * 3), s = Math.floor(tt), fr = tt - s;
+    for (let x = 0; x < W; x++) b.set(x, y, band(fr) > bay(x, y) ? st[s + 1] : st[s], 1);
+  }
+  const r = rng(7);
+  for (let i = 0; i < 60; i++) b.set(r() * W | 0, r() * 110 | 0, r() < 0.25 ? C.boneD : C.mist, 1);
+  const mx = 396, my = 40;
+  for (let y = -20; y <= 20; y++) for (let x = -20; x <= 20; x++) {
+    const d = Math.sqrt(x * x + y * y);
+    if (d > 12.5 && d < 20 && bay(mx + x, my + y) < (1 - (d - 12.5) / 7.5) * 0.45) b.set(mx + x, my + y, C.dusk, 1);
+    if (d <= 12) { const d2 = (x - 5) ** 2 + (y + 3) ** 2; if (d2 > 100) b.set(mx + x, my + y, d > 10.5 ? C.boneD : C.bone, 1); }
+  }
+  for (const [x, y, w, h] of [[330, 50, 110, 3], [352, 54, 60, 2], [40, 28, 80, 3], [62, 31, 38, 2], [170, 70, 120, 2], [200, 73, 50, 2]]) {
+    b.rect(x, y, w, h, C.dusk, 1); b.rect(x + 4, y - 1, w - 8, 1, C.haze, 1);
+  }
+}
+
+function drawTower(b) {
+  const x0 = 318, w = 28, top = 58, cx = x0 + 14;
+  b.rect(x0, top, w, 206 - top, C.soot, 1);
+  b.rect(x0 + w - 2, top, 2, 206 - top, C.stone, 1);
+  b.rect(x0, top, 1, 206 - top, C.ink, 1);
+  for (const y of [top, top + 30, top + 52, top + 80]) { b.rect(x0 - 1, y, w + 2, 2, C.stoneD, 1); b.rect(x0 - 1, y, w + 2, 1, C.stone, 1); }
+  const rh = 34;
+  for (let k = 0; k <= rh; k++) { const half = Math.round(17 * k / rh); for (let i = -half; i <= half; i++) b.set(cx + i, top - rh + k, i > 0 ? C.stoneD : C.ink, 1); }
+  b.line(cx, top - rh - 6, cx, top - rh, C.ink, 1); b.line(cx - 2, top - rh - 4, cx + 2, top - rh - 4, C.ink, 1);
+  // Clock face frozen at 2:17
+  const fx = cx, fy = top + 16;
+  b.disc(fx, fy, 9, C.ink, 1); b.disc(fx, fy, 8, C.boneD, 1);
+  for (const [dx, dy] of [[0, -7], [7, 0], [0, 7], [-7, 0]]) b.set(fx + dx, fy + dy, C.ink, 1);
+  const ha = (2 + 17 / 60) / 12 * Math.PI * 2, ma = 17 / 60 * Math.PI * 2;
+  b.line(fx, fy, fx + Math.sin(ha) * 4.2, fy - Math.cos(ha) * 4.2, C.ink, 1);
+  b.line(fx, fy, fx + Math.sin(ma) * 6.6, fy - Math.cos(ma) * 6.6, C.ink, 1);
+  // Belfry, bell and its untouched rope
+  b.rect(cx - 7, top + 36, 14, 14, C.ink, 1); b.rect(cx - 6, top + 35, 12, 1, C.ink, 1); b.rect(cx - 4, top + 34, 8, 1, C.ink, 1);
+  b.disc(cx, top + 41, 3, C.mudD, 1); b.rect(cx - 4, top + 43, 9, 2, C.mudD, 1); b.set(cx + 1, top + 40, C.mud, 1);
+  b.line(cx, top + 45, cx, top + 49, C.mudL, 1);
+  b.rect(cx - 1, top + 62, 2, 7, C.ink, 1); b.rect(cx - 1, top + 92, 2, 7, C.ink, 1);
+  b.rect(cx - 4, 190, 8, 13, C.ink, 1); b.rect(cx - 3, 189, 6, 1, C.ink, 1);
+}
+
+function drawFar(b) {
+  const r = rng(11); let x = -4;
+  while (x < W) {
+    const w = 12 + (r() * 22 | 0), h = 10 + (r() * 26 | 0), top = 184 - h;
+    b.rect(x, top, w, h + 20, C.far, 1);
+    const type = r();
+    if (type < 0.55) { const rh = 4 + (r() * 8 | 0); for (let k = 0; k < rh; k++) { const half = (w / 2) * (k / rh); b.rect(Math.round(x + w / 2 - half), top - rh + k, Math.max(1, Math.round(half * 2)), 1, C.far, 1); } }
+    else if (type < 0.75) b.rect(x + 3, top - 5, 3, 5, C.far, 1);
+    x += w - (r() * 4 | 0);
+  }
+  b.rect(228, 128, 10, 60, C.far, 1);
+  for (let k = 0; k < 26; k++) { const half = Math.round(5 * k / 26); b.rect(233 - half, 102 + k, half * 2 + 1, 1, C.far, 1); }
+  b.line(233, 95, 233, 102, C.far, 1); b.line(231, 97, 235, 97, C.far, 1);
+  drawTower(b);
+}
+
+const DARK = { 7: 6, 8: 7, 10: 9, 9: 6 };
+function windowAt(b, x, y, kind, r) {
+  b.rect(x - 1, y - 1, 10, 12, C.mudD); b.rect(x, y, 8, 10, C.ink);
+  b.rect(x + 4, y, 1, 10, C.mudD); b.rect(x, y + 5, 8, 1, C.mudD); b.rect(x - 2, y + 11, 12, 1, C.stoneD);
+  if (kind === 'broken') { b.set(x + 1, y + 1, C.soot); b.set(x + 2, y + 2, C.soot); b.set(x + 6, y + 7, C.soot); b.set(x + 1, y + 3, C.soot); }
+  if (kind === 'boarded') { b.line(x - 1, y + 1, x + 8, y + 4, C.mudL); b.line(x - 1, y + 2, x + 8, y + 5, C.mud); b.line(x - 1, y + 8, x + 8, y + 6, C.mudL); }
+  if (kind === 'shutter') { b.rect(x + 9, y + 1, 3, 11, C.oliveD); b.rect(x + 11, y + 1, 1, 11, C.ink); b.set(x + 10, y + 4, C.olive); }
+}
+function door(b, x, base) {
+  b.rect(x - 1, base - 20, 12, 18, C.ink); b.rect(x, base - 19, 10, 17, C.mudD);
+  b.rect(x + 3, base - 19, 1, 17, C.ink); b.rect(x + 6, base - 19, 1, 17, C.ink);
+  b.set(x + 8, base - 11, C.boneD); b.rect(x - 2, base - 2, 14, 2, C.stoneD);
+}
+function house(b, o, r) {
+  const { x, w, h, wall, roofH } = o, base = 202, top = base - h, dk = DARK[wall];
+  if (o.chimney) { b.rect(o.chimney, top - roofH - 3, 5, roofH, C.mudD); b.rect(o.chimney - 1, top - roofH - 4, 7, 1, C.ink); }
+  b.rect(x, top, w, h, wall);
+  for (let i = 0; i < w * h * 0.06; i++) b.set(x + r() * w, top + r() * h, dk);
+  for (let i = 0; i < 6; i++) { const sx = x + 2 + r() * (w - 4) | 0, sy = top + 2 + r() * (h * 0.5) | 0, len = 3 + r() * 8 | 0; b.line(sx, sy, sx, sy + len, dk); }
+  b.rect(x + w - 3, top, 3, h, dk); b.rect(x + w - 1, top, 1, h, C.ink); b.rect(x, top, 1, h, C.ink);
+  b.rect(x, top, w, 2, C.mudD); b.rect(x, base - 2, w, 2, C.mudD);
+  if (h > 62) b.rect(x, top + Math.floor(h / 2), w, 2, C.mudD);
+  for (const [wx, wy, kind] of o.win) windowAt(b, wx, top + wy, kind, r);
+  if (o.door) door(b, o.door, base);
+  const cx = x + w / 2, ov = 3;
+  for (let k = 0; k <= roofH; k++) {
+    const half = (w / 2 + ov) * (k / roofH), l = Math.round(cx - half), rr = Math.round(cx + half);
+    for (let i = l; i < rr; i++) {
+      let c = (k % 3 === 0 || k === roofH) ? C.ink : (i > cx ? C.stone : C.stoneD);
+      if (k > 2 && k < roofH - 1 && r() < 0.03) c = C.ink;
+      b.set(i, top - roofH + k, c);
+    }
+  }
+}
+function gate(b) {
+  for (const px of [52, 112]) {
+    b.rect(px, 116, 7, 86, C.mud); b.rect(px + 5, 116, 2, 86, C.mudD); b.rect(px, 116, 1, 86, C.ink); b.rect(px + 6, 116, 1, 86, C.ink);
+    for (let k = 0; k < 6; k++) b.set(px + 2, 122 + k * 13, C.mudD);
+  }
+  for (let k = 0; k < 6; k++) b.rect(44 - k, 105 + k, 82 + k * 2, 1, k % 2 ? C.stoneD : C.ink);
+  b.rect(38, 111, 94, 6, C.mudD); b.rect(38, 111, 94, 1, C.mud); b.rect(38, 116, 94, 1, C.ink);
+  for (let y = 117; y < 124; y += 2) { b.set(72, y, C.ink); b.set(98, y, C.ink); }
+  b.rect(66, 124, 38, 13, C.ink); b.rect(67, 125, 36, 11, C.mud); b.rect(67, 135, 36, 1, C.mudD);
+  text(b, 'VEYRA', 76, 128, C.boneD);
+  b.line(91, 125, 94, 131, C.mudD);
+  residue(b, 113, 168, ['.#.#.', '#.#.#', '.###.', '#.#.#', '.#.#.']);
+}
+function drawMid(b) {
+  const r = rng(31);
+  // dead tree
+  b.line(22, 202, 24, 150, C.ink); b.line(23, 202, 25, 150, C.ink);
+  b.line(24, 166, 12, 150, C.ink); b.line(24, 158, 36, 140, C.ink); b.line(25, 150, 20, 134, C.ink); b.line(31, 148, 40, 146, C.ink); b.line(16, 156, 8, 154, C.ink);
+  // low stone wall
+  b.rect(0, 190, 150, 12, C.stone);
+  for (const y of [190, 194, 198]) b.rect(0, y, 150, 1, C.stoneD);
+  for (let y = 190, k = 0; y < 202; y += 4, k++) for (let x = (k % 2) * 4; x < 150; x += 8) b.rect(x, y, 1, 4, C.stoneD);
+  b.rect(0, 189, 150, 1, C.stoneL);
+  b.rect(130, 189, 20, 6, C.far, 1);
+  gate(b);
+  const houses = [
+    { x: 150, w: 58, h: 58, wall: 7, roofH: 22, door: 172, win: [[156, 14, 'broken'], [192, 14, 'shutter']], chimney: 160 },
+    { x: 212, w: 44, h: 80, wall: 10, roofH: 26, door: 230, win: [[218, 10, ''], [240, 10, 'broken'], [218, 48, 'boarded']] },
+    { x: 262, w: 48, h: 52, wall: 8, roofH: 18, win: [[268, 14, 'boarded'], [292, 14, '']], chimney: 296 },
+    { x: 352, w: 58, h: 64, wall: 7, roofH: 20, door: 362, win: [[380, 12, ''], [396, 12, 'broken']] },
+    { x: 416, w: 64, h: 86, wall: 9, roofH: 24, door: 446, win: [[424, 12, 'shutter'], [460, 12, ''], [424, 50, 'broken']], chimney: 466 },
+  ];
+  for (const o of houses) house(b, o, r);
+  for (let x = 314; x < 350; x += 6) b.rect(x, 192, 2, 10, C.mudD);
+  b.rect(312, 195, 38, 1, C.mudD);
+  residue(b, 174, 186);
+}
+function drawStreet(b) {
+  const r = rng(23);
+  b.rect(0, 202, W, 2, C.stone); b.rect(0, 204, W, 1, C.stoneD); b.rect(0, 205, W, 1, C.ink);
+  let y = 206;
+  [4, 4, 5, 5, 6, 6, 7, 8, 9, 10].forEach((rh, ri) => {
+    const cw = rh * 2 + 4, off = (ri % 2) * Math.floor(cw / 2);
+    for (let x = -off; x < W; x += cw) {
+      const v = r(), dark = v < 0.15;
+      b.rect(x, y, cw - 1, rh - 1, dark ? C.stoneD : C.stone);
+      if (dark || v > 0.55) b.rect(x, y, cw - 1, 1, dark ? C.stone : C.stoneL);
+      b.rect(x + cw - 1, y, 1, rh, C.ink); b.rect(x, y + rh - 1, cw, 1, C.stoneD);
+      if (r() < 0.12) { b.set(x + cw - 1, y + rh - 2, C.oliveD); b.set(x + cw - 2, y + rh - 1, C.olive); }
+    }
+    y += rh;
+  });
+  b.ell(262, 242, 26, 3, C.dusk); b.rect(246, 241, 14, 1, C.mist);
+  b.ell(404, 258, 34, 5, C.dusk); b.rect(386, 256, 20, 1, C.mist); b.rect(420, 258, 3, 1, C.boneD);
+  b.rect(330, 230, 5, 3, C.boneD); b.set(334, 230, C.mudL); b.set(331, 232, C.mudL);
+}
+function drawFG(b) {
+  for (const [x, y0] of [[4, 226], [18, 232], [34, 240]]) b.rect(x, y0, 4, H - y0, C.ink);
+  b.line(0, 236, 40, 246, C.ink); b.line(0, 237, 40, 247, C.ink); b.line(2, 252, 38, 258, C.ink); b.line(2, 253, 38, 259, C.ink);
+  const r = rng(5);
+  for (let i = 0; i < 46; i++) { const x = 438 + r() * 42 | 0, h = 4 + r() * 16 | 0; b.line(x, H - 1, x + (r() * 5 - 2 | 0), H - 1 - h, r() < 0.55 ? C.ink : C.oliveD); }
+}
+function fog(b, t, y0, y1, amt, col) {
+  const mid = (y0 + y1) / 2, hw = (y1 - y0) / 2;
+  for (let y = y0; y < y1; y++) {
+    const fall = 1 - Math.abs((y - mid) / hw);
+    for (let x = 0; x < b.w; x++) {
+      const d = amt * fall * (0.55 + 0.45 * Math.sin((x + t * 9) / 27) + 0.25 * Math.sin((x - t * 5) / 11 + y * 0.3));
+      if (bay(x, y) < d) b.c[y * b.w + x] = col;
+    }
+  }
+}
+
+function legs(b, x, by, fy, pose) {
+  const top = by - 9;
+  const boot = (bx) => { b.rect(bx, fy - 2, 3, 2, C.ink); b.set(bx + 3, fy - 1, C.ink); b.set(bx + 1, fy - 2, C.stoneD); };
+  if (pose === 1 || pose === 3) {
+    b.rect(x - 3, top, 2, fy - top - 1, C.ink); b.rect(x + 1, top, 2, fy - top - 1, C.soot); boot(x - 3); boot(x + 1);
+  } else {
+    const a = pose === 0;
+    b.line(x + 1, top, x + 4, fy - 2, a ? C.soot : C.ink); b.line(x + 2, top, x + 5, fy - 2, a ? C.soot : C.ink);
+    b.line(x - 2, top, x - 5, fy - 2, a ? C.ink : C.soot); b.line(x - 1, top, x - 4, fy - 2, a ? C.ink : C.soot);
+    boot(x + 4); boot(x - 5);
+  }
+}
+function drawElias(b, x, fy, ph, t, walking) {
+  x = Math.round(x);
+  const pose = walking ? ph : 1, by = fy + (walking && (ph === 1 || ph === 3) ? -1 : 0);
+  for (let i = -9; i <= 9; i++) { if (Math.abs(i) < 7 || bay(x + i, fy) < 0.5) b.tint(x + i, fy, C.ink); if (Math.abs(i) < 5) b.tint(x + i, fy + 1, C.stoneD); }
+  legs(b, x, by, fy, pose);
+  // coat, lit a touch on the lantern side
+  for (let k = 0; k <= 27; k++) {
+    const yy = by - 37 + k, half = 5 + Math.round(k * 3 / 27);
+    const sway = walking && k > 22 ? (ph === 0 ? 1 : ph === 2 ? -1 : 0) : 0;
+    for (let i = -half; i < half; i++) {
+      let c = C.soot;
+      if (i === -half || i === half - 1 || k === 27) c = C.ink;
+      else if (k === 13) c = C.ink;
+      else if (i === -1 && k > 16) c = C.ink;
+      else if (i >= half - 3) c = C.dusk;
+      b.set(x + i + sway, yy, c);
+    }
+  }
+  b.rect(x - 4, by - 41, 8, 4, C.soot); b.rect(x - 4, by - 41, 1, 4, C.ink); b.rect(x + 3, by - 41, 1, 4, C.ink);
+  // amber scarf, tail blown back by the wind
+  b.rect(x - 4, by - 39, 9, 2, C.amber); b.rect(x - 4, by - 38, 9, 1, C.amberD);
+  for (let k = 0; k < 9; k++) {
+    const tx = x - 5 - k, ty = by - 39 + Math.round(Math.sin(t * 7 - k * 0.8) * (k / 5)) + (k >> 2);
+    b.set(tx, ty, C.amber); if (k < 6) b.set(tx, ty + 1, C.amberD);
+  }
+  // hat: the brim hides the face
+  b.rect(x - 4, by - 49, 8, 6, C.ink); b.rect(x - 3, by - 50, 6, 1, C.ink); b.rect(x - 4, by - 45, 8, 1, C.stoneD);
+  b.rect(x - 7, by - 43, 15, 2, C.ink); b.rect(x + 2, by - 43, 5, 1, C.stoneD);
+  // staff + arm + glove
+  const sx = x + 9;
+  b.line(sx, by - 53, sx, fy - 1, C.mudD);
+  for (let y = by - 50; y < fy - 2; y += 5) b.set(sx, y, C.mud);
+  b.set(sx, by - 54, C.mudD); b.set(sx + 1, by - 55, C.mudD); b.set(sx + 2, by - 55, C.mudD); b.set(sx + 3, by - 54, C.mudD);
+  b.line(x + 4, by - 36, x + 8, by - 26, C.ink); b.line(x + 3, by - 35, x + 7, by - 26, C.soot);
+  b.rect(x + 7, by - 27, 3, 3, C.mudD); b.set(x + 9, by - 27, C.mud);
+  const sw = Math.round(Math.sin(t * 2.6) * (walking ? 1.2 : 0.8));
+  return { hx: sx + 3, hy: by - 53, lx: sx + 3 + sw, ly: by - 52 };
+}
+function drawLanternSmall(b, L, t) {
+  const { hx, hy, lx, ly } = L;
+  b.line(hx, hy, lx, ly, C.ink);
+  b.rect(lx - 1, ly + 1, 3, 1, C.ink);
+  b.rect(lx - 2, ly + 2, 5, 7, C.ink); b.rect(lx - 1, ly + 3, 3, 5, C.teal);
+  const fl = hash(Math.floor(t * 9)) > 0.5;
+  b.set(lx, ly + 5, fl ? C.bone : C.teal); b.set(lx, ly + 6, C.bone); b.set(lx + 1, ly + 3, C.tealD);
+  b.rect(lx - 2, ly + 9, 5, 1, C.ink); b.set(lx, ly + 10, C.ink);
+}
+
+
+// ------------------------------------------------ 3x5 font
+const F3 = {
+  A: '010101111101101', B: '110101110101110', C: '011100100100011', D: '110101101101110', E: '111100110100111', F: '111100110100100', G: '011100101101011', H: '101101111101101', I: '111010010010111', J: '001001001101010', K: '101101110101101', L: '100100100100111', M: '101111111101101',
+  N: '110101101101101', O: '010101101101010', P: '110101110100100', Q: '010101101110011', R: '110101110101101', S: '011100010001110', T: '111010010010010', U: '101101101101111', V: '101101101101010', W: '101101111111101', X: '101101010101101', Y: '101101010010010', Z: '111001010100111',
+  0: '111101101101111', 1: '010110010010111', 2: '110001010100111', 3: '110001010001110', 4: '101101111001001', 5: '111100110001110', 6: '011100111101111', 7: '111001010010010', 8: '111101111101111', 9: '111101111001110',
+  ':': '000010000010000', '.': '000000000000010', ',': '000000000010100', '!': '010010010000010', '?': '110001010000010', '-': '000000111000000', "'": '010010000000000', '/': '001001010100100', ' ': '000000000000000', '%': '101001010100101' };
+const CHARSET = Object.keys(F3).join('');
+function txt(b, s, x, y, c, shadow) { [...s.toUpperCase()].forEach((ch, k) => { const g = F3[ch] || F3['?']; for (let j = 0; j < 5; j++) for (let i = 0; i < 3; i++) if (g[j * 3 + i] === '1') { if (shadow != null) b.set(x + k * 4 + i, y + j + 1, shadow); b.set(x + k * 4 + i, y + j, c); } }); }
+const tw = s => s.length * 4 - 1;
+// ------------------------------------------------ 5x7 logo letters
+const F5 = { E: '11111100001000011110100001000011111', C: '01111100001000010000100001000001111', H: '10001100011000111111100011000110001', O: '01110100011000110001100011000101110', S: '01111100001000001110000010000111110', F: '11111100001000011110100001000010000', R: '11110100011000111110101001001010001', W: '10001100011000110101101011101110001' };
+function logo() {
+  const b = new Buf(184, 58); b.c.fill(255);
+  const big = (s, x, y, sc, col) => [...s].forEach((ch, k) => { if (ch === ' ') return; const g = F5[ch]; for (let j = 0; j < 7; j++) for (let i = 0; i < 5; i++) if (g[j * 5 + i] === '1') b.rect(x + k * (6 * sc) + i * sc, y + j * sc, sc, sc, col); });
+  const layer = (dx, dy, col) => { big('ECHOES', 4 + dx, 2 + dy, 5, col); big('OF SORROW', 38 + dx, 42 + dy, 2, col); };
+  // outline + shadow, then misregistered amber/teal, then bone
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [2, 2], [1, 2], [2, 1]]) layer(dx, dy, C.ink);
+  layer(-1, 0, C.amber); layer(1, 0, C.teal); layer(0, 0, C.bone);
+  for (let x = 4; x < 180; x++) if (bay(x, 20) < 0.5) b.c[20 * 184 + x] = b.c[20 * 184 + x] === C.bone ? C.boneD : b.c[20 * 184 + x];
+  return b;
+}
+// ------------------------------------------------ 9-slices
+function slice(w, h, fn) { const b = new Buf(w, h); b.c.fill(255); fn(b, w, h); return b; }
+const notch = (b, w, h) => { for (const [x, y] of [[0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1]]) b.c[y * w + x] = 255; };
+function button(fill, top, low, edge) { return slice(24, 16, (b, w, h) => { b.rect(0, 0, w, h, C.ink); b.rect(1, 1, w - 2, h - 2, fill); b.rect(2, 1, w - 4, 1, top); b.rect(1, 2, 1, h - 4, top); b.rect(2, h - 2, w - 4, 1, low); if (edge != null) { b.rect(1, 1, w - 2, 1, edge); b.rect(1, h - 2, w - 2, 1, edge); b.rect(1, 1, 1, h - 2, edge); b.rect(w - 2, 1, 1, h - 2, edge); } notch(b, w, h); }); }
+const BTN = { normal: button(C.mudD, C.mud, C.ink), hover: button(C.mud, C.mudL, C.mudD, C.boneD), pressed: button(C.ink, C.ink, C.soot) };
+const BTNP = { normal: button(C.tealD, C.tealM, C.ink), hover: button(C.tealM, C.teal, C.tealD, C.bone), pressed: button(C.ink, C.ink, C.tealD) };
+const PANEL = slice(48, 48, (b, w, h) => { b.rect(0, 0, w, h, C.ink); b.rect(1, 1, w - 2, h - 2, C.mudD); b.rect(2, 2, w - 4, 1, C.mud); b.rect(4, 4, w - 8, h - 8, C.ink); b.rect(5, 5, w - 10, h - 10, C.soot); for (const [x, y] of [[2, 2], [w - 4, 2], [2, h - 4], [w - 4, h - 4]]) { b.rect(x, y, 2, 2, C.boneD); b.set(x, y, C.bone); } notch(b, w, h); });
+const POPUP = slice(48, 48, (b, w, h) => { b.rect(0, 0, w, h, C.ink); b.rect(1, 1, w - 2, h - 2, C.bone); b.rect(1, h - 3, w - 2, 2, C.boneD); b.rect(w - 3, 1, 2, h - 2, C.boneD); b.rect(1, 1, w - 2, 9, C.tealD); b.rect(1, 9, w - 2, 1, C.teal); b.rect(1, 10, w - 2, 1, C.ink); b.disc(5, 5, 2, C.blood); b.set(4, 4, C.bone); notch(b, w, h); });
+const CARD = slice(24, 24, (b, w, h) => { b.rect(0, 0, w, h, C.ink); b.rect(1, 1, w - 2, h - 2, C.bone); b.rect(1, h - 2, w - 2, 1, C.boneD); b.rect(w - 2, 1, 1, h - 2, C.boneD); for (let k = 0; k < 5; k++) for (let i = 0; i <= k; i++) b.set(w - 1 - (4 - k) + i - k, k, 255); for (let k = 0; k < 5; k++) b.set(w - 6 + k, k, C.ink); b.rect(w - 5, 1, 3, 1, C.boneD); b.rect(w - 4, 2, 2, 1, C.boneD); b.set(w - 3, 3, C.boneD); });
+const TRACK = slice(16, 6, (b, w, h) => { b.rect(0, 0, w, h, C.ink); b.rect(1, 2, w - 2, 2, C.soot); b.rect(1, 1, w - 2, 1, C.ink); notch(b, w, h); });
+const FILLT = slice(16, 6, (b, w, h) => { b.rect(0, 0, w, h, C.ink); b.rect(1, 2, w - 2, 2, C.mudL); b.rect(1, 1, w - 2, 1, C.boneD); notch(b, w, h); });
+const KNOB = slice(7, 9, b => { b.rect(0, 0, 7, 9, C.ink); b.rect(1, 1, 5, 7, C.boneD); b.rect(1, 1, 5, 1, C.bone); b.rect(1, 7, 5, 1, C.mudL); b.rect(3, 3, 1, 3, C.mudL); notch(b, 7, 9); });
+const CHECK = [0, 1].map(on => slice(9, 9, b => { b.rect(0, 0, 9, 9, C.ink); b.rect(1, 1, 7, 7, C.soot); b.rect(1, 1, 7, 1, C.ink); if (on) { b.line(2, 4, 4, 6, C.bone); b.line(4, 6, 7, 2, C.bone); b.line(2, 5, 4, 7, C.boneD); } }));
+const PIN = slice(7, 7, b => { b.disc(3, 3, 3, C.ink); b.disc(3, 3, 2, C.blood); b.set(2, 2, C.bone); b.set(3, 6, C.ink); });
+function stampSprite(word, col) { const w = tw(word) + 8; return slice(w, 11, b => { b.rect(0, 0, w, 11, col); b.rect(1, 1, w - 2, 9, 255); b.rect(2, 2, w - 4, 7, col); txt(b, word, 4, 3, C.boneD); for (let i = 0; i < w * 3; i++) { const r = rng(i + w); if (r() < 0.12) b.set(r() * w, r() * 11, 255); } }); }
+const STAMP_C = stampSprite('CONTRADICTION', C.blood), STAMP_U = stampSprite('IDENTITY UNKNOWN', C.ink), STAMP_N = stampSprite('NEW EVIDENCE', C.tealD);
+
+function nine(dst, src, [l, r, t, bt], x, y, w, h) {
+  const sw = src.w, sh = src.h;
+  for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) {
+    const sx = xx < l ? xx : xx >= w - r ? sw - (w - xx) : l + ((xx - l) % (sw - l - r));
+    const sy = yy < t ? yy : yy >= h - bt ? sh - (h - yy) : t + ((yy - t) % (sh - t - bt));
+    const v = src.c[sy * sw + sx]; if (v !== 255) dst.set(x + xx, y + yy, v);
+  }
+}
+const SL = { btn: [5, 5, 4, 4], panel: [12, 12, 12, 12], popup: [12, 12, 12, 12], card: [6, 6, 6, 6], track: [3, 3, 3, 3] };
+function btn(b, label, x, y, w, state = 'normal', primary = false) { nine(b, (primary ? BTNP : BTN)[state], SL.btn, x, y, w, 16); txt(b, label, x + Math.round((w - tw(label)) / 2), y + 5 + (state === 'pressed' ? 1 : 0), primary ? C.bone : C.boneD, C.ink); }
+
+
+function stampScaled(dst, src, ox, oy, s) { for (let y = 0; y < src.h * s; y++) for (let x = 0; x < src.w * s; x++) { const v = src.c[Math.floor(y / s) * src.w + Math.floor(x / s)]; if (v !== 255) dst.set(ox + x, oy + y, v); } }
+
+const T = 16, NAMES = [
+  ['wall', 'wall_crack', 'wall_symbol', 'wall_moss', 'wall_top', 'arch_l', 'arch_r', 'doorway'],
+  ['floor', 'floor_wet', 'floor_crack', 'water_a', 'water_b', 'rubble', 'drag_marks', 'grate'],
+  ['niche', 'niche_lantern', 'niche_lit', 'record_box', 'pillar', 'pillar_cap', 'crate', 'lever'],
+  ['well_stone', 'lock_stone', 'ladder', 'stairs', 'pipe', 'drip', 'chain', 'plinth']];
+const SYM = ['..###..', '.#...#.', '#..#..#', '#.###.#', '#..#..#', '.#...#.', '..###..'];
+
+function tile(b, ox, oy, name, seed = 1) {
+  const r = rng(seed * 97 + name.length * 13), S = (x, y, c) => b.set(ox + x, oy + y, c);
+  const R = (x, y, w, h, c) => b.rect(ox + x, oy + y, w, h, c);
+  const bricks = (base, line) => { for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) { const row = y >> 2, off = (row % 2) * 4; S(x, y, (y % 4 === 3 || (x + off) % 8 === 7) ? line : (y % 4 === 0 ? C.stone : base)); } };
+  switch (name) {
+    case 'wall': bricks(C.stoneD, C.ink); break;
+    case 'wall_crack': bricks(C.stoneD, C.ink); b.line(ox + 3, oy, ox + 7, oy + 8, C.ink); b.line(ox + 7, oy + 8, ox + 5, oy + 15, C.ink); break;
+    case 'wall_symbol': bricks(C.stoneD, C.ink); SYM.forEach((row, j) => [...row].forEach((v, i) => { if (v === '#') b.mark(ox + 4 + i, oy + 4 + j); })); S(7, 7, C.stone); S(5, 9, C.stone); break;
+    case 'wall_moss': bricks(C.stoneD, C.ink); for (let i = 0; i < 18; i++) S(r() * T | 0, 10 + (r() * 6 | 0), r() < 0.5 ? C.oliveD : C.olive); break;
+    case 'wall_top': bricks(C.stoneD, C.ink); R(0, 0, T, 3, C.ink); R(0, 3, T, 1, C.stone); break;
+    case 'arch_l': case 'arch_r': bricks(C.stoneD, C.ink); for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) { const dx = name === 'arch_l' ? T - x : x; if (dx * dx + (T - y) ** 2 < (T - 2) ** 2) S(x, y, C.ink); else if (dx * dx + (T - y) ** 2 < T * T) S(x, y, C.stone); } break;
+    case 'doorway': R(0, 0, T, T, C.ink); R(0, 0, 2, T, C.stone); R(14, 0, 2, T, C.stoneD); break;
+    case 'floor': case 'floor_wet': case 'floor_crack': for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) S(x, y, (y % 8 === 7 || (x + (y >> 3) * 8) % 16 === 15) ? C.ink : (y % 8 === 0 ? C.stone : C.stoneD)); if (name === 'floor_wet') for (let x = 2; x < 13; x++) S(x, 11, C.dusk), S(x + 1, 12, C.haze); if (name === 'floor_crack') b.line(ox + 2, oy + 2, ox + 12, oy + 13, C.ink); break;
+    case 'water_a': case 'water_b': for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) { const s = Math.sin((x + (name === 'water_b' ? 4 : 0)) / 2.5 + y * 1.3); S(x, y, y === 0 ? C.ink : s > 0.9 ? C.haze : y < 3 ? C.soot : C.dusk); } break;
+    case 'rubble': for (let i = 0; i < 9; i++) { const x = r() * 12 | 0, y = 4 + (r() * 10 | 0), w = 3 + (r() * 4 | 0); R(x, y, w, 3, C.stone); R(x, y, w, 1, C.stoneL); R(x, y + 3, w, 1, C.ink); } break;
+    case 'drag_marks': tile(b, ox, oy, 'floor'); for (const y of [5, 9]) for (let x = 0; x < T; x++) if (x % 3) S(x, y + (x >> 3), C.mudD); S(4, 5, C.blood); break;
+    case 'grate': tile(b, ox, oy, 'floor'); R(2, 2, 12, 12, C.ink); for (let x = 3; x < 14; x += 3) R(x, 2, 1, 12, C.stoneL); break;
+    case 'niche': case 'niche_lantern': case 'niche_lit': bricks(C.stoneD, C.ink); R(2, 3, 12, 12, C.ink); R(2, 14, 12, 1, C.stone);
+      if (name !== 'niche') { R(6, 6, 5, 1, C.ink); R(5, 7, 7, 7, C.stoneL); R(6, 8, 5, 5, name === 'niche_lit' ? C.teal : C.soot); R(5, 14, 7, 1, C.stoneL); if (name === 'niche_lit') S(8, 10, C.bone); else S(9, 9, C.tealD); } break;
+    case 'record_box': bricks(C.stoneD, C.ink); R(1, 5, 14, 10, C.mudL); R(1, 5, 14, 1, C.boneD); R(1, 14, 14, 1, C.ink); R(5, 8, 6, 3, C.bone); R(6, 9, 4, 1, C.mudL); break;
+    case 'pillar': R(0, 0, T, T, C.ink); R(3, 0, 10, T, C.stone); R(3, 0, 2, T, C.stoneL); R(11, 0, 2, T, C.stoneD); break;
+    case 'pillar_cap': bricks(C.stoneD, C.ink); R(1, 8, 14, 3, C.stoneL); R(1, 11, 14, 1, C.ink); R(3, 12, 10, 4, C.stone); R(3, 12, 2, 4, C.stoneL); break;
+    case 'crate': R(1, 3, 14, 13, C.mud); R(1, 3, 14, 1, C.mudL); R(1, 15, 14, 1, C.ink); b.line(ox + 2, oy + 4, ox + 13, oy + 14, C.mudD); b.line(ox + 13, oy + 4, ox + 2, oy + 14, C.mudD); R(1, 3, 1, 13, C.ink); R(14, 3, 1, 13, C.ink); break;
+    case 'lever': bricks(C.stoneD, C.ink); R(5, 10, 6, 4, C.ink); R(6, 11, 4, 2, C.stone); b.line(ox + 8, oy + 11, ox + 12, oy + 3, C.mudD); R(11, 2, 3, 2, C.blood); break;
+    case 'well_stone': for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) S(x, y, (y % 5 === 4 || (x + (Math.floor(y / 5) % 2) * 5) % 10 === 9) ? C.stoneD : C.stone); break;
+    case 'lock_stone': tile(b, ox, oy, 'well_stone'); R(2, 2, 12, 12, C.stoneL); R(2, 13, 12, 1, C.ink); R(13, 2, 1, 12, C.ink); SYM.forEach((row, j) => [...row].forEach((v, i) => { if (v === '#') S(4 + i, 4 + j, C.stoneD); })); R(7, 7, 2, 3, C.ink); break;
+    case 'ladder': R(3, 0, 2, T, C.mudD); R(11, 0, 2, T, C.mudD); for (let y = 2; y < T; y += 5) R(3, y, 10, 2, C.mud); break;
+    case 'stairs': for (let k = 0; k < 4; k++) { R(k * 4, k * 4, T - k * 4, 4, C.stone); R(k * 4, k * 4, T - k * 4, 1, C.stoneL); R(k * 4, k * 4 + 3, T - k * 4, 1, C.ink); } break;
+    case 'pipe': R(0, 5, T, 6, C.mudD); R(0, 5, T, 1, C.mudL); R(0, 10, T, 1, C.ink); R(6, 4, 3, 8, C.mud); S(7, 11, C.dusk); break;
+    case 'drip': S(8, 0, C.haze); S(8, 5, C.mist); S(8, 6, C.haze); S(7, 14, C.haze); S(9, 14, C.haze); S(8, 13, C.mist); break;
+    case 'chain': for (let y = 0; y < T; y += 4) { R(7, y, 2, 3, C.stoneL); S(7, y + 1, C.ink); S(8, y + 3, C.stone); } break;
+    case 'plinth': R(1, 4, 14, 12, C.stoneL); R(1, 4, 14, 1, C.boneD); R(1, 15, 14, 1, C.ink); R(1, 4, 1, 12, C.ink); R(14, 4, 1, 12, C.ink); R(3, 7, 10, 1, C.stoneD); break;
+  }
+}
+
+function youngElias() {
+  const parts = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.ink, shade: C.ink, line: false }, { base: C.soot, shade: C.ink, line: true }, { base: C.amber, shade: C.amberD, line: true }, { base: C.ink, shade: C.ink, line: false }];
+  const f = Figure(32, 58, parts);
+  f.poly([[8, 50], [10, 20], [22, 20], [24, 50]], 2);
+  f.rect(11, 50, 4, 6, 4); f.rect(17, 50, 4, 6, 4);
+  f.rect(13, 16, 6, 4, 0); f.ell(16, 12, 4.5, 5, 0);
+  f.rect(10, 18, 12, 3, 3); f.poly([[10, 19], [6, 26], [8, 27], [12, 21]], 3);
+  f.rect(12, 1, 8, 6, 1); f.rect(8, 6, 16, 2, 1);
+  f.rect(22, 24, 3, 12, 2); f.rect(22, 35, 3, 3, 0);
+  const b = f.render(1, 1);
+  b.set(14, 12, C.ink); b.set(18, 12, C.ink); b.set(18, 11, C.tealM); b.line(15, 15, 17, 15, C.mudL);
+  b.rect(8, 6, 16, 1, C.stoneD); b.rect(12, 1, 8, 1, C.stoneD); b.rect(19, 2, 1, 4, C.stoneD); b.rect(12, 5, 8, 1, C.stone);
+  b.line(16, 21, 16, 48, C.ink); b.rect(11, 56, 4, 1, C.ink); b.rect(17, 56, 4, 1, C.ink);
+  b.line(26, 2, 26, 56, C.mudD); b.set(27, 1, C.mudD); b.set(28, 1, C.mudD); b.set(29, 2, C.ink);
+  b.rect(27, 4, 5, 7, C.ink); b.rect(28, 5, 3, 5, C.teal); b.set(29, 7, C.bone);
+  return b;
+}
+function youngEliasPortrait() {
+  const parts = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.ink, shade: C.ink, line: true }, { base: C.soot, shade: C.ink, line: true }, { base: C.amber, shade: C.amberD, line: true }];
+  const f = Figure(64, 64, parts);
+  f.poly([[4, 64], [8, 50], [20, 44], [44, 44], [56, 50], [60, 64]], 2);
+  f.rect(27, 36, 10, 9, 0);
+  f.ell(32, 26, 15, 13, 1); f.ell(32, 29, 10, 11.5, 0);
+  f.poly([[18, 26], [20, 13], [26, 12], [30, 18], [34, 12], [40, 14], [46, 24], [42, 20], [37, 19], [31, 22], [25, 19]], 1);
+  f.poly([[20, 42], [44, 42], [46, 48], [18, 48]], 3); f.poly([[22, 46], [16, 60], [22, 61], [27, 48]], 3);
+  const b = f.render();
+  for (const ex of [26, 35]) { b.rect(ex, 28, 4, 2, C.bone); b.rect(ex + 1, 28, 2, 2, C.ink); b.rect(ex - 1, 27, 5, 1, C.ink); b.set(ex + 2, 28, C.tealM); }
+  b.line(25, 25, 29, 26, C.ink); b.line(35, 26, 39, 25, C.ink);
+  b.set(26, 31, C.mudL); b.set(37, 31, C.mudL); b.line(25, 32, 29, 32, C.mudL); b.line(35, 32, 39, 32, C.mudL);
+  b.line(32, 30, 32, 33, C.mudL); b.line(30, 37, 34, 37, C.mud);
+  return b;
+}
+function sisterBed() {
+  const b = new Buf(56, 24); b.c.fill(255);
+  b.disc(8, 10, 6, C.mudD); b.disc(9, 11, 4, C.bone); b.set(8, 11, C.ink); b.set(11, 11, C.ink); b.set(8, 12, C.mist); b.set(11, 12, C.mist);
+  b.line(4, 15, 18, 22, C.mudD); b.line(4, 16, 17, 22, C.mudD);
+  for (let x = 14; x < 54; x++) { const h = 6 + Math.round(Math.sin((x - 14) / 40 * Math.PI) * 4); b.rect(x, 18 - h, 1, h + 2, x === 14 || x === 53 ? C.ink : (x % 7 === 0 ? C.mudD : C.blood)); b.set(x, 18 - h - 1, C.ink); }
+  b.rect(16, 11, 4, 3, C.bone); return b;
+}
+
+function photo(elias) {
+  const b = new Buf(192, 108), r = rng(17);
+  for (let y = 0; y < 108; y++) for (let x = 0; x < 192; x++) b.set(x, y, bay(x, y) < 0.15 ? C.mudL : C.boneD);
+  b.rect(10, 10, 172, 88, C.mudL); for (let y = 10; y < 98; y++) for (let x = 10; x < 182; x++) if (bay(x, y) < 0.35) b.set(x, y, C.boneD);
+  b.rect(10, 74, 172, 24, C.mud);
+  const people = [[44, 'ivy'], [80, 'luke'], [116, 'hanna'], [152, 'fourth']];
+  for (const [cx, who] of people) {
+    const top = who === 'luke' ? 30 : 34;
+    b.rect(cx - 12, top + 18, 24, 74 - top - 18 + 10, C.mudD);
+    b.disc(cx, top + 8, 9, who === 'hanna' ? C.mud : C.mudD); b.disc(cx, top + 10, 7, C.boneD);
+    if (who === 'luke') b.rect(cx - 9, top, 18, 5, C.mudD);
+    if (who === 'hanna') b.disc(cx, top - 2, 4, C.mud);
+    if (who === 'fourth') {
+      b.rect(cx + 12, top + 26, 2, 30, C.mudD); b.rect(cx + 10, top + 22, 6, 7, C.ink); b.rect(cx + 11, top + 23, 4, 5, C.bone);
+      if (!elias) { for (let k = 0; k < 40; k++) b.line(cx - 8 + r() * 4, top + 2 + r() * 16, cx + 6 + r() * 4, top + 2 + r() * 16, k % 3 ? C.ink : C.mudD); continue; }
+      b.disc(cx, top + 6, 8, C.ink); b.rect(cx - 7, top + 8, 14, 3, C.ink); b.disc(cx, top + 11, 6, C.boneD);
+    }
+    b.set(cx - 3, top + 10, C.ink); b.set(cx + 3, top + 10, C.ink); b.line(cx - 2, top + 14, cx + 2, top + 14, C.mud);
+  }
+  // burned edges, scorched corner top-right
+  for (let y = 0; y < 108; y++) for (let x = 0; x < 192; x++) {
+    const edge = Math.min(x, y, 191 - x, 107 - y) + (hash(x * 7 + y * 131) * 4 | 0);
+    const corner = Math.hypot(x - 192, y) < 30 + Math.sin(y / 3) * 4 + Math.cos(x / 4) * 4;
+    if (edge < 3 || corner) b.c[y * 192 + x] = 255;
+    else if (edge < 6 || Math.hypot(x - 192, y) < 37 + Math.sin(y / 3) * 4) b.c[y * 192 + x] = edge < 5 ? C.ink : (bay(x, y) < 0.5 ? C.mudD : C.amberD);
+  }
+  return b;
+}
+
+const FIGURE = (() => { const b = new Buf(32, 58); b.c.fill(255);
+  b.rect(12, 2, 8, 6, C.ink); b.rect(8, 8, 16, 2, C.ink);
+  for (let k = 0; k < 40; k++) { const half = 6 + Math.round(k * 3 / 40); b.rect(16 - half, 10 + k, half * 2, 1, C.ink); }
+  b.rect(12, 50, 3, 6, C.ink); b.rect(18, 50, 3, 6, C.ink);
+  for (let y = 10; y < 50; y++) { const half = 6 + Math.round((y - 10) * 3 / 40); b.set(16 + half - 1, y, C.tealD); }
+  return b; })();
+
+
+function bustBase(f, P, broad) {
+  const s = broad ? 4 : 0;
+  f.poly([[6 - s, 64], [10 - s, 49], [21, 43], [43, 43], [54 + s, 49], [58 + s, 64]], P.coat);
+  f.rect(28 - (broad ? 1 : 0), 35, broad ? 10 : 8, 10, P.skin);
+}
+function eyes(b, y, big, col = C.ink) {
+  for (const ex of [26, 35]) {
+    b.rect(ex, y, 4, big ? 3 : 2, C.bone);
+    b.rect(ex + 1, y, 2, big ? 3 : 2, col);
+    if (big) b.set(ex + 1, y, C.bone);
+    b.rect(ex - (ex === 26 ? 1 : 0), y - 1, 5, 1, C.ink);
+  }
+}
+function hanna(ghost) {
+  const P = ghost
+    ? { skin: 0, hair: 1, coat: 2, shawl: 3, collar: 4 }
+    : { skin: 0, hair: 1, coat: 2, shawl: 3, collar: 4 };
+  const parts = ghost
+    ? [{ base: C.bone, shade: C.boneD, line: true }, { base: C.boneD, shade: C.mist, line: true }, { base: C.mist, shade: C.haze, line: true }, { base: C.haze, shade: C.dusk, line: true }, { base: C.bone, shade: C.boneD, line: true }]
+    : [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.stoneL, shade: C.stone, line: true }, { base: C.violet, shade: C.violetD, line: true }, { base: C.mud, shade: C.mudD, line: true }, { base: C.bone, shade: C.boneD, line: true }];
+  return { P, parts };
+}
+function portraitHanna() {
+  const { P, parts } = hanna(false), f = Figure(64, 64, parts);
+  bustBase(f, P);
+  f.poly([[8, 64], [12, 50], [22, 45], [30, 53], [26, 64]], P.shawl); f.poly([[56, 64], [52, 50], [42, 45], [34, 53], [38, 64]], P.shawl);
+  f.poly([[26, 43], [38, 43], [37, 49], [32, 51], [27, 49]], P.collar);
+  f.ell(32, 13, 9, 5, P.hair); f.ell(32, 23, 13, 11, P.hair);
+  f.ell(21, 28, 2, 3, P.skin); f.ell(43, 28, 2, 3, P.skin);
+  f.ell(32, 28, 10, 11, P.skin);
+  f.poly([[21, 25], [22, 15], [32, 12], [42, 15], [43, 25], [40, 19], [32, 17], [24, 19]], P.hair);
+  const b = f.render();
+  eyes(b, 28, false);
+  for (const ex of [25, 34]) { b.line(ex, 26, ex + 5, 26, C.ink); b.line(ex, 31, ex + 5, 31, C.ink); b.line(ex, 26, ex, 31, C.ink); b.line(ex + 5, 26, ex + 5, 31, C.ink); }
+  b.line(31, 28, 33, 28, C.ink);
+  b.line(25, 24, 29, 23, C.stone); b.line(35, 23, 39, 24, C.stone);
+  b.line(32, 30, 33, 33, C.mudL); b.set(31, 34, C.mudL);
+  b.line(29, 37, 35, 37, C.mud); b.set(28, 36, C.mudL); b.set(36, 36, C.mudL);
+  b.set(25, 34, C.mudL); b.set(39, 34, C.mudL);
+  b.line(27, 13, 24, 22, C.boneD); b.line(28, 13, 25, 21, C.boneD);
+  b.rect(31, 46, 3, 3, C.blood); b.set(32, 46, C.bone);
+  return b;
+}
+function portraitIvy() {
+  const P = { skin: 0, hair: 1, coat: 2, blouse: 3 };
+  const parts = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.blue, shade: C.blueD, line: true }, { base: C.bone, shade: C.boneD, line: true }];
+  const f = Figure(64, 64, parts);
+  bustBase(f, P);
+  f.poly([[25, 43], [39, 43], [32, 57]], P.blouse);
+  f.ell(32, 24, 14, 13, P.hair); f.rect(18, 24, 28, 15, P.hair);
+  f.ell(32, 28, 10, 11, P.skin);
+  f.poly([[20, 27], [21, 16], [32, 11], [43, 16], [44, 27], [41, 20], [35, 17], [30, 21], [24, 19]], P.hair);
+  const b = f.render();
+  eyes(b, 27, true, C.blueD);
+  b.set(25, 27, C.ink); b.set(39, 27, C.ink);
+  b.line(25, 24, 29, 24, C.mudD); b.line(35, 24, 39, 24, C.mudD); b.set(29, 23, C.mudD); b.set(35, 23, C.mudD);
+  b.line(32, 31, 32, 32, C.mudL);
+  b.line(30, 35, 34, 35, C.blood); b.set(29, 36, C.mudL);
+  b.set(38, 32, C.bone); b.set(39, 33, C.bone); b.set(37, 33, C.bone);
+  b.line(40, 17, 43, 19, C.bone); b.set(41, 17, C.stoneL);
+  b.set(25, 50, C.boneD); b.set(26, 55, C.boneD); b.set(27, 60, C.boneD);
+  return b;
+}
+function portraitLuke() {
+  const P = { skin: 0, beard: 1, cap: 2, coat: 3, knit: 4 };
+  const parts = [{ base: C.mudL, shade: C.mud, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.oliveD, shade: C.ink, line: true }, { base: C.olive, shade: C.oliveD, line: true }, { base: C.mud, shade: C.mudD, line: true }];
+  const f = Figure(64, 64, parts);
+  bustBase(f, P, true);
+  f.poly([[24, 41], [40, 41], [39, 50], [25, 50]], P.knit);
+  f.ell(20.5, 28, 2, 3, P.skin); f.ell(43.5, 28, 2, 3, P.skin);
+  f.ell(32, 27, 11, 12, P.skin);
+  f.poly([[21, 28], [22, 36], [27, 41], [32, 42], [37, 41], [42, 36], [43, 28], [40, 33], [36, 35], [28, 35], [24, 33]], P.beard);
+  f.poly([[19, 22], [21, 13], [32, 10], [43, 13], [46, 20], [44, 22]], P.cap);
+  f.poly([[19, 22], [46, 20], [48, 23], [20, 25]], P.cap);
+  const b = f.render();
+  eyes(b, 27, false);
+  b.line(24, 25, 30, 25, C.ink); b.line(34, 25, 40, 25, C.ink); b.line(25, 24, 29, 24, C.mudD); b.line(35, 24, 39, 24, C.mudD);
+  b.line(32, 28, 33, 31, C.mud); b.set(31, 32, C.mud); b.set(34, 32, C.mud);
+  b.line(28, 35, 36, 35, C.ink); b.line(30, 37, 34, 37, C.mud);
+  b.line(18, 46, 25, 60, C.oliveD); b.line(46, 46, 39, 60, C.oliveD);
+  b.line(41, 54, 45, 57, C.boneD); b.set(46, 58, C.boneD); b.set(43, 55, C.stoneL);
+  b.line(22, 15, 41, 14, C.ink);
+  return b;
+}
+
+
+function ivyBody() {
+  const P = { skin: 0, hair: 1, coat: 2, blouse: 3, skirt: 4, books: 5 };
+  const parts = [{ base: C.boneD, shade: C.mudL, line: true }, { base: C.mudD, shade: C.ink, line: true }, { base: C.blue, shade: C.blueD, line: true }, { base: C.bone, shade: C.boneD, line: true }, { base: C.blood, shade: C.mudD, line: true }, { base: C.olive, shade: C.oliveD, line: true }];
+  const f = Figure(32, 58, parts);
+  f.poly([[10, 56], [11, 34], [21, 34], [22, 56]], P.skirt);
+  f.poly([[10, 36], [11, 20], [21, 20], [22, 36]], P.coat);
+  f.poly([[14, 20], [18, 20], [16, 27]], P.blouse);
+  f.rect(15, 17, 3, 3, P.skin);
+  f.ell(16, 10, 6, 6, P.hair); f.rect(10, 10, 12, 7, P.hair);
+  f.ell(16, 11.5, 4, 4.5, P.skin);
+  f.poly([[11, 11], [12, 6], [16, 5], [21, 6], [21, 11], [19, 8], [15, 9], [13, 8]], P.hair);
+  f.rect(12, 25, 9, 7, P.books);
+  f.rect(11, 28, 3, 3, P.skin); f.rect(19, 28, 3, 3, P.skin);
+  const b = f.render(1, 1);
+  b.set(14, 12, C.ink); b.set(18, 12, C.ink); b.line(15, 15, 17, 15, C.blood);
+  b.line(12, 27, 20, 27, C.boneD); b.line(12, 29, 20, 29, C.blueD);
+  b.line(19, 6, 20, 7, C.bone);
+  b.rect(12, 56, 3, 1, C.ink); b.rect(17, 56, 3, 1, C.ink);
+  return b;
+}
+
+
+// ------------------------------------------------ helpers
+const GH = []; for (let i = 0; i < 27; i++) { const [r, g, bl] = RGB[i], l = (r + g + bl) / 3; GH[i] = i === C.ink ? C.dusk : l < 50 ? C.haze : l < 90 ? C.mist : l < 150 ? C.boneD : C.bone; }
+const ghostly = s => { const b = new Buf(s.w, s.h); for (let i = 0; i < s.c.length; i++) b.c[i] = s.c[i] === 255 ? 255 : GH[s.c[i]]; return b; };
+function vign(b, cx, cy, k = 0.45) { for (let i = 0; i < b.c.length; i++) { const x = i % W, y = (i / W) | 0; if (bay(x, y) < (Math.hypot((x - cx) / 400, (y - cy) / 250) - k * 0.9) * 1.4) b.c[i] = C.ink; } }
+function clock(b, cx, cy, R, h, m, col = C.boneD) { b.disc(cx, cy, R + 2, C.ink); b.disc(cx, cy, R, col); for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; b.line(cx + Math.sin(a) * (R - 3), cy - Math.cos(a) * (R - 3), cx + Math.sin(a) * (R - 1), cy - Math.cos(a) * (R - 1), C.ink); } const hand = (ang, len, th) => { for (let d = 0; d <= len; d += 0.5) for (let o = -(th - 1) / 2; o <= (th - 1) / 2; o++) b.set(cx + Math.sin(ang) * d + Math.cos(ang) * o, cy - Math.cos(ang) * d + Math.sin(ang) * o, C.ink); }; hand((h + m / 60) / 12 * Math.PI * 2, R * 0.5, R > 20 ? 3 : 1); hand(m / 60 * Math.PI * 2, R * 0.8, R > 20 ? 2 : 1); b.disc(cx, cy, Math.max(1, R / 12 | 0), C.ink); }
+function tiled(map, key) { const b = new Buf(W, H); map.forEach((row, ty) => [...row].forEach((ch, tx) => tile(b, tx * 16, ty * 16, key[ch], tx * 7 + ty))); return b; }
+function cork() { const b = new Buf(W, H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const n = hash(x * 13 + y * 7919); b.set(x, y, n < 0.12 ? C.mud : n > 0.93 ? C.boneD : n > 0.8 ? C.amberD : C.mudL); } return b; }
+function yarn(b, x0, y0, x1, y1, col = C.blood) { const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0)); for (let k = 0; k <= n; k++) { const u = k / n, x = x0 + (x1 - x0) * u, y = y0 + (y1 - y0) * u + Math.sin(u * Math.PI) * 5; b.set(x, y + 1, C.ink); b.set(x, y, col); } }
+const KEY10 = { T: 'wall_top', W: 'wall', c: 'wall_crack', s: 'wall_symbol', m: 'wall_moss', l: 'arch_l', r: 'arch_r', d: 'doorway', F: 'floor', w: 'floor_wet', R: 'rubble', P: 'pillar', g: 'grate', n: 'niche_lantern', L: 'niche_lit', N: 'wall', k: 'floor_crack', p: 'plinth', '~': 'water_a', X: 'ladder' };
+
+// ------------------------------------------------ panels
+function archIntro() { const b = tiled(['TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT', 'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWW', 'WWsWWWWWWWWWNNNNNNWWWWWWWWsWWW', 'WWWWWWcWWWWWNnLnnNWWWWWWWWWWWW', 'WWWWWWWWWWWWNnnnLNWWWcWWWWWWWW', 'WWWWWWWWWWWWNNNNNNWWWWWWWWWWWW', 'WmWWWWWWWWWWWlrWWWWWWWWWWWWmWW', 'WWWWWWWWsWWWWddWWWWWWWWWWWWWWW', 'PWWWWWWWWWWWWddWWWWWWWWWWWWWWP', 'PWWWWWWWWWWWWddWWWWWWWWWWWWWWP', 'PWWWWWWWWWWWWddWWWWWWWWWWWWWWP', 'FFFFFFFFFFFwFFFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFgFFFFFFRFFFFF', 'FFFFFFFkFFFFFFFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'FFRFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'], KEY10);
+  stamp(b, FIGURE, 220, 178); light(b, 238, 186, 90); vign(b, 230, 160, 0.35); return b; }
+function archEscape() { const b = tiled(['TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT', 'WWWcWWWWWWWcWWWWWWWWWcWWWWWWWW', 'WWWWWWsWWWWWWWWWWcWWWWWWWWWWWW', 'WWcWWWWWWWWRRWWWWWWWWWWWcWWWWW', 'WWWWWWWWWRRRRRWWWWWWWWWWWWWWWW', 'WWWWWWWWWWRRRWWWWWWcWWWWWWWWWW', 'WWWWWWcWWWWWWWWWWWWWWWWWWWlrWW', 'WWWWWWWWWWWWWWWWWWWWWWWWWWddWW', 'WWWWWWWWWWWWWWWcWWWWWWWWWWddWW', 'WWWWsWWWWWWWWWWWWWWWWWWWWWddWW', 'WWWWWWWWWWWWWWWWWWWWWWWWWWddWW', 'FFFFFFRFFFFFFFFFFkFFFFFFFFFFFF', 'FFFFRRRFFFFFFFFFFFFFFFkFFFFFFF', 'FFFFFFFFFFFFRRFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'FFRFFFFFFFFFFFFFFRRFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'], KEY10);
+  for (let y = 0; y < 150; y++) for (let x = 120; x < 260; x++) if (hash(x * 3 + y * 977) < 0.02) b.set(x, y, C.stoneL);
+  for (let y = 0; y < H; y++) for (let x = 0; x < 160; x++) if (bay(x, y) < (1 - x / 160) * 0.5) b.c[y * W + x] = bay(x, y) < 0.15 ? C.tealM : C.tealD;
+  stamp(b, FIGURE, 300, 178); light(b, 318, 186, 80); vign(b, 360, 170, 0.4); return b; }
+function boardConverge(close) { const b = cork(); const r = rng(close ? 4 : 3);
+  const cards = close ? [[40, 30], [380, 40], [30, 190], [390, 190], [200, 20], [210, 210]] : Array.from({ length: 12 }, (_, k) => [20 + (k % 4) * 116 + (r() * 20 | 0), 16 + Math.floor(k / 4) * 86 + (r() * 16 | 0)]);
+  const cx = 240, cy = 135;
+  for (const [x, y] of cards) yarn(b, x + 24, y + 4, cx, cy - 30);
+  for (const [x, y] of cards) { nine(b, CARD, [6, 6, 6, 6], x, y, close ? 60 : 50, close ? 40 : 34); stamp(b, PIN, x + 22, y); for (let k = 0; k < 3; k++) b.rect(x + 6, y + 10 + k * 7, 30 - k * 6, 1, C.mudL); }
+  const fw = close ? 120 : 86, fh = close ? 90 : 64; nine(b, CARD, [6, 6, 6, 6], cx - fw / 2, cy - fh / 2, fw, fh);
+  const ph = photo(false); stampScaled(b, (() => { const s = new Buf(48, 27); s.c.fill(255); for (let y = 0; y < 27; y++) for (let x = 0; x < 48; x++) s.c[y * 48 + x] = ph.c[(y * 4) * 192 + x * 4]; return s; })(), cx - 48 * (close ? 1 : 0.5) | 0, cy - fh / 2 + 8, close ? 2 : 1);
+  txt(b, 'THE FIGURE', cx - (tw('THE FIGURE') >> 1), cy + fh / 2 - 12, C.ink); stamp(b, STAMP_U, cx - 34, cy + fh / 2 + 2);
+  for (let i = 0; i < b.c.length; i++) { const x = i % W, y = (i / W) | 0; const d = Math.hypot(x - cx, y - cy); if (d < (close ? 90 : 70) && bay(x, y) < 0.12 * (1 - d / 90)) b.c[i] = C.tealM; }
+  vign(b, cx, cy, close ? 0.3 : 0.5); return b; }
+function clocksVsWatch() { const b = new Buf(W, H); for (let i = 0; i < b.c.length; i++) b.c[i] = (i % W) < 240 ? C.soot : C.mudD;
+  for (let y = 0; y < H; y++) b.set(240 + Math.round(Math.sin(y / 9) * 2), y, C.ink);
+  clock(b, 120, 120, 70, 2, 17); txt(b, 'THE TOWER', 120 - (tw('THE TOWER') >> 1), 210, C.boneD, C.ink); txt(b, '2:17', 112, 222, C.bone, C.ink);
+  b.disc(360, 120, 66, C.ink); b.disc(360, 120, 64, C.amberD); clock(b, 360, 120, 60, 2, 31, C.bone); b.rect(354, 42, 12, 10, C.amberD); b.rect(354, 42, 12, 1, C.ink); b.disc(360, 36, 5, C.ink); b.disc(360, 36, 3, C.amberD);
+  b.line(360, 120, 360 + Math.sin(0.6) * 54, 120 - Math.cos(0.6) * 54, C.blood);
+  txt(b, "LUKE'S WATCH", 360 - (tw("LUKE'S WATCH") >> 1), 210, C.boneD, C.ink); txt(b, '2:31', 352, 222, C.bone, C.ink); stamp(b, STAMP_C, 240 - (STAMP_C.w >> 1), 244); return b; }
+function handsWriting() { const b = new Buf(W, H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) b.set(x, y, (y % 30 === 0) ? C.ink : (((y * 7) % 11 === 0 && (x * 3 + y) % 17 > 3) ? C.mud : C.mudD));
+  b.rect(110, 40, 230, 200, C.ink); b.rect(108, 38, 230, 200, C.bone); for (let y = 60; y < 200; y += 12) b.rect(124, y, 120 + ((y * 7) % 60), 1, y < 150 ? C.mudL : C.boneD);
+  txt(b, 'REQUEST: USE OF THE ECHO LANTERN', 124, 48, C.ink); txt(b, 'REASON: MY SISTER IS DYING', 124, 160, C.ink);
+  const hand = (x, y, flip) => { b.rect(x, y, 34, 20, C.ink); b.rect(x + 1, y + 1, 32, 18, C.boneD); for (let k = 0; k < 4; k++) b.rect(x + (flip ? 0 : 22) + 2, y + 2 + k * 4, 10, 3, C.bone); b.rect(x + (flip ? 30 : -30), y + 6, 32, 14, C.soot); };
+  hand(250, 168, false); b.line(262, 172, 250, 152, C.ink); b.line(263, 172, 251, 152, C.mudD); b.rect(80, 200, 40, 16, C.soot); b.rect(118, 196, 26, 16, C.ink); b.rect(119, 197, 24, 14, C.boneD);
+  b.rect(400, 120, 40, 60, C.ink); b.rect(404, 124, 32, 52, C.teal); b.rect(416, 136, 8, 26, C.bone);
+  light(b, 420, 150, 260); b.rect(404, 124, 32, 52, C.teal); b.rect(416, 136, 8, 26, C.bone); vign(b, 300, 150, 0.4); return b; }
+function dissolve(young) { const b = new Buf(W, H); for (let i = 0; i < b.c.length; i++) { const x = i % W, y = (i / W) | 0; b.c[i] = bay(x, y) < 0.08 + y / 2000 ? C.tealD : (bay(x, y) < 0.5 - Math.hypot(x - 240, y - 110) / 400 ? C.dusk : C.ink); }
+  const src = young ? youngElias() : FIGURE; stampScaled(b, young ? src : ghostly(src).c ? src : src, 192, 30, 3); if (!young) { for (let i = 0; i < b.c.length; i++) if (b.c[i] === C.ink && (i % W) > 190 && (i % W) < 290 && bay(i % W, (i / W) | 0) < 0.05) b.c[i] = C.tealD; }
+  light(b, 280, 60, 200); return b; }
+function nia() { const b = new Buf(W, H); for (let i = 0; i < b.c.length; i++) b.c[i] = ((i % W) * 3 + ((i / W) | 0) * 7) % 37 === 0 ? C.dusk : C.soot;
+  b.rect(60, 150, 360, 120, C.mud); b.rect(60, 150, 360, 4, C.mudL); b.rect(80, 120, 320, 40, C.bone); b.rect(80, 156, 320, 4, C.boneD);
+  b.disc(150, 128, 26, C.mudD); b.disc(156, 132, 20, C.bone); b.set(148, 130, C.ink); b.set(149, 130, C.ink); b.set(164, 130, C.ink); b.set(165, 130, C.ink); b.rect(146, 134, 6, 2, C.mist); b.rect(160, 134, 6, 2, C.mist); b.rect(153, 142, 6, 1, C.mudL);
+  for (let x = 180; x < 400; x++) { const hh = 10 + Math.round(Math.sin((x - 180) / 220 * Math.PI) * 10); b.rect(x, 150 - hh, 1, hh + 4, x % 9 === 0 ? C.mudD : C.blood); }
+  b.rect(420, 140, 14, 20, C.ink); b.rect(422, 142, 10, 16, C.teal); light(b, 427, 150, 230); b.rect(422, 142, 10, 16, C.teal); vign(b, 240, 140, 0.4); return b; }
+function overload(t) { const b = new Buf(W, H); for (let i = 0; i < b.c.length; i++) b.c[i] = C.ink;
+  b.rect(196, 60, 88, 16, C.ink); b.rect(186, 76, 108, 140, C.ink); b.rect(194, 84, 92, 124, C.teal); b.rect(226, 110, 28, 70, C.bone);
+  for (const [x0, y0, x1, y1] of [[194, 90, 240, 140], [240, 140, 230, 208], [240, 140, 286, 120], [210, 84, 222, 120]]) b.line(x0, y0, x1, y1, C.ink);
+  for (let k = 0; k < 18; k++) { const a = k / 18 * Math.PI * 2; for (let d = 80; d < 240; d += 2) if (bay(240 + Math.cos(a) * d | 0, 146 + Math.sin(a) * d | 0) < 0.6 - d / 400) b.set(240 + Math.cos(a) * d, 146 + Math.sin(a) * d * 0.7, d < 140 ? C.teal : C.tealM); }
+  b.rect(176, 216, 128, 10, C.ink); return b; }
+function vanished() { const b = new Buf(W, H); drawSky(b); drawFar(b); drawMid(b); drawStreet(b);
+  for (const [x, y] of [[150, 230], [220, 240], [300, 226], [380, 246], [260, 256]]) { b.rect(x, y, 12, 4, [C.blood, C.blueD, C.oliveD, C.mudL, C.violetD][(x / 7 | 0) % 5]); b.rect(x, y + 3, 12, 1, C.ink); }
+  b.rect(336, 218, 12, 8, C.mudD); b.disc(338, 227, 2, C.ink); b.disc(346, 227, 2, C.ink); b.rect(200, 214, 8, 6, C.boneD);
+  vign(b, 240, 150, 0.5); return b; }
+function eliasArchive() { const b = tiled(['TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT', 'NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN', 'NnnnLnnnnnnnnnnnnnnnnnnLnnnnnN', 'NnnnnnnnnLnnnnnnnnnnnnnnnnnnnN', 'NnnLnnnnnnnnnnnnnnLnnnnnnnnnnN', 'NnnnnnnnnnnnnnnnnnnnnnnnnLnnnN', 'NnnnnnnnnnnnLnnnnnnnnnnnnnnnnN', 'NnnnnnLnnnnnnnnnnnnnnLnnnnnnnN', 'NnnnnnnnnnnnnnnnnnnnnnnnnnnnnN', 'NNNNNNNNNNNNNNNNNNNNNNNNNNNNNN', 'WWWWWWWWWWWWWWWWWWWWWWWWWWWWWW', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'], KEY10);
+  const L = drawElias(b, 240, 236, 1, 0.4, false); light(b, L.lx, L.ly + 5, 110); drawLanternSmall(b, L, 0.4); vign(b, 240, 160, 0.45); return b; }
+function closingDesk() { const b = new Buf(W, H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) b.set(x, y, (y % 30 === 0) ? C.ink : (((y * 7) % 11 === 0 && (x * 3 + y) % 17 > 3) ? C.mud : C.mudD));
+  b.rect(52, 52, 200, 150, C.ink); b.rect(50, 50, 200, 150, C.mudL); b.rect(50, 50, 80, 12, C.boneD); txt(b, 'VEYRA', 56, 53, C.ink); b.rect(64, 76, 176, 110, C.boneD); for (let y = 86; y < 176; y += 10) b.rect(72, y, 130 - ((y * 3) % 40), 1, C.mudL);
+  b.rect(300, 60, 50, 80, C.ink); b.rect(304, 70, 42, 64, C.tealD); b.line(306, 72, 330, 110, C.ink); b.line(330, 110, 318, 132, C.ink); b.line(330, 110, 344, 96, C.ink); b.rect(296, 140, 58, 6, C.ink);
+  b.rect(320, 190, 40, 4, C.ink); b.rect(321, 190, 38, 2, C.stoneL); b.rect(352, 186, 8, 10, C.ink); b.rect(353, 187, 6, 8, C.stoneL);
+  vign(b, 220, 130, 0.45); return b; }
+function masterLog() { const b = new Buf(W, H); for (let i = 0; i < b.c.length; i++) b.c[i] = C.mudD;
+  b.rect(92, 14, 300, 250, C.ink); b.rect(90, 12, 300, 250, C.bone); b.rect(90, 12, 300, 22, C.boneD); txt(b, 'ECHO LANTERN - MASTER LOG', 104, 20, C.ink);
+  ['1:43  LANTERN NETWORK PRIMED', '1:58  VILLAGERS GATHER', '2:06  BELL RUNG BY HAND', '2:11  RIVER REVERSES', '2:17  EVERY CLOCK STOPS', '2:31  APPRENTICE RETURNS', '      MEMORIES ALTERED: 3', '      MEMORY ERASED: OPERATOR'].forEach((l, k) => txt(b, l, 104, 46 + k * 14, C.mud));
+  const s1 = stampSprite('CASE CLOSED', C.blood); stampScaled(b, s1, 180, 168, 2); txt(b, 'SIGNED: ELIAS VANE', 200, 232, C.ink); b.line(196, 242, 330, 240, C.ink); b.line(200, 246, 246, 236, C.ink);
+  vign(b, 240, 135, 0.55); return b; }
+function ivyFrame4() { const b = new Buf(W, H); drawSky(b); drawFar(b); drawMid(b); drawStreet(b);
+  const iv = ghostly(ivyBody()); stampScaled(b, iv, 226, 96, 2); for (let i = 0; i < b.c.length; i++) { const x = i % W, y = (i / W) | 0; if (x > 220 && x < 296 && y > 90 && y < 216 && bay(x, y) < 0.06) b.c[i] = C.mist; }
+  vign(b, 258, 150, 0.4); return b; }
+
+const PANELS = [
+  ['Archive · intro', 'bg_archive_intro.png', archIntro, 'Before pz_archive: the lantern-niche wall over a doorway; Elias-outline figure at (220,178).'],
+  ['Archive · escape', 'bg_archive_escape.png', archEscape, 'After pz_archive: the ceiling cracks, rubble falls (code: drop stoneL pixels), teal floods in from the left.'],
+  ['Finale 1 · board convergence', 'finale_1_board.png', () => boardConverge(false), 'All yarn runs to THE FIGURE card; teal glow at the centre.'],
+  ['Finale 2 · 2:17 vs 2:31', 'finale_2_clocks.png', clocksVsWatch, "Split frame: the tower's 2:17 against Luke's 2:31, CONTRADICTION stamp."],
+  ['Finale 3 / 4 / 8', '(scene11 panels)', null, 'Use scene11 panel_bedside (3), panel_confront (4), panel_erase (8). panel_network and panel_alone are for the network-wakes and ghosts-gone beats.'],
+  ['Finale 5 · threads on THE FIGURE', 'finale_5_threads.png', () => boardConverge(true), 'Close-up of frame 1: six cards, the scratched photo at ×2, IDENTITY UNKNOWN.'],
+  ['Finale 6 · the request', 'finale_6_request.png', handsWriting, 'Young bare hand writing the request by the lantern\'s teal light.'],
+  ['Finale 7 · silhouette', 'finale_7a_silhouette.png', () => dissolve(false), 'Pair with 7b: same framing; dither from A to B in code over ~1.2 s.'],
+  ['Finale 7 · young Elias', 'finale_7b_young.png', () => dissolve(true), 'The silhouette has become young Elias (×3, same outline).'],
+  ['Truth 1 · Nia', 'truth_1_nia.png', nia, 'The sister in bed, the lantern on the table.'],
+  ['Truth 2 · the overloaded lantern', 'truth_2_lantern.png', overload, 'Cracked glass, teal pouring out in rays.'],
+  ['Truth 3 · the vanished village', 'truth_3_vanished.png', vanished, 'The square with belongings dropped in the street: scarves, a cart, a basket.'],
+  ['Truth 4 · Elias at the archive', 'truth_4_archive.png', eliasArchive, 'Elias, back view, before the wall of lantern records.'],
+  ['Closing desk', 'ending_desk.png', closingDesk, 'Case file, cracked lantern, the silver hairclip.'],
+  ['100 % epilogue · master log', 'ending_master_log.png', masterLog, 'Times from the records; CASE CLOSED stamp; "SIGNED: ELIAS VANE".'],
+  ['Opening 4 · Ivy at the school', 'opening_4_ivy.png', ivyFrame4, 'Ivy\'s ghost (×2) in the scene 1 street; Opening 6 reuses the scene 5 hub, which is fine.'],
+];
+const host = document.getElementById('panels'), OUT = {};
+for (const [label, file, fn] of PANELS) { if (!fn) continue; const buf = fn(0); OUT[file] = buf; const fig = document.createElement('figure'); fig.style.margin = '0'; const st = document.createElement('div'); st.className = 'stage'; const cv = toCanvas(buf); cv.style.width = '100%'; cv.style.imageRendering = 'pixelated'; cv.setAttribute('aria-label', label); st.appendChild(cv); fig.appendChild(st); const cap = document.createElement('figcaption'); cap.className = 'cap'; cap.textContent = label + ' · ' + file; fig.appendChild(cap); host.appendChild(fig); }
+document.getElementById('rows').innerHTML = PANELS.map(([l, f, , n]) => `<tr><td>${l}</td><td><code>${f}</code></td><td>${n}</td></tr>`).join('');
+window.__veyra = { toCanvas, SPRITES: OUT, NOTES: PANELS.map(([l, f, , n]) => [l, f, n]) };
+})();
+</script>
+</body></html>
