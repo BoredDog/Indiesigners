@@ -33,6 +33,7 @@ To pick up a task, set it to `doing`. Devs and Bhumi update this file in their P
 | G10 | README, LICENSE, CREDITS.md final, AI disclosure | Matches PLAN.md §10 | Tue 13:00 | done (README, LICENSE, CREDITS, AI disclosure); final pass with art credits |
 | G11 | itch.io upload + fresh-browser test + submit | Plays on Chrome/Firefox/Edge from itch | Tue 15:00 | todo (after art) |
 | G12 | Review, play-test and merge every PR | Each PR merged within ~1 h of opening, or feedback given | ongoing | doing |
+| G13 | Ending: the clock moves 2:17 → 2:18 for **every** player, with "The village didn't forget what happened. I did." (from Vansh's final script); the 100% epilogue keeps the signed master log | Plays in every ending; `shots-sequence` checks the hand reaches 2:18 | Tue 01:00 | review (#46) |
 
 ## Nav — gameplay core  *(N6–N9 reassigned to Vansh, 5 Oct)*
 | ID | Task | Done when | Due | Status |
@@ -46,6 +47,7 @@ To pick up a task, set it to `doing`. Devs and Bhumi update this file in their P
 | N7 | Pause/Settings (text size, Reduce Motion, fullscreen) → writes `comicSettings` | Settings persist in the save | Tue 01:00 | done (Vansh, #29) |
 | N8 | Autoplay test (Playwright, all 6 witness orders to the credits) | `npm run test:autoplay` passes | Tue 02:30 | done (Vansh, #27) |
 | N9 | Core bug fixes, cross-browser check | No open `bug` issues in core | Tue 12:00 | done (Vansh, #30): Chromium, Firefox, Edge, Brave reach the summary |
+| N10 | Menu/settings extras (script_final): New Game confirmation "Start a new investigation? YES · NO" (when a save exists), "NO SAVED INVESTIGATION", TEXT SPEED, SCREEN SHAKE on/off (gates `impact()`), toasts MEMORY ECHO DETECTED / SAVE COMPLETE | In TitleScene/PauseScene/GameState settings; checks in check-core/smoke; `npm test` exit 0 | Tue 02:00 | todo → **Nav** (Team HQ 23:52) |
 
 ## Vansh — puzzles
 | ID | Task | Done when | Due | Status |
@@ -64,6 +66,9 @@ To pick up a task, set it to `doing`. Devs and Bhumi update this file in their P
 | V14 | **Difficulty pass: medium levels, no redundant pieces.** Keep `pz_tower` and each `*_1` as teaching levels; rework `*_2`, `*_3` and `pz_archive` so each needs 2+ mechanics working together and has one "aha" (crate shadow as cover, dial order, timing a sentinel, a lever that also closes your way back). **Light rules stay exactly as they are.** References: Lara Croft GO / Hitman GO (turn-based patrols, lever sequencing), Felix the Reaper (shadow-walking, rotating the light), Sokoban / Stephen's Sausage Roll (no wasted tiles; pushes that can trap you). Levels stay in the shared `content/puzzles/*.json`, so the Phaser build gets them too | Every piece is needed (V15 passes); `*_2`/`*_3` par 16–30 with dead ends; a fresh tester finishes each with ≤1 HINT | Tue 10:00 | review (Vansh, #40) |
 | V15 | **Redundancy + difficulty check** in `test:puzzles` (TS) and the GDScript solver: remove each piece (crate, dial, lever/sluice/node, gate, water, collapse tile, sentinel); if the level still solves with the same optimal moves, that piece is unused → fail. Print par, states explored, dead ends per level | Fails on today's levels (9 of 11 have unused pieces: sentinels in `pz_mom_1/2/3`, `pz_archive`; crate in `pz_bro_1`; dial in `pz_sis_3`; lever etc. in `pz_sis_2`); passes after V14 | Tue 06:00 | done (Vansh, #37) |
 | V16 | **Godot 3D puzzle board** (on Vansh's laptop): diorama board, orthographic/isometric camera like Lara Croft GO; pillars/crates cast the *same* grid shadows the rules compute (light from the level's side, dial rotates it); wisp + sentinels as simple low-poly pieces. Same V12 rules engine, same V13 contract (Router data in, `justFound` out). The rest of the Godot game stays 2D | Every level playable in 3D in Godot; `test:godot` passes | Tue 12:00 | done (Vansh, #39) |
+| V17 | **Unknown woman** (script_final §4): one-time village beat on the first visit: abandoned room, *"Whatever you find here, don't trust the first memory you see."*, she vanishes, the chair rocks (Creeeak…), narration *"I didn't know who she was. / But I remembered what she said."* In v2 she is Leela, never named here | Plays once; tested in autoplay/smoke | Tue 06:00 | doing (Vansh, `feat/unknown-woman-photo`) |
+| V18 | **Burned photograph**: village hotspot clue showing Mira, Arun, Leela + a fourth lantern-carrier with the face scratched out → Casebook as IDENTITY UNKNOWN; in the Finale reveal the face becomes the investigator's (young Elias) | Clue pinned; finale swap visible; tests | Tue 06:00 | doing (Vansh, same branch) |
+| V19 | **Phaser "3D" puzzle view (option)**: isometric 2.5D board in Phaser (extruded tiles, pillar/crate blocks, ink shadows from `Rules`, lantern on the light side); same rules + Puzzle contract; PUZZLE VIEW 2D/3D in Pause/Settings, **default 2D**, saved | `shots-puzzle` plays every level in both views; `npm test` exit 0; merged only if solid by ~10:00, else post-jam | Tue 10:00 | todo (Vansh, after V17/V18) |
 
 ### Art reference for tonight: *The Coffin of Andy and Leyley* (inspiration only, never copy)
 Applies to every B and A task below. Take from it:
@@ -103,6 +108,7 @@ Bhumi now has Claude Code, so she handles the technical side of her art: importi
 | B7 | **Import her own art (takes the character half of G9 from Garv).** Save to `art/incoming/bhumi/` under the draft's file name and canvas size → `npm run art` → check with `tsx tools/shots-conversation.ts`, `shots-memory.ts`, `shots-sequence.ts` → PR | No character drafts from `art/incoming/claude/` left in the game; `npm run build` passes | Tue 12:00 | todo |
 | B8 | **Wire the art that has no slot yet:** the reaction expressions (`char_<witness>_react`, shown on the Conversation reaction beat), title cover, finale reveal panel, ending panels. Her Claude adds the keys to `BootScene.ART_REPLACES` / the scenes. OK to touch Title/Finale/Ending (Garv's) and Conversation (ask Vansh first in Team HQ) | Each piece shows in the game; `npm test` passes (check the exit code, not the tail) | Tue 11:00 | todo (after B3) |
 | B9 | Log her Claude use in the AI disclosure in `CREDITS.md` (what it did: import, wiring, checks; not drawing) | Line added on her PR | Tue 12:00 | todo |
+| B10 | Art for the new beats: abandoned room with rocking chair + woman silhouette (bg + cutout); burned photo in **two states** (face scratched / face = young Elias). `char_*`/`bg_*` naming | In the game via the art pipeline | Tue 09:00 | todo (after character art) |
 
 ## Arya — environment art, assets, QA (upload to `art/incoming/arya/`)
 | ID | Task | Done when | Due | Status |
@@ -117,7 +123,7 @@ Bhumi now has Claude Code, so she handles the technical side of her art: importi
 | A8 | 2 external playtesters (Blueprint T1 log) | Log posted in Team HQ | Tue 11:30 | todo |
 | A9 | itch.io page text: description, controls, content warning, AI disclosure | Text posted in Team HQ | Tue 12:00 | todo |
 
-## Godot track (side project; the Phaser build stays the jam prototype)
+## Godot track (side project; the Phaser build stays the jam prototype) · **frozen until after the jam (Garv, 6 Oct)**
 Port in `godot/` (see `godot/README.md`). Shared data in `content/`; `npm run test:godot` must pass.
 | ID | Owner | Task | Done when | Status |
 |---|---|---|---|---|
