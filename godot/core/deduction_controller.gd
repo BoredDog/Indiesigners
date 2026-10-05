@@ -51,13 +51,56 @@ func check(id: String, selected: Array, conclusion: String) -> bool:
 	return true
 
 
+## "The evidence does not support this conclusion yet." (ui_text.json popups.unsupported).
+func unsupported() -> String:
+	return StoryData.ui.popups.unsupported.text
+
+
+## B1 closeness feedback for a wrong attempt (Golden Idol style): says whether the cards or the
+## conclusion are the problem, and how many cards fit or are missing, never which ones.
+## `conclusion` "" = none picked yet. Text: ui_text.json → closeness.
+func closeness(id: String, selected: Array, conclusion: String) -> String:
+	var c: Dictionary = StoryData.ui.closeness
+	if conclusion == "" or selected.is_empty():
+		return c.nothingYet
+	var d := StoryData.deduction(id)
+	var required: Array = d.requiredEvidence
+	var allowed: Array = required + (d.supportingEvidence as Array)
+	var picked: Array = []
+	for e in selected:
+		if not picked.has(e):
+			picked.append(e)
+	var missing := required.filter(func(e): return not picked.has(e)).size()
+	var extra := picked.filter(func(e): return not allowed.has(e)).size()
+	var fit := picked.filter(func(e): return required.has(e)).size()
+	var words := {
+		"missing": "%d %s" % [missing, "clue is" if missing == 1 else "clues are"],
+		"extra": str(extra),
+		"extraWord": "card doesn't" if extra == 1 else "cards don't",
+		"fit": str(fit),
+		"fitWord": "fits" if fit == 1 else "fit",
+	}
+	if conclusion == "correct":
+		if missing and extra:
+			return StoryData.fmt(c.conclusionRightMissingAndExtra, words)
+		if extra:
+			return StoryData.fmt(c.conclusionRightExtra, words)
+		if missing:
+			return StoryData.fmt(c.conclusionRightMissing, words)
+		return unsupported()  # right cards + conclusion but evidence not known (can't happen via the UI)
+	if not missing and not extra:
+		return c.cardsFitConclusionWrong
+	return StoryData.fmt(c.someCardsFit, words) if fit else unsupported()
+
+
+## Confirm the hypothesis. Wrong → closeness feedback (B1), no penalty (A5).
 ## {ok: true, reaction, unlocks, threads} or {ok: false, message}.
 func attempt(id: String, selected: Array, conclusion: String) -> Dictionary:
 	var d := StoryData.deduction(id)
 	if GameState.deduction_state(id) == "confirmed":
 		return {"ok": true, "reaction": d.reaction, "unlocks": [], "threads": []}
 	if not check(id, selected, conclusion):
-		return {"ok": false, "message": StoryData.ui.popups.unsupported.text}
+		return {"ok": false, "message": closeness(id, selected, conclusion)}
 	var thread_ids := GameState.confirm_deduction(id)
 	return {
 		"ok": true,
