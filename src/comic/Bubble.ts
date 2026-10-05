@@ -26,6 +26,9 @@ export class Bubble extends Phaser.GameObjects.Container {
   readonly kind: BubbleKind;
   readonly content: RichText;
   private homeY: number;
+  /** How far a pixel tail/trail reaches beyond the box, above and below (layouts that stack bubbles add these). */
+  extraAbove = 0;
+  extraBelow = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, opts: BubbleOptions) {
     super(scene, x, y);
@@ -68,9 +71,12 @@ export class Bubble extends Phaser.GameObjects.Container {
         const up = tail.y < -h / 2;
         const t = scene.add.image(side === 'l' ? -w / 2 + 80 : w / 2 - 80, up ? -h / 2 + 4 : h / 2 - 4, key).setOrigin(0.5, up ? 1 : 0).setScale(4).setFlipY(up);
         parts.unshift(t);
+        if (up) this.extraAbove = t.displayHeight - 4;
+        else this.extraBelow = t.displayHeight - 4;
       } else if (tail && opts.kind === 'thought' && scene.textures.exists('px_ui_thought_trail')) {
         const t = scene.add.image(Math.sign(tail.x || 1) * (w / 2 - 60), h / 2 - 4, 'px_ui_thought_trail').setOrigin(0.5, 0).setScale(4).setFlipX(tail.x < 0);
         parts.unshift(t);
+        this.extraBelow = t.displayHeight - 4;
       }
       this.add([...parts, this.content]);
       this.setSize(w, h);
