@@ -63,7 +63,27 @@ const GHOST_PALE = 0xdde6f2; // a cold wash over real witness art: still a ghost
  * Placeholder ghost of a witness (pale, translucent, slow float: Blueprint C/N).
  * Only Mira has placeholder art; Arun/Leela reuse it tinted until Bhumi's art lands.
  */
-export function ghost(scene: Phaser.Scene, w: WitnessId, x: number, y: number, scale = 1): Phaser.GameObjects.Image {
+/** Pixel names of the witnesses (script_final): ids stay mira/arun/leela. */
+const PIXEL_NAME: Record<WitnessId, string> = { mira: 'ivy', arun: 'luke', leela: 'hanna' };
+
+export function ghost(scene: Phaser.Scene, w: WitnessId, x: number, y: number, scale = 1): Phaser.GameObjects.Image | Phaser.GameObjects.Sprite {
+  // Pixel hub ghost (design/pixel): pre-made pale sprite, 2-frame idle every 0.6 s, alpha 0.85,
+  // feet on (x, y), slow 1-pixel drift. ×4 matches the stand-in's 0.62 in the village.
+  const key = `px_char_${PIXEL_NAME[w]}_ghost_idle`;
+  if (scene.textures.exists(key)) {
+    const px = Math.max(2, Math.round((4 * scale) / 0.62));
+    const anim = `${key}_anim`;
+    if (!scene.anims.exists(anim)) {
+      scene.anims.create({ key: anim, frames: scene.anims.generateFrameNumbers(key, { start: 0, end: 1 }), frameRate: 1 / 0.6, repeat: -1 });
+    }
+    const spr = scene.add.sprite(x, y, key).setOrigin(0.5, 57 / 58).setScale(px).setAlpha(0.85);
+    const offset = { mira: 0, arun: 200, leela: 400 }[w];
+    if (dur(1) > 0) {
+      scene.time.delayedCall(offset, () => spr.active && spr.play(anim));
+      scene.tweens.add({ targets: spr, y: y - px, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.InOut', delay: offset });
+    }
+    return spr;
+  }
   // Own art (char_<w>) once it exists; until then Mira's stand-in, tinted per witness.
   const own = scene.textures.exists(`ph_${w}`);
   const img = scene.add

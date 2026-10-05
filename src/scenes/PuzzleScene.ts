@@ -8,6 +8,15 @@ import { solve } from '../puzzle/Solver';
 import { DIR_ORDER, type Dir, type Level, type State, type StepResult } from '../puzzle/types';
 import { MEMORY_PAGES, type Witness } from './memory/MemoryData';
 import { button, popup } from './coreUi';
+import { PX, hasPixel } from '../pixel/pixel';
+
+/** pz_tiles.png frame order (design/pixel/PUZZLE.md). */
+const T16 = {
+  floor: 0, floor_b: 1, void: 2, start: 3, goal: 4, goal_b: 5, dial: 6, collapse: 7, collapse_gone: 8, pillar: 9,
+  crate: 10, gate_closed: 11, gate_open: 12, water_a: 13, water_b: 14, water_dry: 15, lever_off: 16, lever_on: 17,
+  sluice_off: 18, sluice_on: 19, node_off: 20, node_on: 21, switch_plate: 22, floor_crack: 23, pillar_lit: 24,
+  crate_lit: 25, goal_reached: 26, dial_arrow: 27, void_edge: 28, floor_moss: 29,
+} as const;
 
 /** Contract (Team HQ): callers start 'Puzzle' with this; on win we start `returnTo` with {witness, justFound}. */
 export interface PuzzleSceneData {
@@ -48,7 +57,10 @@ export class PuzzleScene extends Phaser.Scene {
   private ox = 0;
   private oy = 0;
   private terrain!: Phaser.GameObjects.Graphics;
-  private ink!: Phaser.GameObjects.Graphics;
+  private ink!: Phaser.GameObjects.Graphics | Phaser.GameObjects.Container;
+  /** Pixel board (design/pixel puzzle tiles): tiles drawn from pz_tiles at a whole-number scale. */
+  private pixel = false;
+  private pxTiles?: Phaser.GameObjects.Container;
   private overlay!: Phaser.GameObjects.Graphics; // danger tiles, hint markers, hover
   private dialHands: (Phaser.GameObjects.Graphics | Phaser.GameObjects.Text)[] = []; // per-dial objects rebuilt with the terrain
   private wisp!: Phaser.GameObjects.Container;
@@ -94,15 +106,24 @@ export class PuzzleScene extends Phaser.Scene {
     this.drawBackdrop();
     const maxW = PANEL.w - 160;
     const maxH = PANEL.h - 300;
+    this.pixel = hasPixel(this, 'pz_tiles', 'pz_shadow', 'pz_wisp', 'pz_sentinel', 'pz_group_markers');
     this.tile = Math.min(150, Math.floor(Math.min(maxW / level.w, maxH / level.h)));
+    if (this.pixel) this.tile = Math.max(32, Math.floor(this.tile / 16) * 16); // whole art pixels
     this.ox = Math.round(PANEL.x + PANEL.w / 2 - (level.w * this.tile) / 2);
     this.oy = Math.round(590 - (level.h * this.tile) / 2);
 
-    this.add
-      .rectangle(this.ox - 14, this.oy - 14, level.w * this.tile + 28, level.h * this.tile + 28, COLORS.ink)
-      .setOrigin(0)
-      .setStrokeStyle(6, COLORS.paper);
+    if (this.pixel && hasPixel(this, 'pz_board_frame_9s')) {
+      // The board sits 8 art px inside the frame (PUZZLE.md).
+      const k = this.tile / 16;
+      this.add.nineslice(this.ox - 8 * k, this.oy - 8 * k, PX('pz_board_frame_9s'), undefined, level.w * 16 + 16, level.h * 16 + 16, 8, 8, 8, 8).setOrigin(0).setScale(k);
+    } else {
+      this.add
+        .rectangle(this.ox - 14, this.oy - 14, level.w * this.tile + 28, level.h * this.tile + 28, COLORS.ink)
+        .setOrigin(0)
+        .setStrokeStyle(6, COLORS.paper);
+    }
     this.terrain = this.add.graphics();
+    this.pxTiles = this.pixel ? this.add.container(0, 0) : undefined;
     this.ink = this.add.graphics();
     this.overlay = this.add.graphics();
     this.hoverG = this.add.graphics().setDepth(15);
@@ -278,6 +299,7 @@ export class PuzzleScene extends Phaser.Scene {
     g.clear();
     this.dialHands.forEach((h) => h.destroy());
     this.dialHands = [];
+    if (this.pixel) return this.drawPixelTerrain();
     this.level.cells.forEach((c, i) => {
       const x = this.ox + (i % this.level.w) * t;
       const y = this.oy + Math.floor(i / this.level.w) * t;
@@ -428,8 +450,78 @@ export class PuzzleScene extends Phaser.Scene {
     });
   }
 
+  /** Pixel board: one image per cell from pz_tiles, floor first under props; group markers on top. */
+  private drawPixelTerrain() {
+    const c0 = this.pxTiles!;
+    c0.removeAll(true);
+    const k = this.tile / 16;
+    const s = this.state;
+    const marks = this.textures.get(PX('pz_group_markers'));
+    for (let g = 0; g < 4; g++) if (!marks.has(`g${g}`)) marks.add(`g${g}`, 0, g * 4, 0, 4, 4);
+    const tile = (i: number, frame: number, angle = 0) => {
+      const img = this.add.image(this.cx(i), this.cy(i), PX('pz_tiles'), frame).setScale(k).setAngle(angle);
+      c0.add(img);
+      return img;
+    };
+    const mark = (i: number, group: number) => {
+      const x = this.ox + (i % this.level.w) * this.tile + k;
+      const y = this.oy + Math.floor(i / this.level.w) * this.tile + k;
+      c0.add(this.add.image(x, y, PX('pz_group_markers'), `g${group % 4}`).setOrigin(0).setScale(k));
+    };
+    this.level.cells.forEach((c, i) => {
+      if (s.collapsed.includes(i)) return void tile(i, T16.collapse_gone);
+      const floorKind = (i * 7 + 3) % 11 === 0 ? T16.floor_moss : (i * 5) % 7 === 0 ? T16.floor_b : T16.floor;
+      switch (c.k) {
+        case 'void':
+          return void tile(i, T16.void);
+        case 'pillar':
+          tile(i, T16.floor);
+          return void tile(i, T16.pillar);
+        case 'goal':
+          tile(i, T16.floor);
+          return void tile(i, T16.goal).setName('pz:goal');
+        case 'collapse':
+          return void tile(i, T16.collapse);
+        case 'dial': {
+          tile(i, T16.floor);
+          tile(i, T16.dial);
+          tile(i, T16.dial_arrow, s.light * 90); // points at the light's side
+          const turns = (s.light - this.level.light + 4) % 4;
+          const label = this.add
+            .text(this.cx(i), this.cy(i) + this.tile * 0.3, `2:${String(17 + turns * 14).padStart(2, '0')}`, {
+              fontFamily: `"${FONTS.narration}"`,
+              fontSize: `${Math.round(this.tile * 0.16)}px`,
+              color: COLORS.paperCss,
+              stroke: COLORS.inkCss,
+              strokeThickness: 3,
+              resolution: TEXT_RESOLUTION,
+            })
+            .setOrigin(0.5);
+          this.dialHands.push(label);
+          return;
+        }
+        case 'gate':
+          tile(i, T16.floor);
+          tile(i, gateOpen(c, s) ? T16.gate_open : T16.gate_closed);
+          return void mark(i, c.group);
+        case 'water':
+          return void tile(i, waterDry(c, s) ? T16.water_dry : i % 2 ? T16.water_b : T16.water_a);
+        case 'switch': {
+          tile(i, T16.floor);
+          const on = c.groups.some((g) => (s.toggles >> g) & 1);
+          tile(i, c.kind === 'lever' ? (on ? T16.lever_on : T16.lever_off) : c.kind === 'sluice' ? (on ? T16.sluice_on : T16.sluice_off) : on ? T16.node_on : T16.node_off);
+          c.groups.forEach((g) => mark(i, g));
+          return;
+        }
+        default:
+          tile(i, i === this.level.start ? T16.start : floorKind);
+      }
+    });
+  }
+
   /** Ink = the erased memory: ragged black blots over every shadowed tile. Cross-fades on change. */
   private drawInk(animate: boolean) {
+    if (this.pixel) return this.drawPixelInk(animate);
     const old = this.ink;
     const g = this.add.graphics();
     g.setDepth(old.depth);
@@ -455,6 +547,24 @@ export class PuzzleScene extends Phaser.Scene {
     if (animate && !comicSettings.reduceMotion) {
       g.setAlpha(0);
       this.tweens.add({ targets: g, alpha: 1, duration: 260 });
+      this.tweens.add({ targets: old, alpha: 0, duration: 260, onComplete: () => old.destroy() });
+    } else old.destroy();
+  }
+
+  /** Pixel ink: the dithered pz_shadow tile over each shadowed cell (pits skipped), cross-faded. */
+  private drawPixelInk(animate: boolean) {
+    const old = this.ink;
+    const c = this.add.container(0, 0).setDepth(old.depth);
+    this.children.moveAbove(c, old);
+    const k = this.tile / 16;
+    for (const i of inkTiles(this.level, this.state)) {
+      if (this.level.cells[i].k === 'void' || this.state.collapsed.includes(i)) continue;
+      c.add(this.add.image(this.cx(i), this.cy(i), PX('pz_shadow')).setScale(k));
+    }
+    this.ink = c;
+    if (animate && !comicSettings.reduceMotion) {
+      c.setAlpha(0);
+      this.tweens.add({ targets: c, alpha: 1, duration: 260 });
       this.tweens.add({ targets: old, alpha: 0, duration: 260, onComplete: () => old.destroy() });
     } else old.destroy();
   }
@@ -527,8 +637,14 @@ export class PuzzleScene extends Phaser.Scene {
 
   private buildEntities() {
     const t = this.tile;
+    const k = t / 16;
     for (const c of this.state.crates) {
       const box = this.add.container(this.cx(c), this.cy(c)).setDepth(30);
+      if (this.pixel) {
+        box.add(this.add.image(0, 0, PX('pz_tiles'), T16.crate).setScale(k));
+        this.crates.set(c, box);
+        continue;
+      }
       const s = t * 0.74;
       box.add([
         this.add.rectangle(6, 8, s, s, COLORS.ink, 0.4),
@@ -541,6 +657,14 @@ export class PuzzleScene extends Phaser.Scene {
     this.level.sentinels.forEach((_, n) => {
       const a = sentinelAt(this.level, n, 0);
       const ghost = this.add.container(this.cx(a.pos), this.cy(a.pos)).setDepth(35);
+      if (this.pixel) {
+        // 8 frames: N, E, S, W × 2. The facing is set in moveSentinels; 'arrow' stays for its API.
+        const spr = this.add.sprite(0, 0, PX('pz_sentinel'), 0).setScale(k).setName('body');
+        const arrow = this.add.triangle(0, 0, 0, -12, 24, 0, 0, 12, 0xc0392b).setAlpha(0).setName('arrow');
+        ghost.add([spr, arrow]);
+        this.sentinels.push(ghost);
+        return;
+      }
       const r = t * 0.3;
       const body = this.add.graphics();
       body.fillStyle(0xe8f4f2, 0.88);
@@ -556,6 +680,17 @@ export class PuzzleScene extends Phaser.Scene {
     });
 
     const w = this.add.container(this.cx(this.state.pos), this.cy(this.state.pos)).setDepth(40);
+    if (this.pixel) {
+      const glow = this.add.circle(0, 0, t * 0.42, COLORS.spiritTeal, 0.18).setBlendMode(Phaser.BlendModes.ADD);
+      const spr = this.add.sprite(0, 0, PX('pz_wisp'), 0).setScale(k);
+      if (!this.anims.exists('pz_wisp_anim')) {
+        this.anims.create({ key: 'pz_wisp_anim', frames: this.anims.generateFrameNumbers(PX('pz_wisp'), { start: 0, end: 1 }), frameRate: 1 / 0.3, repeat: -1 });
+      }
+      if (!comicSettings.reduceMotion) spr.play('pz_wisp_anim');
+      w.add([glow, spr]);
+      this.wisp = w;
+      return;
+    }
     const glow = this.add.circle(0, 0, t * 0.42, COLORS.spiritTeal, 0.3);
     const ring = this.add.circle(0, 0, t * 0.22, COLORS.spiritTeal, 0.9).setStrokeStyle(4, COLORS.ink);
     const core = this.add.circle(0, 0, t * 0.1, 0xffffff, 1);
@@ -753,6 +888,8 @@ export class PuzzleScene extends Phaser.Scene {
     this.sentinels.forEach((ghost, n) => {
       const a = sentinelAt(this.level, n, t);
       this.tweens.add({ targets: ghost, x: this.cx(a.pos), y: this.cy(a.pos), duration: ms, ease: 'Quad.Out' });
+      const body = ghost.getByName('body') as Phaser.GameObjects.Sprite | null;
+      if (this.pixel && body) body.setFrame({ N: 0, E: 2, S: 4, W: 6 }[a.dir] + (t % 2));
       const arrow = ghost.getByName('arrow') as Phaser.GameObjects.Triangle;
       const ang = { N: -90, E: 0, S: 90, W: 180 }[a.dir];
       arrow.setAngle(ang).setPosition(Math.cos((ang * Math.PI) / 180) * this.tile * 0.36, Math.sin((ang * Math.PI) / 180) * this.tile * 0.36);

@@ -7,6 +7,8 @@ import { PX, PixelStage, hasPixel, lanternLight } from '../pixel/pixel';
 
 const SCENE1 = ['bg_veyra_sky', 'bg_veyra_far', 'bg_veyra_mid', 'bg_veyra_street', 'bg_veyra_fg', 'char_elias_walk'];
 const SCENE2 = ['bg_tower_sky', 'bg_tower', 'prop_bell', 'bg_clockface_close'];
+const SCENE3 = ['bg_veyra_sky', 'bg_veyra_far', 'bg_veyra_mid', 'bg_veyra_street', 'bg_veyra_fg', 'char_elias_walk', 'prop_toy_horse'];
+const WINDOW = ['bg_window_close', 'char_window_figure'];
 
 /**
  * Opening (Blueprint F2): six frames, ~50 s, Elias never shown (hands, lantern glow and a
@@ -47,8 +49,11 @@ export class OpeningScene extends SequenceScene {
       // 2 — Gloved hands set the lantern down; the unsigned request (found in the lantern case) is
       // pinned to the typed file. Face never shown.
       (layer) => {
-        this.panel(layer, PH.village, { x: 560, y: 600, w: 760, h: 428 });
-        this.lanternGlow(layer, FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h - 220, 1.6);
+        if (hasPixel(this, ...SCENE3)) this.pixelToy(layer);
+        else {
+          this.panel(layer, PH.village, { x: 560, y: 600, w: 760, h: 428 });
+          this.lanternGlow(layer, FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h - 220, 1.6);
+        }
         if (f[1].prop) this.document(layer, FRAME.x + 1220, FRAME.y + 330, 480, 250, 'REQUEST', f[1].prop, true, 4);
         this.narration(layer, n(1));
         this.sfxWord(layer, f[1].sfx, FRAME.x + 260, FRAME.y + 760, 64);
@@ -75,6 +80,12 @@ export class OpeningScene extends SequenceScene {
       },
       // 5 — Black silhouette in a window reflection; it doubles for one beat, then clears.
       (layer) => {
+        if (hasPixel(this, ...WINDOW)) {
+          this.pixelWindow(layer);
+          this.narration(layer, n(4));
+          this.sfxWord(layer, f[4].sfx, FRAME.x + 1250, FRAME.y + 740, 64, 900);
+          return;
+        }
         this.panel(layer, PH.village, { x: 1100, y: 480, w: 420, h: 236 });
         const win = { x: FRAME.x + 494, y: FRAME.y + 380 };
         const fig = this.add.image(win.x + 190, win.y + 330, PH.figure).setOrigin(0.5, 1).setScale(0.48).setAlpha(0.7);
@@ -185,6 +196,44 @@ export class OpeningScene extends SequenceScene {
       // Frozen at :40; every 1.3 s it tries the next tick and snaps straight back.
       const twitch = !comicSettings.reduceMotion && t % 1300 < 120 ? 6 : 0;
       hand.setAngle(40 * 6 + twitch);
+    });
+  }
+
+  /** Scene 3a: Elias has stopped on the street; a child's toy horse rolls in and stops at his feet. */
+  private pixelToy(layer: Phaser.GameObjects.Container) {
+    const st = new PixelStage(this, layer, FRAME);
+    for (const n of ['bg_veyra_sky', 'bg_veyra_far', 'bg_veyra_mid', 'bg_veyra_street']) st.image(n);
+    const FEET = 236;
+    const EX = 196;
+    if (!this.anims.exists('elias_idle')) {
+      this.anims.create({ key: 'elias_idle', frames: this.anims.generateFrameNumbers(PX('char_elias_walk'), { start: 4, end: 5 }), frameRate: 2, repeat: -1 });
+    }
+    st.sprite('char_elias_walk', EX, FEET, 0, 56 / 58).play('elias_idle');
+    const toy = st.sprite('prop_toy_horse', 480 + 12, 222, 0.5, 1).setName('pixel:toy');
+    st.image('bg_veyra_fg');
+    const light = lanternLight(st, () => st.at(EX + 12, FEET - 46), 58, 'bg_veyra_residue');
+    const [TX0, TX1, T0, T1] = [492, 270, 600, 3600];
+    this.everyFrame(layer, (t) => {
+      const k = comicSettings.reduceMotion ? 1 : Phaser.Math.Clamp((t - T0) / (T1 - T0), 0, 1);
+      const e = 1 - (1 - k) * (1 - k); // rolls in and slows to a stop
+      const x = Math.round(TX0 + (TX1 - TX0) * e);
+      const p = st.at(x, 222 + (k < 1 && Math.floor(t / 90) % 2 ? -1 : 0)); // bumps over the cobbles
+      toy.setPosition(p.x, p.y);
+      light(t);
+    });
+  }
+
+  /** Scene 3b: a figure in the window, there for a blink (6 frames at 4.6 s), then fade to black. */
+  private pixelWindow(layer: Phaser.GameObjects.Container) {
+    const st = new PixelStage(this, layer, FRAME, 192, 108);
+    st.image('bg_window_close');
+    const fig = st.sprite('char_window_figure', 76, 30, 0, 0).setVisible(false).setName('pixel:window-figure');
+    const black = this.add.rectangle(st.x, st.y, 192 * st.scale, 108 * st.scale, COLORS.ink).setOrigin(0).setAlpha(0);
+    layer.add(black);
+    const SHOW = comicSettings.reduceMotion ? 1500 : 4600;
+    this.everyFrame(layer, (t) => {
+      fig.setVisible(t >= SHOW && t < SHOW + 100); // 6 frames at 60 fps
+      if (t >= SHOW + 100) black.setAlpha(Math.min(0.85, (t - SHOW - 100) / 900));
     });
   }
 
