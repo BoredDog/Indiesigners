@@ -1,8 +1,12 @@
 import Phaser from 'phaser';
-import { Bubble, dur, pageTurn, type BubbleKind } from '../comic';
+import { PX, hasPixel } from '../pixel/pixel';
+import { Bubble, COLORS, comicSettings, dur, FONTS, pageTurn, TEXT_RESOLUTION, type BubbleKind } from '../comic';
 import { gameState } from '../core/GameState';
 import { story, type Question, type WitnessId } from '../core/StoryData';
 import { H, W, backdrop, button, ghost, hudIcons, label } from './coreUi';
+
+/** Pixel names of the witnesses (script_final); ids stay mira/arun/leela. */
+const PIXEL_NAME: Record<WitnessId, string> = { mira: 'ivy', arun: 'luke', leela: 'hanna' };
 
 const COL_X = 1180; // bubble column centre
 const LOG_TOP = 150; // the dialogue log scrolls inside LOG_TOP .. the top of the options
@@ -44,9 +48,13 @@ export class ConversationScene extends Phaser.Scene {
     this.scroll = 0;
     const d = story.dialogue[this.witness];
 
-    backdrop(this, 0.6);
-    ghost(this, this.witness, 420, 1000, 1.15);
-    label(this, 420, 1010, d.name.toUpperCase(), 44).setOrigin(0.5, 1);
+    const pn = PIXEL_NAME[this.witness];
+    if (hasPixel(this, `conv_bg_${pn}`, 'ui_portrait_frame_9s', `portrait_${pn}`)) this.pixelPortrait(pn, d.name);
+    else {
+      backdrop(this, 0.6);
+      ghost(this, this.witness, 420, 1000, 1.15);
+      label(this, 420, 1010, d.name.toUpperCase(), 44).setOrigin(0.5, 1);
+    }
     hudIcons(this, 'Conversation');
 
     this.log = this.add.container(0, 0).setName('log');
@@ -73,6 +81,26 @@ export class ConversationScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-DOWN', () => this.scrollTo(this.scroll + 160));
     this.input.on('wheel', (_p: unknown, _o: unknown, _dx: number, dy: number) => this.scrollTo(this.scroll + dy));
     this.next();
+  }
+
+  /**
+   * Pixel conversation (design/pixel/CONVERSATION.md, ×4): the witness's background, the 64×64
+   * portrait at ×2 inside the portrait frame (washed pale: a ghost), and the name tab above it.
+   */
+  private pixelPortrait(pn: string, name: string) {
+    const k = 4;
+    this.add.image(0, 0, PX(`conv_bg_${pn}`)).setOrigin(0).setScale(k);
+    this.add.nineslice(14 * k, 30 * k, PX('ui_portrait_frame_9s'), undefined, 148, 156, 6, 6, 6, 6).setOrigin(0).setScale(k);
+    const bust = this.add.image(24 * k, 40 * k, PX(`portrait_${pn}`)).setOrigin(0).setScale(2 * k).setTint(0xdde6f2).setAlpha(0.88).setName('portrait');
+    if (!comicSettings.reduceMotion) this.tweens.add({ targets: bust, y: bust.y - k, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    const tag = this.add
+      .text(0, 0, name.toUpperCase(), { fontFamily: `"${FONTS.sfx}"`, fontSize: '28px', color: COLORS.paperCss, resolution: TEXT_RESOLUTION })
+      .setOrigin(0, 0);
+    const tw = Math.ceil(tag.width / k) + 12;
+    if (this.textures.exists(PX(`ui_name_tab_${pn}_9s`))) {
+      this.add.nineslice(20 * k, 22 * k, PX(`ui_name_tab_${pn}_9s`), undefined, tw, 10, 4, 4, 3, 3).setOrigin(0).setScale(k);
+    }
+    tag.setPosition((20 + 6) * k, 22 * k + 2).setDepth(1).setName('name-tab');
   }
 
   private hint(text: string, dir: -1 | 1) {
