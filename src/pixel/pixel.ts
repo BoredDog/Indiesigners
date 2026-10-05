@@ -10,6 +10,9 @@ export const PX = (name: string) => `px_${name}`;
 const SHEETS: Record<string, [number, number]> = {
   char_elias_walk: [32, 58], // walk ×4, idle ×2; feet at y = 56, body centre x = 13
   prop_lantern: [8, 12], // 3 flame frames
+  pz_tiles: [16, 16], // puzzle board tiles (design/pixel/PUZZLE.md)
+  pz_wisp: [16, 16],
+  pz_sentinel: [16, 16], // N, E, S, W × 2
   prop_key_turn: [24, 24], // 0° / 45° / 90°
 };
 
