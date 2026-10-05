@@ -1,0 +1,61 @@
+{
+  "_note": "Final script (design/script_final.html) section 4, village investigation (V20). Each clue is a village hotspot: clicking it shows `discovery` + `narration` once, adds `evidence`, and pins `title` + the evidence text in the Casebook's VILLAGE strip. Hotspot positions live in VillageScene (they follow the background art).",
+  "clues": [
+    {
+      "id": "footprints",
+      "evidence": "ev_village_footprints",
+      "title": "FOOTPRINTS",
+      "hover": "Marks in the dirt",
+      "discovery": "Footprints lead toward the clock tower and stop suddenly.",
+      "narration": []
+    },
+    {
+      "id": "key",
+      "evidence": "ev_village_key",
+      "title": "BLOOD-STAINED KEY",
+      "hover": "Something small in the dirt",
+      "discovery": "A small old key with dried blood, near the footprints.",
+      "narration": ["Someone was here.", "And they were hurt."]
+    },
+    {
+      "id": "bell",
+      "evidence": "ev_village_bell_rope",
+      "title": "UNTOUCHED BELL ROPE",
+      "hover": "The bell",
+      "discovery": "The bell rope hangs untouched, although the bell rang.",
+      "narration": ["The bell rang.", "But nobody pulled it."]
+    },
+    {
+      "id": "clocks",
+      "evidence": "ev_village_clocks",
+      "title": "EVERY CLOCK AT 2:17",
+      "hover": "The tower clock",
+      "discovery": "Pocket watch, wall clock, school clock, church clock, broken watch. All of them show 2:17.",
+      "narration": []
+    },
+    {
+      "id": "records",
+      "evidence": "ev_village_records",
+      "title": "VILLAGE RECORDS",
+      "hover": "A notice on the wall",
+      "discovery": "The village records list 1:43, 1:58, 2:06, 2:11, 2:17 and 2:31.",
+      "narration": ["The clocks said 2:17.", "The records didn't.", "Something happened at 2:17.", "But 2:17 wasn't the whole story."]
+    },
+    {
+      "id": "symbols",
+      "evidence": "ev_village_symbols",
+      "title": "STRANGE SYMBOLS",
+      "hover": "A mark on the wall",
+      "discovery": "The same strange symbols, near the clock tower, on the doors and by the old well.",
+      "narration": []
+    },
+    {
+      "id": "recording",
+      "evidence": "ev_village_recording",
+      "title": "DAMAGED RECORDING",
+      "hover": "An old recorder",
+      "discovery": "A damaged recording. Through the hiss: \"...the lantern...\" / \"...don't activate it...\"",
+      "narration": []
+    }
+  ]
+}

@@ -210,10 +210,26 @@ try {
   await shot('15-photo');
   await click('btn:CLOSE');
   check(await state<boolean>("gs.hasEvidence('ev_photo_burned')"), 'burned photograph added as evidence');
+
+  // V20: the seven village clues (script §4), each a hotspot with a discovery popup.
+  const clues = ['footprints', 'key', 'bell', 'clocks', 'records', 'symbols', 'recording'];
+  for (const c of clues) {
+    await click(`spot:${c}`);
+    if (c === 'records') await shot('17-clue-records');
+    await click('btn:CONTINUE');
+  }
+  const found = await state<number>("['footprints','key','bell_rope','clocks','records','symbols','recording'].filter((x) => gs.hasEvidence('ev_village_' + x)).length");
+  check(found === 7, `all 7 village clues findable (${found}/7)`);
   await click('btn:CASEBOOK');
   await scene('Casebook');
   check(await find(page, 'figure:identity-unknown'), 'casebook pins the photo as IDENTITY UNKNOWN');
+  let pinned = 0;
+  for (const c of clues) if (await find(page, `clue:${c}`)) pinned++;
+  check(pinned === 7, `casebook VILLAGE strip pins every clue (${pinned}/7)`);
   await shot('16-casebook-photo');
+  await click('clue:records');
+  check(await find(page, 'clue-detail'), 'a pinned clue opens its detail');
+  await shot('18-casebook-clue');
 } catch (e) {
   failed++;
   console.error('FAIL', e);

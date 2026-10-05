@@ -7,15 +7,17 @@ import { H, W, ghost, hasScene, hudIcons, label, popup, witnessStatusText } from
 import { BEAT, makeBeatArt } from '../dev/beatArt';
 import { MET_FLAG } from './UnknownWomanScene';
 import { PHOTO_EVIDENCE, showPhoto } from './beats/photo';
+import { CLUES, CLUE_SPOTS, discoveryText, drawClueProps, type ClueId, type VillageClue } from './beats/villageClues';
 
 // Hotspot centres on the 1920×1080 village (placeholder art; move when Arya's bg_village lands).
-const SPOTS: Record<WitnessId | 'tower' | 'record' | 'photo', { x: number; y: number; w: number; h: number }> = {
+const SPOTS: Record<WitnessId | 'tower' | 'record' | 'photo' | ClueId, { x: number; y: number; w: number; h: number }> = {
   mira: { x: 470, y: 760, w: 220, h: 320 }, // schoolhouse
   arun: { x: 760, y: 1010, w: 240, h: 300 }, // river road
   leela: { x: 1500, y: 790, w: 220, h: 320 }, // lantern-house
-  tower: { x: 910, y: 480, w: 200, h: 640 }, // clock tower
+  tower: { x: 910, y: 790, w: 170, h: 400 }, // clock tower body (the bell and the clock face are clues, V20)
   record: { x: 1180, y: 760, w: 180, h: 160 }, // well / lantern-house: THE RECORD
   photo: { x: 1040, y: 1000, w: 150, h: 110 }, // burned photograph on the cobbles (script §4)
+  ...CLUE_SPOTS, // V20 village clues
 };
 
 // Blueprint K: a resolved witness's location "becomes clearer and gains a permanent evidence mark".
@@ -38,6 +40,7 @@ export class VillageScene extends Phaser.Scene {
   private hover?: Bubble;
   private hud!: { refresh: () => void };
   private busy = false;
+  private glints = new Map<string, Phaser.GameObjects.Arc>();
 
   constructor() {
     super('Village');
@@ -52,6 +55,7 @@ export class VillageScene extends Phaser.Scene {
     for (const w of WITNESSES) this.addWitness(w);
     this.addTower();
     this.addPhoto();
+    this.addClues();
     if (gameState.finale !== 'locked') this.addRecord();
 
     this.events.on(Phaser.Scenes.Events.RESUME, () => this.hud.refresh());
@@ -155,6 +159,32 @@ export class VillageScene extends Phaser.Scene {
       },
       () => (found ? 'The burned photograph' : 'Something in the street'),
     );
+  }
+
+  /** V20: the village clues (script §4). First click shows the discovery and pins it in the Casebook. */
+  private addClues() {
+    drawClueProps(this);
+    this.glints.clear();
+    for (const c of CLUES) {
+      const found = gameState.hasEvidence(c.evidence);
+      if (!found && !comicSettings.reduceMotion && !comicSettings.reduceFlashing) {
+        // A faint glint until found, offset per clue so they don't pulse in sync.
+        const s = SPOTS[c.id];
+        const glint = this.add.circle(s.x + s.w / 2 - 10, s.y - s.h + 12, 6, COLORS.spiritTeal, 0.7);
+        this.tweens.add({ targets: glint, alpha: 0.05, scale: 1.7, duration: dur(1100), delay: (c.id.length * 137) % 900, yoyo: true, repeat: -1 });
+        this.glints.set(c.id, glint);
+      }
+      this.hotspot(c.id, () => void this.discover(c), () => (gameState.hasEvidence(c.evidence) ? c.title : c.hover));
+    }
+  }
+
+  private async discover(c: VillageClue) {
+    this.busy = true;
+    await popup(this, discoveryText(c), story.ui.popups.evidenceFound.buttons);
+    const isNew = gameState.addEvidence(c.evidence);
+    this.glints.get(c.id)?.destroy();
+    this.busy = false;
+    if (isNew) this.hud.refresh();
   }
 
   private addTower() {

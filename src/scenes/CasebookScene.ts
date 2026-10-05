@@ -3,6 +3,7 @@ import { Bubble, ComicButton, COLORS, comicSettings, dur, FONTS, TEXT_RESOLUTION
 import { casebookDeps, type CaseCard, type CaseThread } from './casebook/CasebookDeps';
 import { BEAT, makeBeatArt } from '../dev/beatArt';
 import { PHOTO_EVIDENCE, PHOTO_TEXT } from './beats/photo';
+import { CLUES, discoveryText, type VillageClue } from './beats/villageClues';
 import type { Witness } from './memory/MemoryData';
 
 export interface CasebookSceneData {
@@ -69,6 +70,7 @@ export class CasebookScene extends Phaser.Scene {
 
     for (const c of cards) this.drawCard(c);
     this.drawFigureCards(cards);
+    this.drawVillageStrip();
 
     // Threads go on top of the cards, pin to pin, like string on a corkboard.
     const threadLayer = this.add.container(0, 0);
@@ -83,8 +85,8 @@ export class CasebookScene extends Phaser.Scene {
     const g = this.add.graphics();
     g.lineStyle(6, COLORS.ink).lineBetween(300, y, 1400, y);
     const marks: { label: string; x: number; known: boolean; note: string }[] = [
-      { label: '2:17', x: 640, known: deps.hasEvidence('ev_mira_clocks') || deps.hasEvidence('ev_mira_bell'), note: 'Every clock froze' },
-      { label: '2:31', x: 1060, known: deps.hasEvidence('ev_mira_later_entry') || deps.hasEvidence('ev_arun_tick'), note: 'The night kept moving' },
+      { label: '2:17', x: 640, known: ['ev_mira_clocks', 'ev_mira_bell', 'ev_village_clocks'].some((e) => deps.hasEvidence(e)), note: 'Every clock froze' },
+      { label: '2:31', x: 1060, known: ['ev_mira_later_entry', 'ev_arun_tick', 'ev_village_records'].some((e) => deps.hasEvidence(e)), note: 'The night kept moving' },
     ];
     this.add.text(300, y + 20, 'INCIDENT NIGHT', this.noteStyle(22)).setAlpha(0.85);
     for (const m of marks) {
@@ -286,6 +288,43 @@ export class CasebookScene extends Phaser.Scene {
         .text(0, 24, deps.sideNote('case_request'), { ...this.handStyle(24), align: 'center', wordWrap: { width: 270 } })
         .setOrigin(0.5),
     );
+  }
+
+  /** V20: the village clues as small notes pinned along the bottom of the board. */
+  private drawVillageStrip() {
+    const deps = casebookDeps();
+    const y = 990;
+    this.add.text(70, y, 'VILLAGE', this.sfxStyle(30, COLORS.paperCss)).setOrigin(0, 0.5).setAngle(-90).setPosition(84, y);
+    CLUES.forEach((c, i) => {
+      const found = deps.hasEvidence(c.evidence);
+      const x = 210 + i * 186;
+      const note = this.add.container(x, y).setAngle((this.hash(c.id) - 0.5) * 6).setName(`clue:${c.id}`);
+      note.add(this.add.rectangle(4, 6, 172, 84, 0x000000, 0.35));
+      const paper = this.add.rectangle(0, 0, 172, 84, found ? 0xfff6c9 : 0x9b8b72).setStrokeStyle(3, COLORS.ink);
+      note.add([paper, this.add.circle(0, -36, 8, 0xc0392b).setStrokeStyle(2, COLORS.ink)]);
+      note.add(
+        this.add
+          .text(0, 6, found ? c.title : '?', { ...this.sfxStyle(found ? 20 : 40, found ? COLORS.inkCss : '#5f523f'), align: 'center', wordWrap: { width: 156 } })
+          .setOrigin(0.5),
+      );
+      if (found) paper.setInteractive({ useHandCursor: true }).on('pointerup', () => this.openClue(c));
+    });
+  }
+
+  private openClue(c: VillageClue) {
+    this.closeDetail();
+    const layer = this.add.container(0, 0).setDepth(100).setName('clue-detail');
+    const dim = this.add.rectangle(0, 0, 1920, 1080, 0x000000, 0.6).setOrigin(0).setInteractive();
+    dim.on('pointerup', () => this.closeDetail());
+    const sheet = this.add.rectangle(960, 540, 900, 460, 0xfff6c9).setStrokeStyle(5, COLORS.ink).setInteractive();
+    layer.add([dim, sheet]);
+    layer.add(this.add.text(560, 350, `VILLAGE · ${c.title}`, this.sfxStyle(34, '#7a2f2f')));
+    layer.add(this.add.text(560, 410, casebookDeps().evidenceText(c.evidence), { ...this.noteStyle(28), wordWrap: { width: 800 } }));
+    layer.add(this.add.text(560, 540, discoveryText(c), { ...this.handStyle(26), wordWrap: { width: 800 } }));
+    const close = new ComicButton(this, 1320, 360, { label: 'CLOSE', fontSize: 24 });
+    close.on('click', () => this.closeDetail());
+    layer.add(close);
+    this.detail = layer;
   }
 
   // ------------------------------------------------------------------ detail overlay
