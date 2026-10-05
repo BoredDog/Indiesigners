@@ -57,10 +57,15 @@ const FIND_IN_ENDING = `(name) => {
 const findInEnding = (name: string) =>
   page.evaluate(([code, n]) => {
     const o = new Function(`return (${code})`)()(n);
-    return o ? { angle: o.angle as number } : null;
+    return o ? { angle: o.angle as number, alpha: o.alpha as number } : null;
   }, [FIND_IN_ENDING, name] as const);
-const minute = (await findInEnding('clock:minute'))?.angle;
-expect(Math.abs(((minute ?? 0) + 360) % 360 - 108) < 1, `clock reaches 2:18 for every player (minute hand at ${minute}°)`);
+// Comic art: a drawn minute hand turns to 108°. Pixel art: the 2:18 ending art fades in over the 2:17 face.
+const pixel218 = await findInEnding('clock:2:18');
+if (pixel218) expect(pixel218.alpha > 0.9, `clock reaches 2:18 for every player (pixel 2:18 art at alpha ${pixel218.alpha})`);
+else {
+  const minute = (await findInEnding('clock:minute'))?.angle;
+  expect(Math.abs(((minute ?? 0) + 360) % 360 - 108) < 1, `clock reaches 2:18 for every player (minute hand at ${minute}°)`);
+}
 for (let i = 3; i <= 5 && !(await findInEnding('btn:PLAY AGAIN')); i++) {
   await advance(2000);
   await shot(`ending-${i}`);

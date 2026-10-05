@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { PixelStage, hasPixel } from '../pixel/pixel';
 import { ComicButton, ComicPanel, COLORS, comicSettings, dur, FONTS, gridFrames, TEXT_RESOLUTION } from '../comic';
 import { gameState } from '../core/GameState';
 import { DEDUCTION_IDS, deduction, story } from '../core/StoryData';
@@ -78,6 +79,18 @@ export class EndingScene extends SequenceScene {
     ];
     // Every player: the clock finally moves, 2:17 → 2:18 (from Vansh's final script).
     list.push((layer) => {
+      if (hasPixel(this, 'bg_clockface_close', 'ui_ending_bg')) {
+        // Pixel: the 2:17 face up close, then it cross-fades to the ending art where it reads 2:18.
+        const before = new PixelStage(this, layer, FRAME, 192, 108);
+        before.image('bg_clockface_close');
+        const after = this.add.container(0, 0).setAlpha(0).setName('clock:2:18');
+        layer.add(after);
+        new PixelStage(this, after, FRAME).image('ui_ending_bg');
+        this.tweens.add({ targets: after, alpha: 1, duration: dur(600) || 1, delay: dur(1400) });
+        this.sfxWord(layer, 'TICK.', FRAME.x + 1200, FRAME.y + 700, 70, 1500);
+        if (t.clockLine) this.narration(layer, t.clockLine, FRAME.x + 1150, FRAME.y + 300);
+        return;
+      }
       this.panel(layer, PH.village, { x: 643, y: 150, w: 534, h: 300 });
       const cx = FRAME.x + (910 - 643) * 3;
       const cy = FRAME.y + (300 - 150) * 3;
