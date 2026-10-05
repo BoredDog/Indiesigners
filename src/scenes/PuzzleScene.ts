@@ -880,17 +880,18 @@ export class PuzzleScene extends Phaser.Scene {
     const y = PANEL.y + PANEL.h - 130;
     const c = this.add.container(x, y).setDepth(46).setName('compass');
     const g = this.add.graphics();
-    g.fillStyle(COLORS.ink, 0.6).fillCircle(0, 0, 92);
+    g.fillStyle(COLORS.charcoal, 0.85).fillCircle(0, 0, 96);
+    g.lineStyle(3, COLORS.paper, 0.6).strokeCircle(0, 0, 96);
     c.add(g);
     const keys: Record<Dir, string> = { N: 'W', E: 'D', S: 'S', W: 'A' };
     for (const d of DIR_ORDER) {
       const [vx, vy] = this.vec(d);
-      const ang = Math.atan2(vy, vx);
-      g.lineStyle(5, COLORS.paper, 1).lineBetween(vx * 18, vy * 18, vx * 52, vy * 52);
-      c.add(this.add.triangle(vx * 56, vy * 56, 0, -9, 16, 0, 0, 9, COLORS.paper).setRotation(ang));
+      // Arrow along the diagonal: shaft, then a head whose tip points away from the centre.
+      g.lineStyle(5, COLORS.paper, 1).lineBetween(vx * 14, vy * 14, vx * 44, vy * 44);
+      g.fillStyle(COLORS.paper, 1).fillTriangle(vx * 60, vy * 60, vx * 42 - vy * 10, vy * 42 + vx * 10, vx * 42 + vy * 10, vy * 42 - vx * 10);
       c.add(
         this.add
-          .text(vx * 76, vy * 76, keys[d], {
+          .text(vx * 80, vy * 80, keys[d], {
             fontFamily: `"${FONTS.sfx}"`,
             fontSize: '24px',
             color: COLORS.amberCss,
