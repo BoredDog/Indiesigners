@@ -1,17 +1,21 @@
 // Proves every Echo Paths level in content/puzzles/ is solvable within par + 4 (PLAN.md §3.4)
 // and prints its shortest solution (the hint path). Exits 1 on a broken or unsolvable level, so
 // `npm run build` (and CI) fails before a bad level can ship.
-// Usage: npx tsx tools/solve-puzzles.ts [--show] [id ...]
+// V15: also reports, per level, dead ends (states that can no longer reach the goal) and UNUSED
+// pieces (removing it still solves at the same optimal length). With --strict an unused piece fails.
+// Usage: npx tsx tools/solve-puzzles.ts [--show] [--strict] [id ...]
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { initialState, inkTiles, parseLevel, sentinelAt } from '../src/puzzle/Rules';
 import { solve } from '../src/puzzle/Solver';
+import { analyse } from '../src/puzzle/Analysis';
 import type { Level, LevelFile, State } from '../src/puzzle/types';
 import evidenceJson from '../content/evidence.json';
 
 export const dir = join(import.meta.dirname, '..', 'content', 'puzzles');
 const args = process.argv.slice(2);
 const show = args.includes('--show');
+const strict = args.includes('--strict');
 const only = args.filter((a) => !a.startsWith('--'));
 
 /** ASCII board: ink tiles as '▓', sentinels as '!', wisp as '@'. */
@@ -66,6 +70,12 @@ for (const file of files.sort()) {
       `${verdict.padEnd(4)} ${tag.padEnd(11)} ${level.w}x${level.h}  par ${String(level.par).padStart(2)}  best ${String(n).padStart(2)}  ` +
         `states ${String(sol.explored).padStart(7)}  ${Date.now() - t0}ms  ${sol.moves.join('')}`,
     );
+    const a = analyse(level);
+    console.log(`     ${''.padEnd(11)} reachable ${a.reachable}  dead ends ${a.deadEnds}  unused pieces ${a.unused.length}`);
+    if (a.unused.length) {
+      console.log(`${strict ? 'FAIL' : 'warn'}   unused: ${a.unused.map((p) => p.label).join(', ')}`);
+      if (strict) failed++;
+    }
     if (show) console.log(draw(level, initialState(level)).replace(/^/gm, '    ') + '\n');
   } catch (e) {
     failed++;
