@@ -22,9 +22,12 @@ Every third-party asset in the game, with source and license. **Add a row before
 | Cork001 texture | ambientCG | https://ambientcg.com/view?id=Cork001 | CC0 1.0 | Casebook board | Tinted in code | ☐ |
 | PaintedPlaster017 texture | ambientCG | https://ambientcg.com/view?id=PaintedPlaster017 | CC0 1.0 | Grime on the village walls (draft art) | Greyscale, multiplied into `bg_village` by `tools/draft-art.ts` | ☐ |
 | Leaking006 texture (opacity map) | ambientCG | https://ambientcg.com/view?id=Leaking006 | CC0 1.0 | Water stains under sills and eaves (draft art) | Used as a stain mask by `tools/draft-art.ts` | ☐ |
-| Particle Pack (smoke_04, smoke_07, smoke_10) | Kenney | https://kenney.nl/assets/particle-pack | CC0 1.0 (`public/assets/trail/particles/Kenney-Particle-Pack-License.txt`) | Fog on The Road to Veyra | Resized to 256 px, tinted in code | ☐ |
-| RPG Audio (creak1–3, bookFlip1, metalClick, doorClose_4) | Kenney | https://kenney.nl/assets/rpg-audio | CC0 1.0 (`public/assets/trail/audio/Kenney-RPG-Audio-License.txt`) | Cart creaks, ledger, lantern, event sting | Pitched down in code | ☐ |
-| Impact Sounds (footstep_grass_000–004, impactBell_heavy_000) | Kenney | https://kenney.nl/assets/impact-sounds | CC0 1.0 (`public/assets/trail/audio/Kenney-Impact-Sounds-License.txt`) | Footsteps, landmark bell | Pitched down in code | ☐ |
+| Gothicvania Town, Cemetery and Church packs (tiles, houses, props, parallax, townsfolk + ghost sprites) | ansimuz (Luis Zuno) | https://opengameart.org/content/gothicvania-town · /gothicvania-cemetery-pack · /gothicvania-church-pack | CC0 1.0 (`public/assets/gv/LICENSE.txt`) | Story mode world, characters and backdrops | Sprite frames packed into strips; tinted in code | ☐ |
+| VT323 (font) | Peter Hull | https://fonts.google.com/specimen/VT323 | SIL OFL 1.1 (`public/assets/fonts/VT323-OFL.txt`) | Story mode UI text | No | ☐ |
+| Echoes pixel pack (Elias ×3, Ivy, Luke, Hanna portraits; lantern, watch, rope) | **Confirm creator** | `echoes_pixel_assets.zip`, added by Nav (5 Oct) | **Confirm license / AI disclosure** | Story mode dialogue portraits and props (`public/assets/pixel/`) | Cropped / scaled in code | ☐ |
+| Particle Pack (smoke_04, smoke_07, smoke_10) | Kenney | https://kenney.nl/assets/particle-pack | CC0 1.0 (`public/assets/story/particles/Kenney-Particle-Pack-License.txt`) | Fog (currently unused) | Resized to 256 px, tinted in code | ☐ |
+| RPG Audio (creak1–3, bookFlip1, metalClick, doorClose_4) | Kenney | https://kenney.nl/assets/rpg-audio | CC0 1.0 (`public/assets/story/audio/Kenney-RPG-Audio-License.txt`) | Story mode: creaks, dig, page turns, stings | Pitched down in code | ☐ |
+| Impact Sounds (footstep_grass_000–004, impactBell_heavy_000) | Kenney | https://kenney.nl/assets/impact-sounds | CC0 1.0 (`public/assets/story/audio/Kenney-Impact-Sounds-License.txt`) | Story mode: footsteps, bell | Pitched down in code | ☐ |
 | Paper001, Paper003, Wood049, Concrete034 textures | ambientCG | https://ambientcg.com | CC0 1.0 | Downloaded; **remove before release if unused** | — | ☐ |
 
 ## Software

@@ -7,6 +7,7 @@ const FONT_FILES: Array<[family: string, file: string, descriptors?: FontFaceDes
   ['Comic Neue', 'ComicNeue-Bold.ttf', { weight: 'bold' }],
   ['Special Elite', 'SpecialElite-Regular.ttf'],
   ['Caveat', 'Caveat-Variable.ttf', { weight: '400 700' }],
+  ['VT323', 'VT323-Regular.ttf'], // story mode (pixel UI)
 ];
 
 export async function loadComicFonts(): Promise<void> {

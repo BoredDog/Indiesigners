@@ -43,7 +43,7 @@ export class TitleScene extends Phaser.Scene {
     const items: [string, () => void][] = [];
     if (gameState.hasSave()) items.push([t.continue, () => this.continueGame()]);
     items.push([t.newGame, () => this.newGame()]);
-    items.push(['THE ROAD TO VEYRA', () => pageTurn(this, () => this.scene.start('Trail'))]);
+    items.push(['STORY MODE', () => pageTurn(this, () => this.scene.start('Story'))]);
     items.push([t.settings, () => openPause(this, 'Title')]);
     items.push([t.credits, () => this.credits()]);
     items.forEach(([text, fn], i) => button(this, W / 2, 560 + i * 92, text, fn, { width: 460, fontSize: 40 }));
