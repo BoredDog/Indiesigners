@@ -1,2 +1,5 @@
 .godot/
 export/
+# Generated copies of ../content and ../public/assets: run `npm run godot:sync` (test:godot does it for you).
+content/
+assets/

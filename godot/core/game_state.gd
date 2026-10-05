@@ -250,6 +250,36 @@ func questions_for(w: String) -> Array:
 	)
 
 
+## Unlocked questions not asked yet: drives the village "New evidence." shimmer.
+func unasked_questions(w: String) -> Array:
+	return questions_for(w).filter(func(q): return not d.asked.has(q.id))
+
+
+func was_asked(question_id: String) -> bool:
+	return d.asked.has(question_id)
+
+
+## Casebook has evidence / threads / deductions not opened yet ("NEW EVIDENCE" badge).
+func casebook_has_new() -> bool:
+	var seen: Dictionary = d.casebookSeen
+	for e in d.evidence:
+		if not seen.evidence.has(e):
+			return true
+	for t in d.threads:
+		if not seen.threads.has(t):
+			return true
+	for id in StoryData.DEDUCTION_IDS:
+		if d.deductions[id] == "confirmed" and not seen.deductions.has(id):
+			return true
+	return false
+
+
+func mark_casebook_seen() -> void:
+	var confirmed := StoryData.DEDUCTION_IDS.filter(func(id): return d.deductions[id] == "confirmed")
+	d.casebookSeen = {"evidence": d.evidence.duplicate(), "threads": d.threads.duplicate(), "deductions": confirmed}
+	_commit()
+
+
 func mark_asked(question_id: String) -> void:
 	if d.asked.has(question_id):
 		return

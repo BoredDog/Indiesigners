@@ -14,7 +14,7 @@
     "test": "npm run build && tsx tools/check-core.ts && tsx tools/autoplay-smoke.ts && tsx tools/shots-memory.ts mira && tsx tools/shots-memory.ts arun && tsx tools/shots-memory.ts leela && tsx tools/shots-casebook.ts && tsx tools/shots-sequence.ts && tsx tools/shots-puzzle.ts && tsx tools/autoplay-full.ts",
     "answer-key": "tsx tools/answer-key.ts",
     "godot:sync": "bash tools/sync-godot-content.sh",
-    "test:godot": "bash tools/sync-godot-content.sh --check && bash tools/godot.sh --headless --path godot --import && bash tools/godot.sh --headless --path godot res://tests/test_core.tscn"
+    "test:godot": "bash tools/sync-godot-content.sh && bash tools/godot.sh --headless --path godot --import && bash tools/godot.sh --headless --path godot res://tests/test_core.tscn && bash tools/godot.sh --headless --path godot res://tests/test_memory.tscn && bash tools/godot.sh --headless --path godot res://tests/test_loop.tscn && bash tools/godot.sh --headless --path godot res://tests/test_casebook.tscn && bash tools/godot.sh --headless --path godot -s res://tests/test_puzzles.gd && bash tools/godot.sh --headless --path godot res://tests/test_puzzle_scene.tscn"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
