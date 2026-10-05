@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && npm run test:puzzles && vite build",
     "test:puzzles": "tsx tools/check-puzzle.ts && tsx tools/solve-puzzles.ts",
+    "test:puzzles:strict": "tsx tools/check-puzzle.ts && tsx tools/solve-puzzles.ts --strict",
     "preview": "vite preview",
     "typecheck": "tsc",
     "test:settings": "npm run build && tsx tools/shots-textsize.ts 150",
