@@ -7,14 +7,13 @@ var _on_title := false
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
-	size = Vector2(CoreUi.W, CoreUi.H)
+	set_anchors_preset(Control.PRESET_FULL_RECT)  # fills the screen; no explicit size (anchors own it)
 	z_index = 4000
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_on_title = get_parent() == get_tree().current_scene and get_tree().current_scene.name == "Title"
 	var dim := ColorRect.new()
 	dim.color = Color(ComicTheme.INK, 0.75)
-	dim.size = size
+	dim.size = Vector2(CoreUi.W, CoreUi.H)
 	add_child(dim)
 	var box := Panel.new()
 	var sb := StyleBoxFlat.new()
