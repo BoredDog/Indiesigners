@@ -37,12 +37,14 @@ export class OpeningScene extends SequenceScene {
         this.narration(layer, n(0));
         this.sfxWord(layer, f[0].sfx, FRAME.x + 260, FRAME.y + 760, 64);
       },
-      // 2 — Elias sets the lantern down; face never shown.
+      // 2 — Gloved hands set the lantern down; the unsigned request (found in the lantern case) is
+      // pinned to the typed file. Face never shown.
       (layer) => {
         this.panel(layer, PH.village, { x: 560, y: 600, w: 760, h: 428 });
         this.lanternGlow(layer, FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h - 220, 1.6);
+        if (f[1].prop) this.document(layer, FRAME.x + 1220, FRAME.y + 330, 480, 250, 'REQUEST', f[1].prop, true, 4);
         this.narration(layer, n(1));
-        this.sfxWord(layer, f[1].sfx, FRAME.x + 1300, FRAME.y + 200, 64);
+        this.sfxWord(layer, f[1].sfx, FRAME.x + 260, FRAME.y + 760, 64);
       },
       // 3 — Clock tower close-up frozen at 2:17; the hand twitches but never advances.
       (layer) => {

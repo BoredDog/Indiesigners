@@ -167,7 +167,8 @@ func evidence_progress(witness: String) -> Dictionary:
 
 
 func optional_progress() -> Dictionary:
-	var opt := StoryData.evidence_list.filter(func(e): return not e.core)
+	# The Archive's two documents are granted automatically: never counted (script v2 d8).
+	var opt := StoryData.evidence_list.filter(func(e): return not e.core and e.witness != "archive")
 	return {"found": opt.filter(func(e): return has_evidence(e.id)).size(), "total": opt.size()}
 
 

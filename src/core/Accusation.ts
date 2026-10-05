@@ -1,5 +1,5 @@
-// A2 final accusation (content/accusation.json): name who caused the incident, backed by one clue
-// per witness. Pure checks so tools/check-core.ts can test them; the scene only renders.
+// A2 final accusation (content/accusation.json, script v2 d9): name who caused the incident,
+// backed by one card per witness. Pure checks so tools/check-core.ts can test them; the scene only renders.
 import { gameState } from './GameState';
 import { fmt, story, type WitnessId } from './StoryData';
 
@@ -17,22 +17,25 @@ export const Accusation = {
     return story.evidence.filter((e) => e.witness === witness && gameState.hasEvidence(e.id)).map((e) => e.id);
   },
 
-  /** Slots whose pick doesn't support the accusation (unpicked counts as wrong). */
-  wrongSlots(picks: AccusationPicks): number {
-    return story.accusation.slots.filter((s) => !s.accept.includes(picks[s.witness] ?? '')).length;
+  /** Slots whose pick supports the accusation (unpicked counts as not holding). */
+  holdingSlots(picks: AccusationPicks): number {
+    return story.accusation.slots.filter((s) => s.accept.includes(picks[s.witness] ?? '')).length;
   },
 
+  /**
+   * Feedback order (no penalty, nothing locks): pick everything first; then the slots are judged
+   * ("{n} of 3 witness cards hold"); only when all three hold is the conclusion judged, so
+   * guessing names can't brute-force the answer. Right → the conclusion's narration.
+   */
   check(picks: AccusationPicks, conclusion: string | undefined): AccusationResult {
     const a = story.accusation;
     const f = a.feedback;
     if (!conclusion || a.slots.some((s) => !picks[s.witness])) return { ok: false, message: f.pickFirst };
-    const wrong = this.wrongSlots(picks);
-    const vars = { n: wrong, verb: wrong === 1 ? 'proves' : 'prove' };
+    const holding = this.holdingSlots(picks);
+    if (holding < a.slots.length) return { ok: false, message: fmt(f.slotsHold, { n: holding }) };
     const pick = a.conclusions.find((c) => c.id === conclusion);
-    if (pick?.correct) {
-      return wrong ? { ok: false, message: fmt(f.rightButUnproven, vars) } : { ok: true, reaction: a.reactions[conclusion] };
-    }
-    return { ok: false, message: (a.reactions[conclusion] ?? '') + (wrong ? fmt(f.andCluesOff, vars) : '') };
+    const reaction = a.reactions[conclusion] ?? '';
+    return pick?.correct ? { ok: true, reaction } : { ok: false, message: reaction };
   },
 
   /** Check and, when right, record it (the Finale may then play). */

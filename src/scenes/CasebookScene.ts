@@ -23,7 +23,7 @@ const THREAD_STYLE: Record<CaseThread['type'], { color: number; label: string }>
 
 /**
  * The casebook corkboard (Blueprint J): three witness columns of deduction cards, a shared
- * timeline, THE FIGURE and NIA cards, and relationship threads that appear once both ends are
+ * timeline, THE CASE REQUEST, THE FIGURE and NIA cards, and relationship threads that appear once both ends are
  * known. Relationship types are always written out and use different line patterns, so colour
  * is never the only cue. Opened over another scene, which is paused and resumed on close.
  */
@@ -253,7 +253,7 @@ export class CasebookScene extends Phaser.Scene {
     if (figureSeen) {
       fig.add(
         this.add
-          .text(0, 120, 'Same outline appears near every major clue.', {
+          .text(0, 120, deps.sideNote('figure'), {
             ...this.handStyle(22, COLORS.paperCss),
             align: 'center',
             wordWrap: { width: 260 },
@@ -270,10 +270,22 @@ export class CasebookScene extends Phaser.Scene {
     if (niaSeen) {
       nia.add(
         this.add
-          .text(0, 30, 'Clinic card found in the memories.', { ...this.handStyle(24), align: 'center', wordWrap: { width: 260 } })
+          .text(0, 30, deps.sideNote('nia'), { ...this.handStyle(24), align: 'center', wordWrap: { width: 260 } })
           .setOrigin(0.5),
       );
     }
+
+    // THE CASE REQUEST (script v2 d7): pinned from the start, the reason I came to Veyra.
+    const req = this.add.container(x, 192).setAngle(-2).setName('card:case_request');
+    req.add(this.add.rectangle(6, 8, 300, 156, 0x000000, 0.35));
+    req.add(this.add.rectangle(0, 0, 300, 156, 0xfff6c9).setStrokeStyle(3, COLORS.ink));
+    req.add(this.add.circle(0, -70, 11, 0xc0392b).setStrokeStyle(3, COLORS.ink));
+    req.add(this.add.text(0, -56, 'THE CASE REQUEST', this.sfxStyle(28, COLORS.inkCss)).setOrigin(0.5, 0));
+    req.add(
+      this.add
+        .text(0, 24, deps.sideNote('case_request'), { ...this.handStyle(24), align: 'center', wordWrap: { width: 270 } })
+        .setOrigin(0.5),
+    );
   }
 
   // ------------------------------------------------------------------ detail overlay

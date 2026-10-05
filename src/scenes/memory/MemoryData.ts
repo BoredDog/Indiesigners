@@ -23,12 +23,17 @@ interface FragmentLayout {
   light?: boolean; // A1: only visible under the spirit-light (optional evidence only)
 }
 
-/** A1: hidden teal residue shown only under the spirit-light. fx/fy = fraction of the panel. */
+/**
+ * A1: hidden teal residue shown only under the spirit-light. fx/fy = fraction of the panel.
+ * `text` is hand-lettered; `shape` draws a mark instead (a handprint, or a trail of footprints
+ * running right from fx/fy), with `size` as its scale and `text` left empty.
+ */
 export interface ResidueDef {
   panel: string;
   fx: number;
   fy: number;
   text: string;
+  shape?: 'hand' | 'steps';
   size?: number;
   angle?: number;
 }
@@ -62,6 +67,8 @@ export interface MemoryPageData {
   bubbles: BubbleDef[];
   fragments: FragmentDef[];
   residue?: ResidueDef[];
+  /** A1: the investigator's narration the first time the spirit-light touches this page's residue. */
+  firstLight?: string;
 }
 
 type PageFile = Omit<MemoryPageData, 'fragments'> & { fragments: FragmentLayout[] };

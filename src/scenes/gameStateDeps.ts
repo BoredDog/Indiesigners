@@ -1,6 +1,6 @@
 import { gameState } from '../core/GameState';
 import { deduction, deductionsOf, evidence, isEvidenceId, story, type DeductionId } from '../core/StoryData';
-import { setCasebookDeps, type CaseCard } from './casebook/CasebookDeps';
+import { setCasebookDeps, type CaseCard, type SideCardId } from './casebook/CasebookDeps';
 import { setMemoryDeps } from './memory/MemoryDeps';
 
 /**
@@ -27,7 +27,17 @@ export function wireSceneDeps(): void {
   });
 
   const notes = new Map(story.casebook.map((c) => [c.id, c]));
+  const confirmed = (id: DeductionId) => gameState.deductionState(id) === 'confirmed';
+  const revealed = () => gameState.finale === 'revealed' || gameState.finale === 'complete';
+  // Side-card notes (script v2 d7): the 'final' lines name the investigator, so they wait for the
+  // Finale (figure, nia) or the A2 accusation (case_request); never shown at deduction time.
+  const stage: Record<SideCardId, () => 'first' | 'after' | 'final'> = {
+    figure: () => (revealed() ? 'final' : confirmed('sis_3') ? 'after' : 'first'),
+    nia: () => (revealed() ? 'final' : confirmed('bro_3') ? 'after' : 'first'),
+    case_request: () => (gameState.flag('accused') ? 'final' : confirmed('mom_2') ? 'after' : 'first'),
+  };
   setCasebookDeps({
+    sideNote: (id) => notes.get(id)?.[stage[id]()] ?? '',
     cards: () =>
       story.deductions.map(
         (d): CaseCard => ({

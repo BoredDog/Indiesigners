@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { attachComicFx, Bubble, COLORS, dur, impact, pageTurn, SfxWord } from '../comic';
 import { gameState } from '../core/GameState';
-import { story } from '../core/StoryData';
+import { evidence, evidenceOf, story } from '../core/StoryData';
 import { PH, makePlaceholders } from '../dev/placeholders';
 import { button, hasScene, hudIcons } from './coreUi';
 
@@ -9,13 +9,15 @@ export interface ArchiveData {
   solved?: string; // set by the Puzzle scene when pz_archive is escaped
 }
 
-// Archive beats (Blueprint E "Hidden archive": explore, master console, collapse/scripted escape → Finale).
+// Archive beats (Blueprint E "Hidden archive", script v2 d8): explore, master console,
+// collapse/scripted escape, the record (two documents granted automatically) → Accusation → Finale.
 const TEXT = {
   intro: 'My feet knew the way down. I told myself it was instinct.',
-  console: "Beneath the well, Leela's hidden archive. The master console was still warm, its labels in my handwriting.",
+  console: "Beneath the well, Leela's hidden archive. The master console was still warm.",
   collapse: 'Then the archive began to fall in on itself.',
   escape: 'ESCAPE WITH THE RECORD',
   escaped: 'I got out with the record. The archive did not.',
+  question: 'One question left.',
   next: 'CONTINUE',
 };
 
@@ -40,6 +42,8 @@ export class ArchiveScene extends Phaser.Scene {
     const escaped = data.solved === 'pz_archive' || gameState.flag('archiveEscaped');
     if (escaped) {
       gameState.setFlag('archiveEscaped');
+      // The record itself: granted with the escape, shown automatically (never on a page, never optional-counted).
+      for (const e of evidenceOf('archive')) gameState.addEvidence(e.id);
       return this.escapedBeat(data.solved === 'pz_archive');
     }
     this.introBeat();
@@ -68,15 +72,26 @@ export class ArchiveScene extends Phaser.Scene {
 
   private escapedBeat(fresh: boolean) {
     if (fresh) impact(this);
-    const sfx = new SfxWord(this, 960, 330, { text: 'CRASH!', evidence: '', size: 150, angle: 6 });
+    const sfx = new SfxWord(this, 960, 190, { text: 'CRASH!', evidence: '', size: 130, angle: 6 });
     this.add.existing(sfx);
     sfx.disableInteractive();
-    const box = new Bubble(this, 960, 560, { kind: 'narration', text: TEXT.escaped, maxWidth: 900, fontSize: 36 });
+    const box = new Bubble(this, 960, 350, { kind: 'narration', text: TEXT.escaped, maxWidth: 900, fontSize: 36 });
     this.add.existing(box.appear(300));
+    // What I carried out: the purge list and the case request beside the apprentice log.
+    evidenceOf('archive').forEach((e, i) => {
+      const x = i === 0 ? 560 : 1360;
+      const word = new SfxWord(this, x, 500, { text: e.sfx, evidence: '', size: 64, angle: i === 0 ? -6 : 5 });
+      word.disableInteractive();
+      word.setName(`archive:${e.id}`);
+      this.add.existing(word);
+      const card = new Bubble(this, x, 610, { kind: 'evidence', text: evidence(e.id).text, maxWidth: 560, fontSize: 26 });
+      this.add.existing(card.appear(700 + i * 400));
+    });
     const p = story.ui.popups.finalReconstruction;
-    const cue = new Bubble(this, 960, 720, { kind: 'narration', text: p.text, maxWidth: 900, fontSize: 30 });
-    this.add.existing(cue.appear(800));
-    button(this, 960, 900, p.buttons[0] ?? TEXT.next, () => this.goFinale(), { fontSize: 40 });
+    const pending = hasScene(this, 'Accusation') && !gameState.flag('accused');
+    const cue = new Bubble(this, 960, 780, { kind: 'narration', text: pending ? TEXT.question : p.text, maxWidth: 900, fontSize: 30 });
+    this.add.existing(cue.appear(1400));
+    button(this, 960, 920, p.buttons[0] ?? TEXT.next, () => this.goFinale(), { fontSize: 40 });
   }
 
   private goFinale() {

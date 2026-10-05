@@ -105,7 +105,7 @@
       ]
     }
   ],
-  "openingNarration": "The lantern had rules. I remembered teaching them to him.",
+  "openingNarration": "The lantern had rules. Leela had written every one.",
   "closingNarration": "The machine did not malfunction. Someone told it to do this.",
   "bubbles": [
     {
@@ -171,7 +171,7 @@
     {
       "panel": "P4",
       "kind": "narration",
-      "text": "I had forgotten the exact shape of the moment.",
+      "text": "She remembered his words. Not his face.",
       "x": 184,
       "y": 62,
       "maxWidth": 320
@@ -223,7 +223,7 @@
     {
       "panel": "P6",
       "kind": "narration",
-      "text": "After the experiment, someone removed his own name from the evidence.",
+      "text": "After the overload, someone took his own name out of the evidence.",
       "x": 184,
       "y": 62,
       "maxWidth": 320
@@ -241,7 +241,24 @@
       "evidence": "ev_leela_hum",
       "panel": "P2",
       "x": 126,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 148,
+        "y": 250
+      }
+    },
+    {
+      "evidence": "ev_leela_rule",
+      "light": true,
+      "panel": "P2",
+      "x": 440,
+      "y": 250,
+      "size": 50,
+      "angle": -4,
+      "card": {
+        "x": 424,
+        "y": 160
+      }
     },
     {
       "evidence": "ev_leela_beep",
@@ -259,30 +276,46 @@
       "evidence": "ev_leela_whoom",
       "panel": "P5",
       "x": 165,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 160,
+        "y": 225
+      }
     },
     {
       "evidence": "ev_leela_crack",
       "panel": "P5",
       "x": 451,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 500,
+        "y": 225
+      }
     },
     {
       "evidence": "ev_leela_ash",
       "panel": "P6",
       "x": 165,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 170,
+        "y": 110
+      }
     },
     {
       "evidence": "ev_leela_paper",
-      "light": true,
       "panel": "P6",
       "x": 451,
-      "y": 143
+      "y": 143,
+      "card": {
+        "x": 520,
+        "y": 110
+      }
     }
   ],
+  "firstLight": "Pencil notes in the margins. The capitals slanted like mine. Plenty of hands slant.",
   "residue": [
-    {"panel": "P4", "fx": 0.78, "fy": 0.24, "text": "E.V.", "size": 54, "angle": -6},
-    {"panel": "P2", "fx": 0.7, "fy": 0.8, "text": "32 + 1 anchors", "size": 34, "angle": 4}
+    {"panel": "P1", "fx": 0.55, "fy": 0.8, "text": "E.V.", "size": 50, "angle": -6},
+    {"panel": "P2", "fx": 0.56, "fy": 0.63, "text": "ALL 32 AT ONCE?", "size": 26, "angle": -5}
   ]
 }

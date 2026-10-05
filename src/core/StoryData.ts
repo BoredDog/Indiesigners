@@ -19,9 +19,13 @@ export type DeductionId = (typeof DEDUCTION_IDS)[number];
 
 export type ThreadType = 'corroborates' | 'contradicts' | 'reveals';
 
+/** Where a fragment is found: a witness page, the village clock tower, or the Hidden Archive. */
+export type EvidenceSource = WitnessId | 'tower' | 'archive';
+
 export interface Evidence {
   id: string;
-  witness: WitnessId | 'tower';
+  /** 'archive' = granted automatically in the Hidden Archive (script v2 d8); not on any page, not counted for the epilogue. */
+  witness: EvidenceSource;
   panel: string | null;
   sfx: string;
   text: string;
@@ -39,6 +43,8 @@ export interface Deduction {
   supportingEvidence: string[];
   conclusion: string;
   wrongConclusions: string[];
+  /** B1: reasoning nudge shown under the closeness line when wrongConclusions[wrong] is picked. Never names a card. */
+  closeHint?: { wrong: 0 | 1; text: string };
   unlocks: string[];
   unlockText: string;
   reaction: string;
@@ -82,7 +88,16 @@ export interface Popup {
 
 export interface UiText {
   popups: Record<string, Popup>;
-  closeness: Record<'cardsFitConclusionWrong' | 'conclusionRightMissing' | 'conclusionRightExtra' | 'conclusionRightMissingAndExtra' | 'someCardsFit' | 'nothingYet', string>;
+  closeness: Record<
+    | 'conclusionRightMissing'
+    | 'conclusionRightExtra'
+    | 'conclusionRightExtraMany'
+    | 'conclusionRightMissingAndExtra'
+    | 'cardsFitConclusionWrong'
+    | 'someCardsFit'
+    | 'nothingYet',
+    string
+  >;
   title: Record<'logo' | 'subtitle' | 'cta' | 'continue' | 'newGame' | 'settings' | 'credits', string>;
   tutorial: { firstClueCaption: string };
   village: Record<string, string>;
@@ -102,6 +117,8 @@ export interface OpeningFrame {
   see: string;
   narration: string;
   dialogue: { speaker: Speaker; line: string } | null;
+  /** Handwritten text on a prop in the frame (the case request note). */
+  prop?: string;
   sfx: string;
   animation: string;
 }
@@ -111,6 +128,8 @@ export interface FinaleFrame {
   see: string;
   narration: string;
   shows: string;
+  prop?: string;
+  bubble?: { speaker: Speaker; line: string };
   sfx: string;
   animation: string;
   button?: string;
@@ -118,8 +137,16 @@ export interface FinaleFrame {
 
 export interface Finale {
   frames: FinaleFrame[];
-  truthEnding: { outcome: string; narration: string; panels: string[]; finalState: string };
-  epilogue: { condition: string; outcome: string; narration: string; panel: string; finalState: string };
+  truthEnding: {
+    outcome: string;
+    narration: string;
+    panels: string[];
+    niaEcho?: string; // Nia's echo, speech bubble on the Nia panel
+    closing?: string; // narration on the closing desk panel
+    closingSee?: string;
+    finalState: string;
+  };
+  epilogue: { condition: string; outcome: string; narration: string; stamp?: string; panel: string; finalState: string };
   summary: { title: string; shows: string; replayHint: string; buttons: string[] };
 }
 
@@ -148,7 +175,6 @@ export interface MemoryPageText {
   silhouette: string;
   openingNarration: string;
   closingNarration: string;
-  twistNarration: string;
   panels: MemoryPanelText[];
 }
 
@@ -156,11 +182,14 @@ export interface AccusationText {
   title: string;
   question: string;
   intro: string;
-  archiveClue: { title: string; text: string };
+  /** Shown automatically, can't be picked: the three documents in one hand (script v2 d9). */
+  archiveClue: { title: string; text: string; documents: { title: string; text: string }[]; stamp: string };
   slots: { witness: WitnessId; label: string; accept: string[] }[];
   conclusions: { id: string; text: string; correct?: boolean }[];
+  /** Per conclusion: the nudge when it's wrong (all slots hold), or the narration when it's right. */
   reactions: Record<string, string>;
-  feedback: Record<'pickFirst' | 'rightButUnproven' | 'andCluesOff', string>;
+  feedback: Record<'pickFirst' | 'slotsHold', string>;
+  stamp: string;
   buttons: Record<'accuse' | 'retry' | 'continue', string>;
 }
 
@@ -200,7 +229,7 @@ export function deduction(id: string): Deduction {
   return d;
 }
 
-export function evidenceOf(witness: WitnessId | 'tower'): Evidence[] {
+export function evidenceOf(witness: EvidenceSource): Evidence[] {
   return evidenceList.filter((e) => e.witness === witness);
 }
 
@@ -234,6 +263,11 @@ export function validateStory(): string[] {
       if (evidenceById.get(e)?.core === false) problems.push(`${d.id}: required ${e} is optional evidence`);
     });
     d.supportingEvidence.forEach((e) => known(e, d.id));
+    if (d.closeHint && d.closeHint.wrong !== 0 && d.closeHint.wrong !== 1) problems.push(`${d.id}: closeHint.wrong must be 0 or 1`);
+  }
+  // Archive evidence is granted automatically (script v2 d8): never core, never behind a puzzle.
+  for (const e of evidenceOf('archive')) {
+    if (e.core || e.puzzle) problems.push(`${e.id}: archive evidence must be optional and puzzle-free`);
   }
   for (const t of threadList) {
     if (!deductionById.has(t.from) || !deductionById.has(t.to)) problems.push(`${t.id}: bad endpoint`);

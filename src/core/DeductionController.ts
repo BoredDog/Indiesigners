@@ -74,8 +74,9 @@ export const DeductionController = {
   },
 
   /**
-   * B1 closeness feedback for a wrong attempt (Golden Idol style): says whether the cards or the
-   * conclusion are the problem, and how many cards fit or are missing, never which ones.
+   * B1 closeness feedback for a wrong attempt (Golden Idol style, script v2 d5): says whether the
+   * cards or the conclusion are the problem, and how many cards belong, never which ones. When the
+   * player picked the deduction's likely-miss conclusion, its closeHint follows on a new line.
    */
   closeness(id: DeductionId, selected: string[], conclusion: ConclusionKey | undefined): string {
     const c = story.ui.closeness;
@@ -85,23 +86,16 @@ export const DeductionController = {
     const picked = new Set(selected);
     const missing = d.requiredEvidence.filter((e) => !picked.has(e)).length;
     const extra = [...picked].filter((e) => !allowed.has(e)).length;
-    const fit = [...picked].filter((e) => d.requiredEvidence.includes(e)).length;
-    const n = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
-    const words = {
-      missing: n(missing, 'clue is', 'clues are'),
-      extra: String(extra),
-      extraWord: extra === 1 ? "card doesn't" : "cards don't",
-      fit: String(fit),
-      fitWord: fit === 1 ? 'fits' : 'fit',
-    };
+    const right = picked.size - extra; // cards that belong (required or supporting)
     if (conclusion === 'correct') {
-      if (missing && extra) return fmt(c.conclusionRightMissingAndExtra, words);
-      if (extra) return fmt(c.conclusionRightExtra, words);
-      if (missing) return fmt(c.conclusionRightMissing, words);
+      if (missing && extra) return c.conclusionRightMissingAndExtra;
+      if (extra) return extra === 1 ? c.conclusionRightExtra : c.conclusionRightExtraMany;
+      if (missing) return c.conclusionRightMissing;
       return UNSUPPORTED; // right cards + conclusion but evidence not known (can't happen via the UI)
     }
-    if (!missing && !extra) return c.cardsFitConclusionWrong;
-    return fit ? fmt(c.someCardsFit, words) : UNSUPPORTED;
+    const hint = d.closeHint && conclusion === `wrong_${d.closeHint.wrong}` ? `\n${d.closeHint.text}` : '';
+    if (!missing && !extra) return c.cardsFitConclusionWrong + hint;
+    return (right ? fmt(c.someCardsFit, { right, picked: picked.size }) : UNSUPPORTED) + hint;
   },
 
   /**
