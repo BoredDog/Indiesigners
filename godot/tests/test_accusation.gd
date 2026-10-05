@@ -1,7 +1,7 @@
 extends Node
 ## A2 final accusation through the real scenes and Router: Archive (escaped) → CONTINUE →
 ## Accusation; nothing picked → "pick first"; every wrong option gets its own nudge; the right
-## answer with one clue off → "prove it"; right clues + right answer → CASE CLOSED, flag
+## answer with one clue off → "{n} of 3 witness cards hold"; right clues + right answer → stamp, flag
 ## "accused", CONTINUE → Finale; afterwards the Archive goes straight to the Finale.
 ## Slots, options and texts all come from content/accusation.json.
 ## Run: godot --headless --path godot res://tests/test_accusation.tscn
@@ -164,22 +164,22 @@ func _run() -> void:
 		ok(msg != "" and msg.begins_with(a.reactions[c.id]), "\"%s\" → its own nudge" % c.id)
 		ok(not GameState.flag("accused"), "\"%s\" changes nothing" % c.id)
 
-	# Right answer with one clue off → prove it.
+	# Right answer with one clue off → the slot count comes first (script v2 d9).
 	ok(not off.is_empty(), "first slot has a card it doesn't accept")
 	if not off.is_empty():
 		_click(acc.card_views[off[0]])
 		_click(acc.conclusion_views[right_id])
 		var msg := await _accuse_wrong(acc)
-		ok(msg == StoryData.fmt(a.feedback.rightButUnproven, {"n": 1, "verb": "proves"}), "right answer, one clue off → %s" % JSON.stringify(msg))
+		ok(msg == StoryData.fmt(a.feedback.slotsHold, {"n": (a.slots as Array).size() - 1}), "right answer, one clue off → %s" % JSON.stringify(msg))
 		ok(not GameState.flag("accused"), "unproven answer changes nothing")
 		_click(acc.card_views[core_only[first_slot.witness]])
 
-	# Right clues + right answer → CASE CLOSED, accused, CONTINUE → Finale.
+	# Right clues + right answer → CONFIRMED stamp, accused, CONTINUE → Finale.
 	_click(acc.conclusion_views[right_id])
 	acc.accuse()
 	await get_tree().process_frame
 	ok(GameState.flag("accused"), "right clues + right answer → flag accused")
-	ok(acc.find_child("Stamp", true, false) != null, "CASE CLOSED stamp")
+	ok(acc.find_child("Stamp", true, false) != null, "confirmation stamp")
 	ok(acc.find_child("Popup", true, false) == null, "no popup on the right answer")
 	var cont: Button = null
 	for k in 120:

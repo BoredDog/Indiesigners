@@ -188,7 +188,7 @@ func _shake_picks() -> void:
 
 
 func _stamp() -> void:
-	var s := CoreUi.label(self, Vector2(CONC_X, 640), "CASE CLOSED", 110, STAMP_RED, Vector2(0.5, 0.5))
+	var s := CoreUi.label(self, Vector2(CONC_X, 640), String(Accusation.text().get("stamp", "CASE CLOSED")), 110, STAMP_RED, Vector2(0.5, 0.5))
 	s.name = "Stamp"
 	s.pivot_offset = s.size / 2.0
 	s.rotation_degrees = -12

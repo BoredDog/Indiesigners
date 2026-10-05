@@ -16,34 +16,34 @@ static func cards(witness: String) -> Array:
 	return StoryData.evidence_of(witness).map(func(e): return e.id).filter(func(id): return GameState.has_evidence(id))
 
 
-## Slots whose pick doesn't support the accusation (unpicked counts as wrong).
-static func wrong_slots(picks: Dictionary) -> int:
+## Slots whose pick supports the accusation (unpicked counts as not holding).
+static func holding_slots(picks: Dictionary) -> int:
 	var n := 0
 	for s in text().slots:
-		if not (s.accept as Array).has(picks.get(s.witness, "")):
+		if (s.accept as Array).has(picks.get(s.witness, "")):
 			n += 1
 	return n
 
 
-## {ok: true, reaction} or {ok: false, message}. No state change.
+## {ok: true, reaction} or {ok: false, message}. No state change. Script v2 d9: the slots are
+## judged first ("{n} of 3 witness cards hold"); the conclusion only once all three hold.
 static func check(picks: Dictionary, conclusion: String) -> Dictionary:
 	var a := text()
 	var f: Dictionary = a.feedback
 	var all_picked := (a.slots as Array).all(func(s): return String(picks.get(s.witness, "")) != "")
 	if conclusion == "" or not all_picked:
 		return {"ok": false, "message": f.pickFirst}
-	var wrong := wrong_slots(picks)
-	var vars := {"n": wrong, "verb": "proves" if wrong == 1 else "prove"}
+	var holding := holding_slots(picks)
+	if holding < (a.slots as Array).size():
+		return {"ok": false, "message": StoryData.fmt(f.slotsHold, {"n": holding})}
 	var pick: Dictionary = {}
 	for c in a.conclusions:
 		if c.id == conclusion:
 			pick = c
+	var reaction: String = a.reactions.get(conclusion, "")
 	if pick.get("correct", false):
-		if wrong:
-			return {"ok": false, "message": StoryData.fmt(f.rightButUnproven, vars)}
-		return {"ok": true, "reaction": a.reactions[conclusion]}
-	var nudge: String = a.reactions.get(conclusion, "")
-	return {"ok": false, "message": nudge + (StoryData.fmt(f.andCluesOff, vars) if wrong else "")}
+		return {"ok": true, "reaction": reaction}
+	return {"ok": false, "message": reaction}
 
 
 ## Check and, when right, record it (flag "accused": the Finale may then play).
