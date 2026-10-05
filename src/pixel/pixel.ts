@@ -13,6 +13,13 @@ const SHEETS: Record<string, [number, number]> = {
   pz_tiles: [16, 16], // puzzle board tiles (design/pixel/PUZZLE.md)
   pz_wisp: [16, 16],
   pz_sentinel: [16, 16], // N, E, S, W × 2
+  // Witness idles, colour and pre-made ghost: 2 frames each, feet on y = 56.
+  char_ivy_idle: [32, 58],
+  char_ivy_ghost_idle: [32, 58],
+  char_luke_idle: [32, 58],
+  char_luke_ghost_idle: [32, 58],
+  char_hanna_idle: [32, 58],
+  char_hanna_ghost_idle: [32, 58],
   prop_key_turn: [24, 24], // 0° / 45° / 90°
 };
 
