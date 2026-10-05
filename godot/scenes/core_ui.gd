@@ -14,8 +14,10 @@ static func label(parent: Node, pos: Vector2, text: String, size := 32, color :=
 	ls.font = ComicTheme.font("sfx")
 	ls.font_size = size
 	ls.font_color = color
-	ls.outline_size = maxi(8, size / 3)
-	ls.outline_color = ComicTheme.INK
+	# Dark lettering (ink on paper) gets a thin paper outline; light lettering a thick ink one.
+	var dark := color.get_luminance() < 0.3
+	ls.outline_size = 4 if dark else maxi(8, size / 3)
+	ls.outline_color = ComicTheme.PAPER if dark else ComicTheme.INK
 	l.label_settings = ls
 	l.text = text
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE

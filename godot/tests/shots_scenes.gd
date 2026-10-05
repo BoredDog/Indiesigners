@@ -38,6 +38,11 @@ func _start() -> void:
 	Deductions.attempt("sis_2", StoryData.deduction("sis_2").requiredEvidence, "correct")
 	Deductions.attempt("sis_3", StoryData.deduction("sis_3").requiredEvidence, "correct")
 	await _shot("aftermath", {"witness": "mira"}, "06-aftermath")
+	for id in ["mom_1", "bro_2"]:
+		for e in StoryData.deduction(id).requiredEvidence:
+			GameState.add_evidence(e)
+		Deductions.attempt(id, StoryData.deduction(id).requiredEvidence, "correct")
+	await _shot("casebook", {"returnTo": "village"}, "07-casebook")
 	get_tree().quit(0)
 
 

@@ -40,15 +40,19 @@ func _play(w: String) -> void:
 	for id in m.words:
 		var word: SfxWord = m.words[id]
 		if word.locked:
-			word.locked_clicked.emit(word)  # → unlock fallback (no Puzzle scene yet)
+			word.unlock()  # puzzle round trips are covered by the puzzle tests
 		ok(not word.locked, "%s: %s unlocked" % [w, id])
 		word.pop()
 	await get_tree().process_frame
 	ok(core_ids.all(func(id): return GameState.has_evidence(id)), "%s: all core evidence saved" % w)
 	ok(m.counter.text == "EVIDENCE 5/5", "%s: counter %s" % [w, m.counter.text])
 	ok(m.reconstruct_btn.visible, "%s: RECONSTRUCT shown" % w)
-	for i in 3:
-		m._reconstruct()
+	# RECONSTRUCT itself opens the Deduction scene (covered by test_loop); confirm via state here.
+	for d in StoryData.deductions_of(w):
+		Deductions.attempt(d.id, d.requiredEvidence, "correct")
+	m.queue_free()
+	await get_tree().process_frame
+	m = await _open({"witness": w})
 	ok(GameState.deductions_confirmed(w) == 3, "%s: 3/3 deductions" % w)
 	ok(m.leave_btn.visible and not m.reconstruct_btn.visible, "%s: LEAVE MEMORY shown" % w)
 	m.queue_free()
