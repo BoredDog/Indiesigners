@@ -1,0 +1,110 @@
+{
+  "bg_clockface_close": {
+    "file": "assets/pixel/bg_clockface_close.png",
+    "w": 192,
+    "h": 108,
+    "final": false
+  },
+  "bg_tower": {
+    "file": "assets/pixel/bg_tower.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_tower_sky": {
+    "file": "assets/pixel/bg_tower_sky.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_far": {
+    "file": "assets/pixel/bg_veyra_far.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_fg": {
+    "file": "assets/pixel/bg_veyra_fg.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_mid": {
+    "file": "assets/pixel/bg_veyra_mid.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_residue": {
+    "file": "assets/pixel/bg_veyra_residue.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_sky": {
+    "file": "assets/pixel/bg_veyra_sky.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "bg_veyra_street": {
+    "file": "assets/pixel/bg_veyra_street.png",
+    "w": 480,
+    "h": 270,
+    "final": false
+  },
+  "char_elias_walk": {
+    "file": "assets/pixel/char_elias_walk.png",
+    "w": 192,
+    "h": 58,
+    "final": false
+  },
+  "char_hanna_body": {
+    "file": "assets/pixel/char_hanna_body.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_sister": {
+    "file": "assets/pixel/char_sister.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "char_unknown_woman": {
+    "file": "assets/pixel/char_unknown_woman.png",
+    "w": 32,
+    "h": 58,
+    "final": false
+  },
+  "portrait_hanna": {
+    "file": "assets/pixel/portrait_hanna.png",
+    "w": 64,
+    "h": 64,
+    "final": false
+  },
+  "portrait_ivy": {
+    "file": "assets/pixel/portrait_ivy.png",
+    "w": 64,
+    "h": 64,
+    "final": false
+  },
+  "portrait_luke": {
+    "file": "assets/pixel/portrait_luke.png",
+    "w": 64,
+    "h": 64,
+    "final": false
+  },
+  "prop_bell": {
+    "file": "assets/pixel/prop_bell.png",
+    "w": 48,
+    "h": 40,
+    "final": false
+  },
+  "prop_lantern": {
+    "file": "assets/pixel/prop_lantern.png",
+    "w": 24,
+    "h": 12,
+    "final": false
+  }
+}

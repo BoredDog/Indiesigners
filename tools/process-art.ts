@@ -13,6 +13,7 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { basename, extname, join, relative } from 'node:path';
 import sharp from 'sharp';
+import { pixelNames } from './pixel-art';
 
 const IN = 'art/incoming';
 const OUT = 'public/assets/art';
@@ -42,10 +43,13 @@ mkdirSync(SRC, { recursive: true });
 const rows: string[] = [];
 const seen = new Map<string, string>();
 // Drafts in art/incoming/claude/ go last: a teammate's file with the same name replaces the draft.
+// Pixel layers (art-src/pixel names) are copied losslessly by `npm run pixel`, never converted here.
+const PIXEL = pixelNames();
 const isDraft = (f: string) => relative(IN, f).split(/[\\/]/)[0] === 'claude';
 for (const file of walk(IN).sort((a, b) => Number(isDraft(a)) - Number(isDraft(b)))) {
   const ext = extname(file).toLowerCase();
   const key = snake(basename(file, extname(file)));
+  if (PIXEL.has(basename(file, extname(file)))) continue;
 
   if (SOURCE.has(ext)) {
     const dest = join(SRC, basename(file));
