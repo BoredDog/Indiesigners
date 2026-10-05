@@ -42,7 +42,7 @@ Draft order (design chat):
 9. scene 11 (**done** · `art-src/pixel/scene11/panel_*.png`: bedside, network, confront, erase, alone. Preview `scene11_fourth_person.html`)
 10. young Elias (**done** · `chars/portrait_elias_young.png`, `chars/char_elias_young.png`, plus `char_sister_bed.png` and `char_sister_ghost.png`)
 
-Scene 1 is **done**. Scenes 3 and 4 follow.
+Scene 1 is **done**. Scenes 3 and 4 are **done** (`art-src/pixel/scene3/`: toy horse 20×16, window close-up 192×108, window figure 40×60 over the scene 1 street; `art-src/pixel/scene4/panel_*.png`: five sepia silhouette panels; preview `scene3_4_ten_years_ago.html`). **Every scene now has a draft.**
 
 Checkpoints: +2 h (~03:50), +4 h (~05:50), +6 h (~07:50). Post screenshots in Team HQ.
 

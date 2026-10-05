@@ -192,7 +192,6 @@ function text(b, s, x, y, c) { [...s].forEach((ch, k) => GLYPH[ch].forEach((row,
 const SYMBOL = ['..###..', '.#...#.', '#..#..#', '#.###.#', '#..#..#', '.#...#.', '..###..'];
 function residue(b, x, y, pat = SYMBOL) { pat.forEach((row, j) => [...row].forEach((v, i) => { if (v === '#') b.mark(x + i, y + j); })); }
 
-
 // ------------------------------------------------ shape-based character renderer
 // Shapes write part ids; shading = part pixels whose (x+sx, y+sy) neighbour leaves the part;
 // outline = empty pixels touching a filled one, plus seams between parts flagged `line`.
@@ -228,6 +227,29 @@ function Figure(w, h, parts) {
   return api;
 }
 const px = (b, pts, c) => { for (const [x, y] of pts) b.set(x, y, c); };
+
+function toCanvas(b) {
+  const c = document.createElement('canvas'); c.width = b.w; c.height = b.h;
+  const x = c.getContext('2d'), img = x.createImageData(b.w, b.h);
+  for (let i = 0; i < b.c.length; i++) { const v = b.c[i]; if (v === 255) continue; const q = RGB[v]; img.data.set([q[0], q[1], q[2], 255], i * 4); }
+  x.putImageData(img, 0, 0); return c;
+}
+// Light with any pair of tables (LIT1/LIT2 = lantern teal, LITA1/LITA2 = warm lamp)
+const LITA1 = [6,2,3,5,5,21,7,8,12,10,10,11,13,13,15,15,18,17,17,6,7,8,2,23,23,25,25];
+const LITA2 = [6,6,7,7,8,8,14,14,12,10,12,11,13,13,15,15,18,17,17,7,8,12,6,23,23,25,25];
+function lightT(b, lx, ly, R, T1, T2, sq = 1.15) {
+  lx = Math.round(lx); ly = Math.round(ly);
+  for (let y = Math.max(0, ly - R); y < Math.min(b.h, ly + R); y++) for (let x = Math.max(0, lx - R); x < Math.min(b.w, lx + R); x++) {
+    const dx = x - lx, dy = (y - ly) * sq, d2 = dx * dx + dy * dy; if (d2 > R * R) continue;
+    const i = y * b.w + x; if (b.f[i] & 1) continue; const c = b.c[i]; if (c === 255) continue;
+    const v = (1 - Math.sqrt(d2) / R) * 2.2 + (bay(x, y) - 0.5) * 0.7;
+    if (v > 1.45) b.c[i] = T2[c]; else if (v > 0.6) b.c[i] = T1[c];
+  }
+}
+// Stamp a sprite Buf (255 = transparent) into a scene Buf
+function stamp(dst, src, ox, oy, flip = false) {
+  for (let y = 0; y < src.h; y++) for (let x = 0; x < src.w; x++) { const v = src.c[y * src.w + (flip ? src.w - 1 - x : x)]; if (v !== 255) dst.set(ox + x, oy + y, v); }
+}
 
 // ------------------------------------------------ portraits 64x64
 function bustBase(f, P, broad) {
@@ -355,12 +377,6 @@ const SPRITES = {
   'char_sister.png': spriteSister(), 'char_unknown_woman.png': spriteWoman(true), 'char_hanna_body.png': spriteWoman(false),
 };
 const LABEL = { 'portrait_hanna.png': 'Hanna', 'portrait_ivy.png': 'Ivy', 'portrait_luke.png': 'Luke', 'char_sister.png': 'Sister', 'char_unknown_woman.png': 'Unknown woman', 'char_hanna_body.png': 'Hanna (memory)' };
-function toCanvas(b) {
-  const c = document.createElement('canvas'); c.width = b.w; c.height = b.h;
-  const x = c.getContext('2d'), img = x.createImageData(b.w, b.h);
-  for (let i = 0; i < b.c.length; i++) { const v = b.c[i]; if (v === 255) continue; const q = RGB[v]; img.data.set([q[0], q[1], q[2], 255], i * 4); }
-  x.putImageData(img, 0, 0); return c;
-}
 for (const [name, b] of Object.entries(SPRITES)) {
   const row = document.getElementById(name.startsWith('portrait') ? 'busts-row' : 'sprites-row');
   const fig = document.createElement('figure'); const c = toCanvas(b);
