@@ -3,15 +3,15 @@
   "title": "HUM! The Bell Rope",
   "tip": "The bell rope opens and closes the gates. Stepping on the clock dial turns the light.",
   "reward": "ev_mira_resonance",
-  "light": "W",
+  "light": "N",
   "shadow": 2,
-  "par": 10,
+  "par": 12,
   "tiles": [
-    "#.G..",
+    ".#D..",
+    "LS...",
     "____A",
-    ".....",
-    ".S...",
-    ".L.D."
+    "...G.",
+    "#...#"
   ],
   "legend": {
     "A": "gate:g1",

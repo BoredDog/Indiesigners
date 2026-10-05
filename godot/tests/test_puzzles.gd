@@ -6,8 +6,8 @@ extends SceneTree
 const Rules := preload("res://puzzle/echo_rules.gd")
 const Solver := preload("res://puzzle/echo_solver.gd")
 const Analysis := preload("res://puzzle/echo_analysis.gd")
-## V15: unused pieces fail only with `-- --strict` (V14 turns it on once every level is reworked).
-var strict := OS.get_cmdline_user_args().has("--strict")
+## V15/V14: an unused piece fails (every level is reworked). `-- --report` only reports.
+var strict := not OS.get_cmdline_user_args().has("--report")
 
 var failed := 0
 
