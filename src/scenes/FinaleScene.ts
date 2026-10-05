@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { PixelStage, hasPixel } from '../pixel/pixel';
 import { attachComicFx, COLORS, comicSettings, dur, impact, RichText, FONTS, TEXT_RESOLUTION } from '../comic';
 import { gameState } from '../core/GameState';
 import { story } from '../core/StoryData';
@@ -78,10 +79,13 @@ export class FinaleScene extends SequenceScene {
       },
       // 3 — Nia's clinic record beside the child from the memory echo; the redacted name resolves.
       (layer) => {
-        const bgPanel = this.panel(layer, PH.village, { x: 0, y: 690, w: 1920, h: 390 });
-        bgPanel.setColour(0.25, 0);
-        const nia = this.add.image(FRAME.x + 1260, FRAME.y + FRAME.h - 40, PH.nia).setOrigin(0.5, 1).setScale(1.7).setAlpha(0.85);
-        layer.add(nia);
+        if (hasPixel(this, 'panel_bedside')) new PixelStage(this, layer, FRAME).image('panel_bedside'); // pixel scene 11
+        else {
+          const bgPanel = this.panel(layer, PH.village, { x: 0, y: 690, w: 1920, h: 390 });
+          bgPanel.setColour(0.25, 0);
+          const nia = this.add.image(FRAME.x + 1260, FRAME.y + FRAME.h - 40, PH.nia).setOrigin(0.5, 1).setScale(1.7).setAlpha(0.85);
+          layer.add(nia);
+        }
         const { doc, text } = this.document(layer, FRAME.x + 560, FRAME.y + 520, 680, 420, 'VEYRA CLINIC · RECORD', '', false, -3);
         text.setVisible(false);
         const body = (redacted: boolean) =>
@@ -103,6 +107,18 @@ export class FinaleScene extends SequenceScene {
       },
       // 4 — Master console and village network lit simultaneously; lines spread across the map.
       (layer) => {
+        if (hasPixel(this, 'panel_network')) {
+          // Pixel scene 11: the network panel, with the lantern teal pulsing over it.
+          const st = new PixelStage(this, layer, FRAME);
+          st.image('panel_network');
+          const glow = this.add.rectangle(st.x, st.y, 480 * st.scale, 270 * st.scale, COLORS.spiritTeal, 0).setOrigin(0).setBlendMode(Phaser.BlendModes.ADD);
+          layer.add(glow);
+          if (!comicSettings.reduceFlashing) this.tweens.add({ targets: glow, fillAlpha: 0.12, duration: dur(900) || 1, delay: 300, yoyo: true, repeat: 2 });
+          this.narration(layer, n(3));
+          this.sfxWord(layer, f[3].sfx, FRAME.x + 1360, FRAME.y + 150, 80, 1800);
+          this.time.delayedCall(dur(1800), () => impact(this));
+          return;
+        }
         layer.add(this.add.rectangle(FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h / 2, FRAME.w, FRAME.h, 0x10131a).setStrokeStyle(6, COLORS.ink));
         const cx = FRAME.x + FRAME.w / 2;
         const cy = FRAME.y + FRAME.h / 2 + 60;
@@ -236,6 +252,13 @@ export class FinaleScene extends SequenceScene {
       },
       // 8 — Young Elias activates the machine, then reaches for the self-purge control.
       (layer) => {
+        if (hasPixel(this, 'panel_erase')) {
+          new PixelStage(this, layer, FRAME).image('panel_erase'); // pixel scene 11: young Elias at the purge
+          this.narration(layer, n(7), FRAME.x + 330, FRAME.y + 90);
+          this.sfxWord(layer, f[7].sfx, FRAME.x + 1150, FRAME.y + 330, 54, 1200, COLORS.paperCss);
+          this.button(layer, f[7].button ?? 'CONTINUE', FRAME.x + FRAME.w - 200, FRAME.y + FRAME.h - 70, () => this.next());
+          return;
+        }
         layer.add(this.add.rectangle(FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h / 2, FRAME.w, FRAME.h, 0x12141b).setStrokeStyle(6, COLORS.ink));
         const console_ = this.add.rectangle(FRAME.x + 1160, FRAME.y + 600, 520, 300, 0x2a2a30).setStrokeStyle(6, COLORS.spiritTeal);
         const purge = this.add.circle(FRAME.x + 1300, FRAME.y + 560, 40, 0xb3261e).setStrokeStyle(4, COLORS.ink);
