@@ -1,0 +1,386 @@
+ 
+ Echoes of Sorrow — Final Code-Ready Script 
+ Echoes of Sorrow: Final Code-Ready Script
+ Revised master script — Elias the Ghostburster · Ivy · Luke · Hanna
+ This page follows the revised story: the ghosts do not recognize Elias at first; memories are projected through the Echo Lantern; the player investigates the village between witness memories; the fourth person remains unknown until the final reveal; and the central mystery is not exposed early.
+ menu opening history 
+ investigation ivy luke 
+ hanna casebook archive 
+ finale ui flow 
+ 1. Main menu
+ UI ECHOES OF SORROW logo 
+ UI CONTINUE continue 
+ UI NEW GAME newGame 
+ UI SETTINGS settings 
+ UI CREDITS credits 
+ UI EXIT exit 
+ NEW GAME confirmation 
+Start a new investigation?
+ YES · NO 
+ UI NO SAVED INVESTIGATION shown if no save exists 
+ Settings
+ UI MASTER VOLUME 
+ UI MUSIC VOLUME 
+ UI SFX VOLUME 
+ UI TEXT SPEED 
+ UI FULLSCREEN 
+ UI SCREEN SHAKE 
+ UI BACK 
+ Credits
+ CREDITS ECHOES OF SORROW 
+ CREDITS A Supernatural Investigation Thriller 
+ CREDITS GAME DESIGN 
+ CREDITS PROGRAMMING 
+ CREDITS ART 
+ CREDITS MUSIC & SOUND 
+ CREDITS WRITING 
+ CREDITS SPECIAL THANKS 
+ CREDITS Thank you for playing. 
+ 2. Opening — Enter Veyra
+ Scene 1 — Entering the village
+ Night. Elias enters Veyra carrying the Echo Lantern. Do not reveal his full face yet.
+ SFX Footsteps. 
+ SFX Wind. 
+ SFX Lantern glass softly rattling. 
+ Scene 2 — The clock tower
+ VISUAL Clock reads 2:17 AM. The second hand is frozen. 
+ SFX DONG. 
+ SFX DONG. 
+ Narration The clock tower had been silent for ten years. 
+ Narration Tonight, it rang again. 
+ Scene 3 — The toy
+ VISUAL A small child's toy rolls down the empty street and stops. 
+ SFX click... click... click... 
+ Scene 4 — The window
+ VISUAL A mysterious figure is briefly visible behind a window, then disappears. 
+ SFX WHOOSH 
+ DIRECTION No dialogue. Cut to black. 
+ 3. Ten years ago — comic history
+ Panel 1 — Veyra before the incident
+ Narration Ten years ago, Veyra was different. 
+ Narration It was a quiet village. 
+ Narration People lived here. 
+ Narration They worked here. 
+ Narration They built their lives here. 
+ Panel 2 — The night
+ Narration Then one night, something happened. 
+ VISUAL Dark sky. Rain. Lightning. The village becomes chaotic. 
+ Panel 3 — 2:17 AM
+ VISUAL Clock tower: 2:17 AM. People vanish; streets become empty. 
+ Narration At exactly 2:17 AM, the people of Veyra disappeared. 
+ Panel 4 — The search
+ Narration Days later, a search party entered the village. 
+ Narration Everything had been left behind. 
+ Narration There were no bodies. 
+ Narration No clear signs of what had happened. 
+ Narration No explanation. 
+ Panel 5 — Case closed
+ Narration The investigation continued for weeks. 
+ Narration Nothing was discovered. 
+ Narration Eventually, the case was closed. 
+ 4. Present-day village investigation
+ Narration Ten years later, Veyra was still exactly where they had left it. 
+ PLAYER Free village exploration begins. 
+ Clock tower
+ DISCOVERY Footprints lead toward the clock tower and stop suddenly. 
+ CASEBOOK FOOTPRINTS — Multiple footprints leading toward the clock tower. 
+ Blood-stained key
+ DISCOVERY A small old key with dried blood is found near the footprints. 
+ Narration Someone was here. 
+ Narration And they were hurt. 
+ CASEBOOK BLOOD-STAINED KEY — Found near the clock tower. 
+ Bell mechanism
+ DISCOVERY The bell rope appears untouched, although the bell rang. 
+ Narration The bell rang. 
+ Narration But nobody pulled it. 
+ Clocks
+ DISCOVERY Pocket watch, wall clock, school clock, church clock and broken watch all show 2:17. 
+ CASEBOOK EVERY CLOCK STOPPED AT 2:17 
+ Village records
+ DISCOVERY Records contain 1:43, 1:58, 2:06, 2:11, 2:17 and 2:31. 
+ Narration The clocks said 2:17. 
+ Narration The records didn't. 
+ Narration Something happened at 2:17. 
+ Narration But 2:17 wasn't the whole story. 
+ Other evidence
+ DISCOVERY Burned photograph: Ivy, Luke, Hanna and a fourth lantern-carrying person whose face is scratched out. 
+ DISCOVERY Torn village record. 
+ DISCOVERY The same strange symbols appear near the clock tower, on doors and near the old well. 
+ DISCOVERY Damaged recording: “...the lantern...” / “...don't activate it...” 
+ Unknown woman — first encounter
+ Elias enters an abandoned room. A woman is sitting there. He does not know who she is. She does not recognize him.
+ UNKNOWN WOMAN Whatever you find here, don't trust the first memory you see. 
+ VISUAL She disappears without fading. The chair remains and slowly rocks. 
+ SFX Creeeak... 
+ Narration I didn't know who she was. 
+ Narration But I remembered what she said. 
+ Important: The player does not learn that the unknown woman is Hanna at this point.
+ 5. Ivy — first memory reconstruction
+ VISUAL Schoolhouse. Ivy is not teaching; it is night and she is alone, gathering school materials and preparing to leave. 
+ SFX Low hum. 
+ UI MEMORY ECHO DETECTED 
+ PLAYER Activate Echo Lantern. 
+ VISUAL Ivy hears movement outside and sees people running through the streets. 
+ VISUAL Everyone is moving toward the town square. 
+ SFX DONG 
+ IVY Someone rang the bell. 
+ IVY I don't know who. 
+ VISUAL Ivy sees, for a moment, someone carrying a lantern. The figure disappears behind the crowd. 
+ VISUAL Clock tower: 2:17. The memory glitches and freezes. 
+ SFX Static / distorted bell. 
+ Narration Ivy remembered the bell. 
+ Narration She remembered everyone running toward the square. 
+ Narration But she couldn't remember who rang it. 
+ Casebook: IVY → heard bell → everyone ran to square → person who rang it: UNKNOWN
+ PLAYER Return to village investigation. 
+ 6. Luke — second memory reconstruction
+ VISUAL Dry river in the present. Abandoned boat. Luke is nearby. Echo Lantern reacts. 
+ PLAYER Activate Echo Lantern. 
+ VISUAL Night. The river is flowing. Luke is helping villagers leave Veyra. 
+ VISUAL People get into boats. Luke pushes one away. 
+ VISUAL The river changes unnaturally. 
+ VISUAL Luke sees a figure returning toward Veyra carrying something. The face cannot be seen. 
+ VISUAL Luke checks his pocket watch: 2:31 AM. 
+ VISUAL The village clock tower behind him reads 2:17 AM. 
+ VISUAL The figure continues toward the village. The memory collapses. 
+ SFX CRACK 
+ Narration Luke's watch said 2:31. 
+ Narration The village clock said 2:17. 
+ Narration The night continued after the clocks stopped. 
+ Casebook: IVY → 2:17 bell   CONTRADICTS   LUKE → 2:31 watch
+ PLAYER Return to village investigation. 
+ 7. Hanna — identity and memory reconstruction
+ DISCOVERY The abandoned room contains village archives. An old document identifies the unknown woman as HANNA — VILLAGE ARCHIVIST. 
+ Narration The woman from earlier was Hanna. 
+ VISUAL The Echo Lantern reacts in the archive. 
+ PLAYER Activate Echo Lantern. 
+ VISUAL Hanna is inside the village archive at night, examining old records. 
+ HANNA The lantern was never meant to be used like this. 
+ VISUAL She hears something underground. 
+ VISUAL Hanna discovers a hidden entrance and enters. 
+ VISUAL The same strange symbols cover the walls. 
+ VISUAL Hanna reaches a chamber. An Echo Lantern is active. Someone is standing beside it; the face is hidden. 
+ HANNA Stop. 
+ SFX Flash / memory collapse. 
+ Casebook: HANNA → archive → Echo Lantern → unknown person
+ 8. Detective casebook / investigation graph
+ VEYRA
+ |
+ 2:17
+ |
+ ┌──────────────┼──────────────┐
+ ↓ ↓ ↓
+ IVY CLOCKS BELL
+ | | |
+ TOWN SQUARE 2:17 ROPE UNTOUCHED
+ |
+ ↓
+ LUKE'S MEMORY
+ |
+ 2:31 WATCH
+ |
+ CONTRADICTION
+ |
+ DISTORTED TIME
+ |
+ HANNA
+ |
+ ECHO LANTERN
+ |
+ UNKNOWN FIGURE
+ |
+ FOURTH PERSON
+ |
+ UNKNOWN
+ CASEBOOK FOOTPRINTS Found near clock tower. 
+ CASEBOOK BLOOD-STAINED KEY Found near clock tower. 
+ CASEBOOK FOURTH FIGURE Three known villagers + one scratched-out apprentice. Identity remains unknown. 
+ CASEBOOK DISTORTED TIMELINE Clocks freeze at 2:17, but records continue through 2:31. 
+ CASEBOOK ECHO LANTERN Can extract/replay/alter memories. 
+ CASEBOOK UNDERGROUND The blood-stained key leads toward the hidden route beneath Veyra. 
+ 9. The well, tunnels and archive
+ DISCOVERY The blood-stained key fits a hidden lock at the old well. 
+ SFX CLICK. 
+ Narration The key wasn't meant for a door above ground. 
+ Narration It was meant for what was underneath. 
+ VISUAL Dark tunnels, water, collapsed passages, strange symbols and abandoned rooms. 
+ DISCOVERY Hundreds of Echo Lantern records. 
+ DOCUMENT ECHO LANTERN — MEMORY EXTRACTION 
+ DOCUMENT MEMORY TRANSFER 
+ DOCUMENT MEMORY RECONSTRUCTION 
+ DOCUMENT MEMORY ALTERATION 
+ Narration The lantern didn't only reveal memories. 
+ Narration It could change them. 
+ DOCUMENT Three villagers. One apprentice. 
+ Narration Three names remained. 
+ Narration The fourth had been erased. 
+ 10. Deepest chamber — true memory
+ VISUAL The original Echo Lantern remains in the deepest chamber. It activates by itself. 
+ SFX Deep pulse. Heartbeat. 
+ PLAYER Touch the Echo Lantern. 
+ VISUAL Young Elias appears. His face is finally revealed. 
+ Narration The fourth person was Elias. 
+ VISUAL Elias's younger sister is alive and seriously ill. 
+ VISUAL Hanna tries to stop him. 
+ HANNA You don't know what it will do. 
+ VISUAL Elias activates the Echo Lantern. 
+ VISUAL The village lantern network activates. 
+ VISUAL Ivy hears the bell. Villagers run toward the square. 
+ VISUAL Luke takes people toward the river. The river behaves strangely. 
+ VISUAL Hanna reaches the underground chamber. 
+ SFX WHOOM. 
+ VISUAL Every clock stops at 2:17. 
+ VISUAL Events continue at 1:43, 1:58, 2:06, 2:11, 2:17 and 2:31. 
+ ELIAS I'm trying to save you. 
+ SISTER You were trying to save me. 
+ SISTER But you were the one who killed me. 
+ Narration He changed what they remembered. 
+ Narration Then he changed his own. 
+ VISUAL Ivy's memory changes. Luke's memory changes. Hanna's memory changes. Records change. Young Elias uses the lantern on himself. 
+ Narration His memory of Veyra disappears. 
+ Narration His memory of the experiment disappears. 
+ Narration His memory of what happened disappears. 
+ 11. Finale
+ VISUAL Black screen. Elias opens his eyes in the underground chamber. The fourth person's face in the photograph is now his own. 
+ ELIAS I thought I came here to find out what happened to Veyra. 
+ ELIAS I was looking at the wrong side of the mystery. 
+ ELIAS The village didn't forget what happened. 
+ ELIAS I did. 
+ VISUAL Clock tower. Frozen at 2:17. 
+ SFX TICK. 
+ VISUAL The clock moves to 2:18 AM. 
+ VISUAL Ivy disappears. Luke disappears. Hanna disappears. Elias remains alone with the Echo Lantern. 
+ Narration Some memories disappear. 
+ Narration Some are buried. 
+ Narration And some wait to be remembered. 
+ UI ECHOES OF SORROW 
+ UI THE END 
+ 12. End-game UI and screens
+ UI INVESTIGATION COMPLETE. 
+ UI BACK TO TITLE 
+ UI PLAY AGAIN 
+ UI CONTINUE 
+ UI NEW GAME 
+ UI SETTINGS 
+ UI CREDITS 
+ UI EXIT 
+ UI SAVE COMPLETE after each major investigation milestone 
+ UI MEMORY ECHO DETECTED when the Echo Lantern can reconstruct a memory 
+ UI NEW EVIDENCE when a new casebook relationship/clue appears 
+ UI CONTRADICTION when two pieces of evidence cannot share the same timeline 
+ UI IDENTITY UNKNOWN used for the fourth figure until the final reveal 
+ 13. Complete coding flow
+ MAIN MENU
+│
+├── CONTINUE
+├── NEW GAME
+├── SETTINGS
+├── CREDITS
+└── EXIT
+ │
+ ↓
+ENTER VEYRA
+ │
+ ↓
+CLOCK TOWER → 2:17 → BELL
+ │
+ ↓
+TOY ROLLS
+ │
+ ↓
+MYSTERIOUS FIGURE IN WINDOW
+ │
+ ↓
+COMIC HISTORY OF VEYRA
+ │
+ ↓
+DISAPPEARANCE AT 2:17
+ │
+ ↓
+SEARCH PARTY → CASE UNSOLVED
+ │
+ ↓
+PRESENT-DAY VILLAGE
+ │
+ ↓
+UNKNOWN WOMAN
+“Whatever you find here, don't trust the first memory you see.”
+ │
+ ↓
+VILLAGE INVESTIGATION
+├── footprints
+├── blood-stained key
+├── untouched bell rope
+├── clocks at 2:17
+├── records at different times
+├── burned photograph
+├── strange symbols
+└── damaged recording
+ │
+ ↓
+ECHO LANTERN — FIRST USE
+ │
+ ↓
+IVY MEMORY
+ │
+ ↓
+RETURN TO VILLAGE
+ │
+ ↓
+LUKE MEMORY
+ │
+ ↓
+RETURN TO VILLAGE
+ │
+ ↓
+HANNA IDENTIFIED
+ │
+ ↓
+HANNA MEMORY
+ │
+ ↓
+BLOOD-STAINED KEY → WELL
+ │
+ ↓
+UNDERGROUND TUNNELS
+ │
+ ↓
+ECHO LANTERN ARCHIVE
+ │
+ ↓
+FOURTH PERSON = UNKNOWN APPRENTICE
+ │
+ ↓
+DEEPEST CHAMBER
+ │
+ ↓
+COMPLETE MEMORY
+ │
+ ↓
+YOUNG ELIAS
+ │
+ ↓
+SISTER
+ │
+ ↓
+EXPERIMENT
+ │
+ ↓
+VILLAGE MEMORY COLLAPSE
+ │
+ ↓
+ELIAS ERASES HIS OWN MEMORY
+ │
+ ↓
+PRESENT
+ │
+ ↓
+2:17 → 2:18
+ │
+ ↓
+GHOSTS DISAPPEAR
+ │
+ ↓
+THE END
+ Implementation note: This is the revised story version requested for coding. The witness sequence is fixed as Ivy → Luke → Hanna, but the player returns to village investigation between memories. Ghosts do not identify Elias at the beginning. The unknown woman warning is shown before Hanna's identity is discovered. The fourth person's identity is withheld until the final memory.
+ 
