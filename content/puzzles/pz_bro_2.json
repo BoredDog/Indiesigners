@@ -1,21 +1,22 @@
 {
   "id": "pz_bro_2",
   "title": "TICK! The Pocket Watch",
-  "tip": "A sluice drains one channel and floods the other. Both sluices move the same water.",
+  "tip": "The sluice drains one channel and floods the other. Push the crate to move its shadow.",
   "reward": "ev_arun_tick",
-  "light": "N",
+  "light": "E",
   "shadow": 1,
-  "par": 10,
+  "par": 23,
   "tiles": [
-    ".~.-G",
-    ".~.-.",
-    "S~W-.",
-    ".~#-.",
-    "W~.-."
+    "G.:...",
+    "..:...",
+    "~~:~~~",
+    ".#:C.L",
+    "..:.#.",
+    "S#:..."
   ],
   "legend": {
     "~": "water:s1",
-    "-": "water:s1:dry",
-    "W": "sluice:s1"
+    ":": "water:s2:dry",
+    "L": "sluice:s1,s2"
   }
 }

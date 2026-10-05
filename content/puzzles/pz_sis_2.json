@@ -1,23 +1,22 @@
 {
   "id": "pz_sis_2",
   "title": "SCRATCH! The Wall Ledger",
-  "tip": "Two ropes, two gates. Each rope only moves its own gate.",
+  "tip": "One rope, pulled twice. One clock, turned once. Order matters.",
   "reward": "ev_mira_later_entry",
-  "light": "N",
-  "shadow": 2,
-  "par": 10,
+  "light": "W",
+  "shadow": 3,
+  "par": 19,
   "tiles": [
-    "#...A.",
-    "..D._.",
-    "..LS_.",
-    ".#.M_.",
-    "___B__",
-    "G..._."
+    "D.....",
+    ".__A__",
+    ".._..G",
+    "#S_.#.",
+    ".L_...",
+    "..b..."
   ],
   "legend": {
     "A": "gate:g1",
-    "B": "gate:g2",
-    "L": "lever:g1",
-    "M": "lever:g2"
+    "b": "gate:g2:open",
+    "L": "lever:g1,g2"
   }
 }

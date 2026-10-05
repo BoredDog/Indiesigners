@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && npm run test:puzzles && vite build",
-    "test:puzzles": "tsx tools/check-puzzle.ts && tsx tools/solve-puzzles.ts",
+    "test:puzzles": "tsx tools/check-puzzle.ts && tsx tools/solve-puzzles.ts --strict",
+    "test:puzzles:strict": "tsx tools/check-puzzle.ts && tsx tools/solve-puzzles.ts --strict",
     "preview": "vite preview",
     "typecheck": "tsc",
+    "playtest:sim": "tsx tools/playtest-sim.ts",
     "test:settings": "npm run build && tsx tools/shots-textsize.ts 150",
     "test:browsers": "npm run build && tsx tools/autoplay-full.ts test-results/autoplay-firefox 0 --browser=firefox && tsx tools/autoplay-full.ts test-results/autoplay-edge 0 --browser=msedge && tsx tools/autoplay-full.ts test-results/autoplay-brave 0 --browser=brave",
     "assets": "bash tools/download-assets.sh",

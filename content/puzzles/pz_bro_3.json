@@ -1,21 +1,22 @@
 {
   "id": "pz_bro_3",
   "title": "CLOTH! The Silver Hairclip",
-  "tip": "Crates cast shadows too. The clock dial turns the light.",
+  "tip": "Sluice, crate and clock: each one moves the ink.",
   "reward": "ev_arun_cloth",
-  "light": "E",
+  "light": "N",
   "shadow": 2,
-  "par": 14,
+  "par": 23,
   "tiles": [
-    "#.~...",
-    "..~S.D",
-    ".._...",
-    "..~CL.",
-    "G#~.C.",
-    "..~..."
+    "..L.~.",
+    "..#D~.",
+    "...C~.",
+    "....~#",
+    "::::::",
+    "S..#~G"
   ],
   "legend": {
     "~": "water:s1",
-    "L": "sluice:s1"
+    ":": "water:s2:dry",
+    "L": "sluice:s1,s2"
   }
 }

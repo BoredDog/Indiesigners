@@ -5,6 +5,9 @@ extends SceneTree
 
 const Rules := preload("res://puzzle/echo_rules.gd")
 const Solver := preload("res://puzzle/echo_solver.gd")
+const Analysis := preload("res://puzzle/echo_analysis.gd")
+## V15/V14: an unused piece fails (every level is reworked). `-- --report` only reports.
+var strict := not OS.get_cmdline_user_args().has("--report")
 
 var failed := 0
 
@@ -17,6 +20,7 @@ func ok(cond: bool, msg: String) -> void:
 
 func _initialize() -> void:
 	_mechanics()
+	_analysis()
 	_levels()
 	print("%d puzzle check(s) failed" % failed if failed else "All Godot puzzle checks passed.")
 	quit(1 if failed else 0)
@@ -102,6 +106,14 @@ func _mechanics() -> void:
 	ok(play(l, "EESS").event == "win", "collapse path to goal")
 
 
+func _analysis() -> void:
+	# Same boards as tools/check-puzzle.ts (V15).
+	ok(Analysis.analyse(lvl(["S...G", ".....", "C...."], {"light": "S"})).unused.map(func(p): return p.kind) == ["crate"], "idle crate reported as unused")
+	ok(Analysis.analyse(lvl(["S_G", ".A.", "L__"], {"legend": {"A": "gate:g1", "L": "lever:g1"}, "light": "S"})).unused.is_empty(), "lever + gate on the only route are both used")
+	ok(Analysis.dead_ends(lvl(["SC.G"], {"light": "S"})).dead_ends >= 1, "crate pushed against the goal is a dead end")
+	ok(Analysis.dead_ends(lvl(["S..G"], {"light": "S"})).dead_ends == 0, "an open corridor has no dead ends")
+
+
 func _levels() -> void:
 	var dir := DirAccess.open("res://content/puzzles")
 	ok(dir != null, "res://content/puzzles exists (npm run godot:sync)")
@@ -123,3 +135,9 @@ func _levels() -> void:
 			continue
 		ok(sol.moves.size() == level.par, "%s solves at par %d (got %d)" % [id, level.par, sol.moves.size()])
 		print("ok   %-11s par %2d  best %2d  states %6d  %dms  %s" % [id, level.par, sol.moves.size(), sol.explored, Time.get_ticks_msec() - t0, "".join(sol.moves)])
+		var a := Analysis.analyse(level)
+		print("     %-11s reachable %d  dead ends %d  unused pieces %d" % ["", a.reachable, a.dead_ends, a.unused.size()])
+		if not a.unused.is_empty():
+			print(("FAIL" if strict else "warn") + "   unused: " + ", ".join(a.unused.map(func(p): return p.label)))
+			if strict:
+				failed += 1

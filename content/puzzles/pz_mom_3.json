@@ -1,44 +1,34 @@
 {
   "id": "pz_mom_3",
   "title": "PAPER! The Self-Purge",
-  "tip": "Nodes, echoes and the clock: one wrong step wakes the network.",
+  "tip": "Two nodes, an echo and the clock. Time every step.",
   "reward": "ev_leela_paper",
-  "light": "N",
+  "light": "W",
   "shadow": 2,
-  "par": 18,
+  "par": 20,
   "tiles": [
-    "...._M#",
-    "b______",
-    "L..._#.",
-    "...D_.G",
-    "....A..",
-    "..S._..",
-    "...._.."
+    ".....D.",
+    "..#G_..",
+    "...._#.",
+    "...._..",
+    "...._..",
+    "__b___.",
+    "S.M._.."
   ],
   "legend": {
-    "A": "gate:g1",
     "b": "gate:g2:open",
-    "L": "node:g1,g2",
     "M": "node:g2"
   },
   "sentinels": [
     {
       "path": [
         [
-          1,
+          0,
           3
         ],
         [
           1,
-          4
-        ]
-      ]
-    },
-    {
-      "path": [
-        [
-          2,
-          2
+          3
         ],
         [
           2,

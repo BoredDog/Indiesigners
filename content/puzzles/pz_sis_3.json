@@ -3,16 +3,16 @@
   "title": "GLASS! The Apprentice's Staff",
   "tip": "Two clock dials. Every turn of the light moves every shadow.",
   "reward": "ev_mira_staff",
-  "light": "W",
+  "light": "S",
   "shadow": 3,
-  "par": 16,
+  "par": 20,
   "tiles": [
-    "G.....",
-    "____A_",
-    "#L.D..",
-    "......",
+    "..S...",
+    "L.....",
     "#.....",
-    ".D...S"
+    "....D#",
+    "____A.",
+    "..#G.."
   ],
   "legend": {
     "A": "gate:g1",
