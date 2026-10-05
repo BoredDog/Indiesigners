@@ -29,7 +29,7 @@ func has_own_button() -> bool:
 
 
 func _ready() -> void:
-	_village = load("res://art/placeholders/ph_village.png")
+	_village = ComicTheme.art("ph_village")
 	var bg := ColorRect.new()
 	bg.color = backdrop_color
 	bg.size = Vector2(CoreUi.W, CoreUi.H)
@@ -152,7 +152,7 @@ func document(layer: Control, centre: Vector2, size: Vector2, title: String, bod
 
 
 func image(layer: Control, key: String, feet: Vector2, scale := 1.0) -> TextureRect:
-	var tex: Texture2D = load("res://art/placeholders/%s.png" % key)
+	var tex: Texture2D = ComicTheme.art(key)
 	var r := TextureRect.new()
 	r.texture = tex
 	r.expand_mode = TextureRect.EXPAND_IGNORE_SIZE

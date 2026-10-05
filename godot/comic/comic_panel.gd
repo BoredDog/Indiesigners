@@ -46,7 +46,7 @@ func _build(bg: Texture2D, panel_def: Dictionary, frame: Rect2, quality: float, 
 	_vp.add_child(bg_sprite)
 
 	for c in panel_def.get("cutouts", []):
-		var tex: Texture2D = load("res://art/placeholders/%s.png" % c.key)
+		var tex: Texture2D = ComicTheme.art(c.key)
 		if tex == null:
 			continue
 		var s := Sprite2D.new()

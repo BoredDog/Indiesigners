@@ -10,6 +10,9 @@ func _ready() -> void:
 		if a.begins_with("--out="):
 			out = a.substr(6)
 	DirAccess.make_dir_recursive_absolute(out)
+	# The window must not take real clicks or keys (typing elsewhere would advance the frames).
+	get_window().unfocusable = true
+	get_viewport().gui_disable_input = true
 	GameState.save_path = "user://shots_seq_save.json"
 	GameState.new_game()
 	call_deferred("_start")

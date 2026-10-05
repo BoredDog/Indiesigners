@@ -19,6 +19,7 @@ func _ready() -> void:
 	for w in StoryData.WITNESSES:
 		await _play(w)
 	await _just_found()
+	await _way_out()
 	_reached_end = true
 	ok(_reached_end, "test reached its last check (no script error mid-run)")
 	print("%d check(s) failed" % failed if failed else "All Godot memory checks passed.")
@@ -50,6 +51,7 @@ func _play(w: String) -> void:
 	ok(core_ids.all(func(id): return GameState.has_evidence(id)), "%s: all core evidence saved" % w)
 	ok(m.counter.text == "EVIDENCE 5/5", "%s: counter %s" % [w, m.counter.text])
 	ok(m.reconstruct_btn.visible, "%s: RECONSTRUCT shown" % w)
+	ok("RECONSTRUCT" in m.hint.text, "%s: hint says RECONSTRUCT" % w)
 	# RECONSTRUCT itself opens the Deduction scene (covered by test_loop); confirm via state here.
 	for d in StoryData.deductions_of(w):
 		Deductions.attempt(d.id, d.requiredEvidence, "correct")
@@ -58,6 +60,7 @@ func _play(w: String) -> void:
 	m = await _open({"witness": w})
 	ok(GameState.deductions_confirmed(w) == 3, "%s: 3/3 deductions" % w)
 	ok(m.leave_btn.visible and not m.reconstruct_btn.visible, "%s: LEAVE MEMORY shown" % w)
+	ok("LEAVE MEMORY" in m.hint.text, "%s: hint says LEAVE MEMORY" % w)
 	m.queue_free()
 	await get_tree().process_frame
 
@@ -71,3 +74,29 @@ func _just_found() -> void:
 	ok(GameState.has_evidence("ev_mira_resonance"), "justFound evidence saved after return from puzzle")
 	ok(m.words["ev_mira_staff"].locked, "other puzzle fragments stay locked")
 	m.queue_free()
+
+
+## No dead ends (Phaser #24): MENU and ← VILLAGE on a half-finished page, hint, pause settings.
+func _way_out() -> void:
+	GameState.new_game()
+	GameState.set_flag("tip_evidence")
+	var m := await _open({"witness": "arun"})
+	ok(m.get_node_or_null("btn_VILLAGE") != null and m.get_node_or_null("btn_MENU") != null, "half-finished page: MENU and ← VILLAGE on the rail")
+	ok(not m.leave_btn.visible and not m.reconstruct_btn.visible, "half-finished page: no LEAVE / RECONSTRUCT yet")
+	ok("Deductions 0/3" in m.hint.text and "Echo Path" in m.hint.text, "hint: %s" % m.hint.text.replace("
+", " / "))
+	m.get_node("btn_MENU").pressed.emit()
+	await get_tree().process_frame
+	var pause: Node = m.get_node_or_null("Pause")
+	ok(pause != null, "MENU opens the pause overlay")
+	if pause:
+		var was: bool = ComicTheme.reduce_motion
+		pause.get_node("btn_REDUCE_MOTION").pressed.emit()
+		ok(ComicTheme.reduce_motion != was and GameState.settings().reduceMotion == ComicTheme.reduce_motion, "REDUCE MOTION toggles the setting and the comic layer")
+		ok("ON" in pause.get_node("btn_REDUCE_MOTION").text or "OFF" in pause.get_node("btn_REDUCE_MOTION").text, "row shows its value")
+		pause.get_node("btn_REDUCE_MOTION").pressed.emit()
+		pause.get_node("btn_RESUME").pressed.emit()
+		await get_tree().process_frame
+		ok(m.get_node_or_null("Pause") == null, "RESUME closes the overlay")
+	m.queue_free()
+	await get_tree().process_frame

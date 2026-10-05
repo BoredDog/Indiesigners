@@ -36,6 +36,27 @@ static var reduce_flashing := false
 static var _fonts := {}
 
 
+## Processed art (npm run art → godot:sync copies it to res://assets/art/) that replaces a placeholder.
+const ART_FOR := {
+	"ph_village": "bg_village", "ph_figure": "char_figure", "ph_mira": "char_mira", "ph_arun": "char_arun",
+	"ph_leela": "char_leela", "ph_elias_young": "char_elias_young", "ph_nia": "char_nia",
+}
+## Use the placeholders even when real art exists (dev compare; `-- --art=placeholder`).
+static var placeholders_only := "--art=placeholder" in OS.get_cmdline_user_args()
+
+
+## True when a placeholder key has real art (e.g. "ph_arun" → res://assets/art/char_arun.webp).
+static func has_art(key: String) -> bool:
+	return not placeholders_only and ART_FOR.has(key) and ResourceLoader.exists("res://assets/art/%s.webp" % ART_FOR[key])
+
+
+## The texture for a placeholder key: the processed art if it exists, else the stand-in PNG.
+static func art(key: String) -> Texture2D:
+	if has_art(key):
+		return load("res://assets/art/%s.webp" % ART_FOR[key])
+	return load("res://art/placeholders/%s.png" % key)
+
+
 static func font(kind: String) -> Font:
 	if not _fonts.has(kind):
 		_fonts[kind] = load("res://assets/fonts/%s" % FONT_FILES[kind])

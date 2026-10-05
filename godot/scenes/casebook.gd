@@ -208,7 +208,7 @@ func _figure_cards() -> void:
 	var fig := _board_card(Vector2(1640, 470), Vector2(300, 330), Color("1b1b20"), 2)
 	CoreUi.label(fig, Vector2(150, 18), "THE FIGURE", 34, ComicTheme.PAPER, Vector2(0.5, 0))
 	if figure_seen:
-		var tex: Texture2D = load("res://art/placeholders/ph_figure.png")
+		var tex: Texture2D = ComicTheme.art("ph_figure")
 		var img := TextureRect.new()
 		img.texture = tex
 		img.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
