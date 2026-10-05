@@ -45,7 +45,7 @@ To pick up a task, set it to `doing`. Devs update this file in their PR; Bhumi/A
 | N6 | Arun + Leela wiring, all 9 deductions + 6 threads, THE RECORD unlock, witness resolution beats | All 9 confirmable; archive opens at 9/9 | Tue 01:00 | done (Vansh, #28) |
 | N7 | Pause/Settings (text size, Reduce Motion, fullscreen) → writes `comicSettings` | Settings persist in the save | Tue 01:00 | done (Vansh, #29) |
 | N8 | Autoplay test (Playwright, all 6 witness orders to the credits) | `npm run test:autoplay` passes | Tue 02:30 | done (Vansh, #27) |
-| N9 | Core bug fixes, cross-browser check | No open `bug` issues in core | Tue 12:00 | todo → **Vansh** (reassigned 5 Oct) |
+| N9 | Core bug fixes, cross-browser check | No open `bug` issues in core | Tue 12:00 | done (Vansh, #30): Chromium, Firefox, Edge, Brave reach the summary |
 
 ## Vansh — puzzles
 | ID | Task | Done when | Due | Status |
