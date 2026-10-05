@@ -29,6 +29,7 @@ npm install
 npm run dev        # http://localhost:5173  (dev shortcut: /?scene=Memory&witness=arun)
 npm run build      # production build in dist/
 npm test           # full headless test suite (needs: npx playwright install chromium)
+npm run test:autoplay  # all 6 witness orders played to the summary (~14 min); npm test runs 2 of them
 npx tsx tools/check-links.ts   # every puzzle-locked clue → real puzzle → evidence back (after npm run build)
 ```
 Testers' spoiler sheet (every clue, deduction answer and puzzle): `design/ANSWER_KEY.md` (`npm run answer-key`).

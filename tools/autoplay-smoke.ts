@@ -31,6 +31,11 @@ async function scene(key: string) {
   await wait(800);
 }
 
+/** True if `key` is currently running (no waiting). */
+function activeScene(key: string): Promise<boolean> {
+  return page.evaluate((k) => (window as any).__echoes.game.scene.getScenes(true).some((s: any) => s.scene.key === k), key);
+}
+
 /** Screen position of the topmost game object with this name in the running scenes. */
 // Plain JS string: tsx would otherwise inject its __name helper into the browser code.
 const FIND = `(n) => {
@@ -38,7 +43,7 @@ const FIND = `(n) => {
   function walk(list) {
     for (let i = list.length - 1; i >= 0; i--) {
       const o = list[i];
-      if (o.visible === false) continue;
+      if (o.visible === false || o.alpha === 0) continue; // Phaser ignores clicks on fully transparent objects
       if (o.list) { const hit = walk(o.list); if (hit) return hit; }
       if (o.name === n) return o;
     }
@@ -141,7 +146,11 @@ try {
     await click('btn:CONFIRM');
     await click('btn:CONFIRM', 1800);
     if (i === 0) await shot('09-deduction-confirmed');
-    await click('btn:CONTINUE');
+    // CONTINUE fades in; a click that lands mid-fade is dropped, so retry until Memory is back.
+    for (let tries = 0; tries < 3 && !(await activeScene('Memory')); tries++) {
+      if (await find(page, 'btn:CONTINUE')) await click('btn:CONTINUE');
+      else await wait(500);
+    }
     await scene('Memory');
     check(await state<string>(`gs.deductionState('${id}')`) === 'confirmed', `${id} confirmed via UI`);
   }
