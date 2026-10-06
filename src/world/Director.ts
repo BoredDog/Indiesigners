@@ -15,7 +15,7 @@ import { River, LUKE_RIVER } from '../story/river';
 import { followHanna } from '../story/follow';
 import { echoBridge } from '../story/bridge';
 import { wellDescent } from '../story/descent';
-import { wellTiles, SURF } from './worldgen';
+import { wellTiles } from './worldgen';
 import { comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import { playCaseFile } from '../story/caseFile';
@@ -69,12 +69,13 @@ const TRY_OUT: Record<string, (d: Director) => Promise<unknown>> = {
   candles: (d) => d.candles.play(IVY_CANDLES),
   river: (d) => d.river.play(LUKE_RIVER),
   descent: async (d) => {
-    // The end of Episode 4: the well is open and the rubble dug, ready to climb down.
+    // The end of Episode 4, as in the game: the well is unlocked, the rubble still has to be dug.
     const A = d.a;
     for (const [x, y] of wellTiles()) d.world.clearTile(x, y);
-    for (let y = SURF + 1; y <= SURF + 6; y++) for (let x = 39; x <= 41; x++) if (d.world.world.fg[y][x]) d.world.clearTile(x, y);
+    d.world.props.get('well')?.setAlpha(0.35);
     d.teleport(A.well.x - 28, A.well.y);
-    d.objective('Climb down the well.');
+    d.objective('Climb down the well and dig through the rubble.', { x: A.well.x, y: A.well.y, label: 'The old well' });
+    d.guide.teach(['dig']);
     const desc = wellDescent(d);
     await d.explore([], () => desc.done());
     desc.end();
