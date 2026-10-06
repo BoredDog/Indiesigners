@@ -18,6 +18,7 @@ export interface CandleSpec {
   size: number; // candles per side
   /** Presses that light every candle from the start (the start is built from them). */
   solution: number[];
+  done?: string; // shown when every candle is lit
 }
 
 const DEPTH = 68;
@@ -183,7 +184,7 @@ export class Candles {
       state.solved = true;
       d.audio.tone('chime');
       for (const h of halos) s.tweens.add({ targets: h, scale: 2.2, alpha: 0.8, duration: 500 });
-      layer.add(label(s, W / 2, by + bw / 2, 'MEMORY FOUND', 90, { color: '#7fe0d4', strokeThickness: 14 }).setOrigin(0.5));
+      layer.add(label(s, W / 2, by + bw / 2, spec.done ?? 'MEMORY FOUND', 90, { color: '#7fe0d4', strokeThickness: 14 }).setOrigin(0.5));
       await d.wait(1100);
     } finally {
       s.input.off('pointermove', onMove);
@@ -202,4 +203,5 @@ export const IVY_CANDLES: CandleSpec = {
   how: 'Every candle you light also flips the ones beside it. Light them all.',
   size: 4,
   solution: [0, 6, 9, 11, 12, 15],
+  done: 'SOMEONE IS HERE',
 };

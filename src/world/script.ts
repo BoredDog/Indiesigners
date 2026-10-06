@@ -216,6 +216,7 @@ export const EPISODES: Episode[] = [
       d.objective('Follow the humming lantern to the school.');
       await d.explore([{ id: 'school', x: A.school.x, y: A.school.y, label: 'School', run: async () => 'done' }]);
       d.objective(null);
+      await d.candles.play(IVY_CANDLES); // puzzle: light the dark classroom; Ivy appears in the candlelight
       const ivy = d.npc('ivy', A.school.x + 40, A.school.y, { ghost: true, tint: GHOST, flip: true });
       ivy.sprite.setAlpha(0);
       await d.fadeNpc(ivy, 0.85);
@@ -233,7 +234,6 @@ export const EPISODES: Episode[] = [
       const ok = await d.qte.timing('STEADY THE LANTERN', 'SPACE');
       if (!ok) await d.narr('The light shudders, then catches anyway, as if it wanted to.');
       d.memory(true);
-      await d.candles.play(IVY_CANDLES); // puzzle: light the classroom candles
       await d.banner('IVY’S MEMORY, 2:17 AM', '#bfefff', 1300);
       await d.narr('Ten years ago. Ivy is alone in the school, packing her bag by candlelight.');
       d.shake(700, 0.004);
