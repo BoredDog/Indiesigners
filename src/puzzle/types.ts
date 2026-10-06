@@ -1,4 +1,4 @@
-// Echo Paths level + state types (PLAN.md §3). Pure data: no Phaser, so tools/ can import it.
+// Echo Paths level + state types. Pure data: no Phaser, so tools/ can import it.
 
 export type Dir = 'N' | 'E' | 'S' | 'W';
 export const DIR_ORDER: readonly Dir[] = ['N', 'E', 'S', 'W'];

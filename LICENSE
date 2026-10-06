@@ -23,5 +23,5 @@ SOFTWARE.
 
 ---
 This license covers the source code. Original art and writing by the team
-(art-src/, public/assets/art/, content/) are licensed CC BY 4.0. Third-party
+(public/assets/, content/, design/) are licensed CC BY 4.0. Third-party
 assets keep their own licenses; see CREDITS.md.

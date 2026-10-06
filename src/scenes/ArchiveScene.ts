@@ -22,7 +22,7 @@ const TEXT = {
 };
 
 /**
- * Hidden Archive (PLAN.md §2 step 9): opens after 9/9 deductions. A short comic beat, then the
+ * Hidden Archive: opens after 9/9 deductions. A short comic beat, then the
  * collapse escape (Echo Path `pz_archive`), then the Finale.
  */
 export class ArchiveScene extends Phaser.Scene {

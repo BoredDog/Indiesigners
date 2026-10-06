@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 // Procedural stand-in art so the comic layer can be built and tested before real art lands.
-// Swap the keys for real textures once art/incoming is processed (npm run art).
+// Comic mode placeholders; real textures replace them by key when they exist.
 
 export const PH = {
   village: 'ph_village',

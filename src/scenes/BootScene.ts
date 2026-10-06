@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { makePlaceholders } from '../dev/placeholders';
 
-/** Art file name (art/incoming/<you>/<name>.png) → the placeholder texture it replaces. */
+/** Art file name (public/assets/art/<name>.webp) → the placeholder texture it replaces. */
 const ART_REPLACES: Record<string, string> = {
   bg_village: 'ph_village',
   char_figure: 'ph_figure',
@@ -20,7 +20,7 @@ export class BootScene extends Phaser.Scene {
 
   preload() {
     if (!this.textures.exists('paper')) this.load.image('paper', 'assets/textures/paper002.jpg');
-    // Processed art (npm run art) replaces the matching placeholder: same key, same canvas size.
+    // Art in public/assets/art replaces the matching placeholder: same key, same canvas size.
     // ?art=placeholder skips it (compare against the stand-ins).
     if (new URLSearchParams(location.search).get('art') === 'placeholder') return;
     this.load.json('art-manifest', 'assets/art/manifest.json');

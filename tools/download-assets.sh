@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Downloads every free third-party asset listed in tasks.md §4.2.
+# Downloads the free third-party fonts and textures the game ships with (listed in CREDITS.md).
 # Run from the repo root in Git Bash (Windows) or any bash:  bash tools/download-assets.sh
 # Needs: curl, unzip. Safe to re-run (skips files that already exist).
 #
@@ -8,7 +8,6 @@
 #   public/assets/textures/     CC0 colour maps from ambientCG (shipped with the game)
 #   assets-raw/kenney/<pack>/   full Kenney packs (gitignored; copy only what you use into public/assets/ui/)
 #
-# NOT automated (manual download, see tasks.md §11.4): The Outlander CC0 village backgrounds (itch.io).
 set -euo pipefail
 
 ROOT="${ROOT:-$(pwd)}"
@@ -35,7 +34,7 @@ fetch "$GF/ofl/caveat/Caveat%5Bwght%5D.ttf"             "$FONTS/Caveat-Variable.
 fetch "$GF/ofl/caveat/OFL.txt"                          "$FONTS/Caveat-OFL.txt"
 
 echo "== Textures (ambientCG, CC0) =="
-for id in Paper001 Paper002 Paper003 Cork001 Wood049 Concrete034; do
+for id in Paper002 Cork001; do
   zip="$RAW/ambientcg/${id}_1K-JPG.zip"
   fetch "https://ambientcg.com/get?file=${id}_1K-JPG.zip" "$zip"
   out="$TEX/$(echo "$id" | tr '[:upper:]' '[:lower:]').jpg"
@@ -43,11 +42,6 @@ for id in Paper001 Paper002 Paper003 Cork001 Wood049 Concrete034; do
     color=$(unzip -Z1 "$zip" | grep -i '_Color\.jpg$' | head -1)
     unzip -p "$zip" "$color" > "$out" && echo "  ok    $(basename "$out")"
   fi
-done
-
-echo "== Grime textures for tools/draft-art.ts (ambientCG, CC0; stay in assets-raw) =="
-for id in PaintedPlaster017 Leaking006; do
-  fetch "https://ambientcg.com/get?file=${id}_1K-JPG.zip" "$RAW/ambientcg/${id}_1K-JPG.zip"
 done
 
 echo "== Kenney packs (CC0) =="
@@ -62,4 +56,4 @@ for pack in cursor-pack game-icons board-game-icons particle-pack; do
 done
 
 echo
-echo "Done. Log every file you actually use in CREDITS.md (tasks.md §4.2)."
+echo "Done. Log every file you actually use in CREDITS.md."
