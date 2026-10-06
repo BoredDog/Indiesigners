@@ -77,7 +77,8 @@ export function wellDescent(d: Director) {
       if (groundY >= ZONE_TOP && y - groundY > SAFE_DROP) return void die();
       groundY = y; // drops count from where you last stood, so a jump's arc isn't a fall
     }
-    if (!told && y > ZONE_TOP) {
+    // The descent proper starts once he lands on the first plank below the rubble.
+    if (!told && body.blocked.down && y > ZONE_TOP) {
       told = true;
       d.objective('Climb down plank by plank. Some are only there in the lantern’s light. Don’t fall far.');
     }
