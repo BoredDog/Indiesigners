@@ -1,6 +1,10 @@
-// Story-mode sound. Footsteps, creaks, page turns and the bell are Kenney CC0 samples
-// (public/assets/story/audio). Wind, drone, heartbeat and glitch are synthesized with WebAudio.
+// Story-mode sound. Footsteps on grass, creaks, page turns and the bell are Kenney CC0 samples
+// (public/assets/story/audio). Wind, rain, water, drone, stone and wood footsteps, heartbeat and
+// glitch are synthesized with WebAudio. Everything goes through the SOUND bus (src/story/music.ts);
+// music() switches the score.
 import Phaser from 'phaser';
+import { gameState } from '../core/GameState';
+import { mixFor, music, type Mood } from './music';
 
 const FILES = {
   step0: 'footstep_grass_000', step1: 'footstep_grass_001', step2: 'footstep_grass_002', step3: 'footstep_grass_003', step4: 'footstep_grass_004',
@@ -8,6 +12,7 @@ const FILES = {
   page: 'bookFlip1', click: 'metalClick', bell: 'impactBell_heavy_000', slam: 'doorClose_4',
 } as const;
 export type SoundKey = keyof typeof FILES;
+export type Surface = 'grass' | 'stone' | 'wood' | 'mud';
 
 export class StoryAudio {
   private scene: Phaser.Scene;
@@ -22,22 +27,64 @@ export class StoryAudio {
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => (this.bed?.stop(), this.hum(false)));
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => (this.bed?.stop(), this.hum(false), this.water(false)));
   }
 
   private get ctx(): AudioContext | undefined {
     return (this.scene.sound as Phaser.Sound.WebAudioSoundManager).context;
   }
+  /** The SOUND bus (falls back to the raw output if the mix isn't available). */
   private get dest(): AudioNode | undefined {
+    const mix = mixFor(this.scene);
+    if (mix) return mix.sfx;
     const m = this.scene.sound as Phaser.Sound.WebAudioSoundManager;
     return m.destination ?? this.ctx?.destination;
   }
 
-  play(k: SoundKey, volume = 0.5, detune = 0) {
-    if (this.scene.cache.audio.exists(`st_${k}`)) this.scene.sound.play(`st_${k}`, { volume, detune });
+  /** Switch the score (title, night, memory, under, finale, dawn, none). */
+  music(mood: Mood) {
+    music(this.scene, mood);
   }
-  step() {
-    this.play(`step${this.stepI++ % 5}` as SoundKey, 0.2, -300 + Math.random() * 200);
+
+  play(k: SoundKey, volume = 0.5, detune = 0) {
+    const v = volume * gameState.settings.sfx; // samples play through Phaser, so scale them here
+    if (v > 0 && this.scene.cache.audio.exists(`st_${k}`)) this.scene.sound.play(`st_${k}`, { volume: v, detune });
+  }
+  /** A footstep that matches the ground: grass samples, synthesized stone and wood. Underground
+   *  stone gets a short slap-back, like a tunnel. */
+  step(surface: Surface = 'grass', underground = false) {
+    if (surface === 'grass' || surface === 'mud') {
+      this.play(`step${this.stepI++ % 5}` as SoundKey, surface === 'mud' ? 0.14 : 0.2, (surface === 'mud' ? -700 : -300) + Math.random() * 200);
+      return;
+    }
+    const ctx = this.ctx, dest = this.dest;
+    if (!ctx || !dest) return;
+    const t = ctx.currentTime, vary = 0.85 + Math.random() * 0.3;
+    const hit = (at: number, level: number) => {
+      const len = surface === 'wood' ? 0.09 : 0.05;
+      const b = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * len), ctx.sampleRate), ch = b.getChannelData(0);
+      for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / ch.length) ** 2;
+      const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = b;
+      f.type = 'bandpass';
+      f.frequency.value = (surface === 'wood' ? 650 : 1700) * vary;
+      f.Q.value = surface === 'wood' ? 1.2 : 0.8;
+      g.gain.value = level * (surface === 'wood' ? 0.5 : 0.35);
+      s.connect(f).connect(g).connect(dest);
+      s.start(t + at);
+      // The heel: a short low thump, hollow on wood.
+      const o = ctx.createOscillator(), og = ctx.createGain();
+      o.frequency.setValueAtTime((surface === 'wood' ? 170 : 115) * vary, t + at);
+      o.frequency.exponentialRampToValueAtTime(surface === 'wood' ? 110 : 70, t + at + 0.08);
+      og.gain.setValueAtTime(0.0001, t + at);
+      og.gain.exponentialRampToValueAtTime(level * (surface === 'wood' ? 0.22 : 0.14), t + at + 0.004);
+      og.gain.exponentialRampToValueAtTime(0.0001, t + at + 0.09);
+      o.connect(og).connect(dest);
+      o.start(t + at);
+      o.stop(t + at + 0.12);
+    };
+    hit(0, 1);
+    if (underground && surface === 'stone') hit(0.11, 0.3);
   }
   creak() {
     this.play(`creak${1 + Math.floor(Math.random() * 3)}` as SoundKey, 0.35, -500);
@@ -73,8 +120,45 @@ export class StoryAudio {
     }
   }
 
-  /** Short synthesized one-shots. */
-  tone(kind: 'heartbeat' | 'glitch' | 'whoom' | 'chime' | 'drone') {
+  private waterBed?: { stop: () => void };
+  /** Running water while the river is full (Luke's memory). */
+  water(on: boolean) {
+    const ctx = this.ctx, dest = this.dest;
+    if (!ctx || !dest) return;
+    if (on && !this.waterBed) {
+      const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < len; i++) { last = (last + 0.06 * (Math.random() * 2 - 1)) / 1.06; d[i] = last * 2.5 + (Math.random() * 2 - 1) * 0.05; }
+      const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
+      src.buffer = buf;
+      src.loop = true;
+      bp.type = 'bandpass';
+      bp.frequency.value = 420;
+      bp.Q.value = 0.7;
+      // A slow wobble on the filter makes it gurgle rather than hiss.
+      const lfo = ctx.createOscillator(), lg = ctx.createGain();
+      lfo.frequency.value = 0.35;
+      lg.gain.value = 160;
+      lfo.connect(lg).connect(bp.frequency);
+      g.gain.value = 0.0001;
+      g.gain.setTargetAtTime(0.5, ctx.currentTime, 0.8);
+      src.connect(bp).connect(g).connect(dest);
+      src.start();
+      lfo.start();
+      this.waterBed = {
+        stop: () => {
+          g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.7);
+          setTimeout(() => { src.stop(); lfo.stop(); g.disconnect(); }, 3500);
+        },
+      };
+    } else if (!on && this.waterBed) {
+      this.waterBed.stop();
+      this.waterBed = undefined;
+    }
+  }
+
+  /** Short synthesized one-shots. 'whisper' sits under a ghost's line; 'sting' is the dark ending. */
+  tone(kind: 'heartbeat' | 'glitch' | 'whoom' | 'chime' | 'drone' | 'whisper' | 'sting') {
     const ctx = this.ctx, dest = this.dest;
     if (!ctx || !dest) return;
     const t = ctx.currentTime;
@@ -109,10 +193,13 @@ export class StoryAudio {
     if (kind === 'whoom') { noise(1.4, 200, 0.5, 0, 'lowpass'); osc(70, 'sawtooth', 0.12, 1.4, 0, 30); }
     if (kind === 'chime') { [880, 1320, 1760].forEach((f, i) => osc(f, 'sine', 0.12, 1.2, i * 0.08)); }
     if (kind === 'drone') { osc(49, 'sawtooth', 0.08, 3, 0, 46); }
+    if (kind === 'whisper') { noise(0.7, 3200, 0.05, 0, 'bandpass'); [1318, 1975].forEach((f, i) => osc(f, 'sine', 0.012, 0.9, i * 0.05)); }
+    if (kind === 'sting') { noise(2.4, 160, 0.4, 0, 'lowpass'); [55, 58.3, 82.4].forEach((f) => osc(f, 'sawtooth', 0.07, 3.2, 0, f * 0.94)); }
   }
 
-  /** Ambient bed: 'night' = wind + drone, 'memory' = thin high shimmer, 'under' = deep drone + drips. */
-  ambience(kind: 'night' | 'memory' | 'under' | 'none') {
+  /** Ambient bed: 'night' = wind + drone, 'memory' = thin high shimmer, 'under' = deep drone,
+   *  'rain' = the title screen's rain. */
+  ambience(kind: 'night' | 'memory' | 'under' | 'rain' | 'none') {
     const ctx = this.ctx, dest = this.dest;
     this.bed?.stop();
     this.bed = undefined;
@@ -122,6 +209,29 @@ export class StoryAudio {
     out.connect(dest);
     out.gain.setTargetAtTime(kind === 'memory' ? 0.25 : 0.4, ctx.currentTime, 1.5);
     const nodes: AudioScheduledSourceNode[] = [];
+    const stopAll = () => {
+      out.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.4);
+      setTimeout(() => { nodes.forEach((n) => n.stop()); out.disconnect(); }, 1500);
+    };
+
+    if (kind === 'rain') {
+      // Two layers of noise: a bright hiss for the drops, a low rumble for the downpour.
+      const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      for (const [type, freq, level] of [['highpass', 2500, 0.07], ['lowpass', 500, 0.22]] as const) {
+        const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+        src.buffer = buf;
+        src.loop = true;
+        f.type = type;
+        f.frequency.value = freq;
+        g.gain.value = level;
+        src.connect(f).connect(g).connect(out);
+        nodes.push(src);
+      }
+      nodes.forEach((n, i) => (n as AudioBufferSourceNode).start(ctx.currentTime, i * 1.3)); // offset the loops so they don't line up
+      this.bed = { out, stop: stopAll };
+      return;
+    }
 
     const len = ctx.sampleRate * 4, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
     let last = 0;
@@ -151,12 +261,6 @@ export class StoryAudio {
     lfo.connect(lg).connect(bp.frequency);
     nodes.push(lfo);
     nodes.forEach((n) => n.start());
-    this.bed = {
-      out,
-      stop: () => {
-        out.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.4);
-        setTimeout(() => { nodes.forEach((n) => n.stop()); out.disconnect(); }, 1500);
-      },
-    };
+    this.bed = { out, stop: stopAll };
   }
 }
