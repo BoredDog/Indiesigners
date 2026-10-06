@@ -33,8 +33,6 @@ const STEP = `
   }
   // Tuning puzzle: snap the knobs onto the echo and wait for it to lock.
   if (d.tuner && d.tuner.state) { if (!d.tuner.state.locked) d.tuner.state.auto(); return 'tune'; }
-  // Rewritten record: find every change.
-  if (d.rewritten && d.rewritten.state) { if (!d.rewritten.state.solved && !d.rewritten.state.started) { d.rewritten.state.started = true; d.rewritten.state.auto(); } return 'record'; }
   // River channels: turn every piece into place.
   if (d.river && d.river.state) { if (!d.river.state.solved && !d.river.state.started) { d.river.state.started = true; d.river.state.auto(); } return 'river'; }
   // Classroom candles: press the rest of the solution.

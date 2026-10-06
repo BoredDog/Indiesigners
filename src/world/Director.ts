@@ -12,7 +12,6 @@ import { Qte } from '../story/qte';
 import { ECHO_FIRST, ECHO_NOTE, Tuner } from '../story/tuner';
 import { Candles, IVY_CANDLES } from '../story/candles';
 import { River, LUKE_RIVER } from '../story/river';
-import { Rewritten, HANNA_RECORD } from '../story/rewritten';
 import { comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import { playCaseFile } from '../story/caseFile';
@@ -65,7 +64,6 @@ const TRY_OUT: Record<string, (d: Director) => Promise<void>> = {
   tune2: (d) => d.tuner.tune(ECHO_NOTE),
   candles: (d) => d.candles.play(IVY_CANDLES),
   river: (d) => d.river.play(LUKE_RIVER),
-  record: (d) => d.rewritten.play(HANNA_RECORD),
 };
 
 export class Director {
@@ -76,7 +74,6 @@ export class Director {
   tuner: Tuner;
   candles: Candles;
   river: River;
-  rewritten: Rewritten;
   save: StorySave;
   lastDt = 16;
   alive = true;
@@ -129,7 +126,6 @@ export class Director {
     this.tuner = new Tuner(this);
     this.candles = new Candles(this);
     this.river = new River(this);
-    this.rewritten = new Rewritten(this);
     world.events.once(Phaser.Scenes.Events.SHUTDOWN, () => (this.alive = false));
 
     this.promptText = ptext(ui, 0, 0, '', 34, '#ffe08a').setOrigin(0.5);

@@ -22,6 +22,14 @@ export interface TuneSpec {
   hold?: number; // ms the match must be held
   hz?: number; // pitch per peak, for the sound
   hint?: string;
+  /** Scope labels for the target and your wave (default ECHO / LANTERN). */
+  labels?: [string, string];
+  /** Who sits in the frame beside the scope (a dialogue portrait key); default the lantern. */
+  portrait?: string;
+  /** The target swells and fades like a held note (0..1 of its height). */
+  breathe?: number;
+  /** Said when it locks (default LOCKED). */
+  lockText?: string;
 }
 
 const DEPTH = 68; // under the QTE layer (70), above the dialogue (20) and the board (50)
@@ -78,13 +86,16 @@ export class Tuner {
     layer.add(grid);
     const waves = s.add.graphics();
     layer.add(waves);
-    layer.add(ptext(s, sx + 20, sy + 12, 'ECHO', 26, '#e8fbff').setAlpha(0.7));
-    layer.add(ptext(s, sx + 92, sy + 12, 'LANTERN', 26, '#7fe0d4'));
+    const [tName, myName] = spec.labels ?? ['ECHO', 'LANTERN'];
+    const tLabel = ptext(s, sx + 20, sy + 12, tName, 26, '#e8fbff').setAlpha(0.7);
+    layer.add([tLabel, ptext(s, sx + 20 + tLabel.width + 24, sy + 12, myName, 26, '#7fe0d4')]);
 
     // The lantern, framed like a dialogue portrait, with a glow that grows as the signal clears.
     layer.add(panel(s, lx - 76, sy, 152, sh, 1));
     const glow = s.add.image(lx, cy, 'w_glow').setTint(0x9fe8ff).setBlendMode(Phaser.BlendModes.ADD);
-    const lamp = s.add.image(lx, cy, 'pt_lantern').setScale(2);
+    const lamp = spec.portrait
+      ? s.add.image(lx, sy + 24, spec.portrait).setOrigin(0.5, 0).setScale(2.4).setTint(0xd8f4ff).setAlpha(0.9)
+      : s.add.image(lx, cy, 'pt_lantern').setScale(2);
     lamp.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
     layer.add([glow, lamp]);
 
@@ -152,6 +163,8 @@ export class Tuner {
         const dr = spec.drift, ph = dr ? (t / dr.period) * Math.PI * 2 : 0;
         const ef = spec.target.f + (dr ? dr.f * Math.sin(ph) : 0);
         const ea = spec.target.a + (dr ? dr.a * Math.sin(ph + 1.3) : 0);
+        // A held note swells and fades (how it looks and sounds, not where it is).
+        const swell = spec.breathe ? 1 - spec.breathe * 0.5 * (1 + Math.sin((t / 1000) * 1.4)) : 1;
         if (!locked) {
           const fine = held.has('shift') ? 0.35 : 1;
           const k = (dt / 1000) * fine;
@@ -184,7 +197,7 @@ export class Tuner {
         const amp = sh / 2 - 34, x0 = sx + 24, span = sw - 48;
         const phase = still ? 0 : (t / 1000) * 2.2;
         waves.clear();
-        waves.fillStyle(PALE, 0.6);
+        waves.fillStyle(PALE, 0.6 * swell);
         for (let x = 0; x <= span; x += 16) waves.fillCircle(x0 + x, cy - ea * amp * Math.sin((x / span) * Math.PI * 2 * ef + phase), 3);
         const line = fOk && aOk ? GOLD : TEAL;
         waves.lineStyle(5, line, 1).beginPath();
@@ -218,10 +231,10 @@ export class Tuner {
 
         glow.setScale(1.2 + c * 1.8).setAlpha(0.2 + c * 0.6);
         // In tune, the two hums become one note; apart, they beat against each other.
-        sound.set(hz * ef, 0.03 + 0.02 * ea, hz * f, 0.025 + 0.035 * a);
+        sound.set(hz * ef, (0.03 + 0.02 * ea) * swell, hz * f, 0.025 + 0.035 * a);
         return locked;
       });
-      const done = label(s, sx + sw / 2, cy, 'LOCKED', 90, { color: '#7fe0d4', strokeThickness: 14 }).setOrigin(0.5);
+      const done = label(s, sx + sw / 2, cy, spec.lockText ?? 'LOCKED', 90, { color: '#7fe0d4', strokeThickness: 14 }).setOrigin(0.5);
       layer.add(done);
       if (!comicSettings.reduceFlashing) s.tweens.add({ targets: glow, alpha: 1, scale: 4, duration: 300, yoyo: true });
       await d.wait(900);
@@ -252,7 +265,11 @@ export const ECHO_FIRST: TuneSpec = {
 /** Episode 4: the note under Veyra. Slow and deep, and it won't hold still. */
 export const ECHO_NOTE: TuneSpec = {
   title: 'FOLLOW THE NOTE',
-  how: 'The note under the ground keeps wandering. Match it, and stay with it.',
+  how: 'Hanna hears a low note under the ground. It wanders. Find it, and stay with it.',
+  labels: ['THE NOTE UNDER THE GROUND', 'LANTERN'],
+  portrait: 'pt_hanna',
+  breathe: 0.6,
+  lockText: 'SHE HEARS IT',
   target: { f: 1.6, a: 0.8 },
   start: { f: 4.5, a: 0.3 },
   drift: { f: 0.3, a: 0.08, period: 7000 },
