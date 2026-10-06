@@ -11,7 +11,7 @@
 // Naming rule (keeps players oriented): every character has ONE name, shown on a name card the
 // first time we meet them. Before Hanna is identified she is only ever "The woman". The hooded
 // person in every memory is only ever "the figure".
-import type { Episode } from './Director';
+import type { Director, Episode } from './Director';
 import { collapseTiles, wellTiles, SURF } from './worldgen';
 import { TILE } from './tiles';
 import { ECHO_FIRST } from '../story/tuner';
@@ -23,6 +23,49 @@ import { LUKE_RIVER } from '../story/river';
 
 const GHOST = 0xd8f4ff;
 
+/**
+ * The opening of Episode 1, from the walk into the square to the toy horse. The FORGET ending
+ * replays it word for word, so the player knows they're back at the start; keep both in this one
+ * place so they can't drift apart.
+ */
+async function playOpening(d: Director) {
+  const A = d.a;
+  d.teleport(A.start.x, A.start.y);
+  await d.fadeIn(1200);
+  await d.walkTo(A.start.x + 140);
+  await d.nameCard('ELIAS VANE', 'Ghost hunter');
+  await d.narr('The letter came with no stamp and no return address. Two words in pencil, in a child’s round, careful hand, and a smudge where a name should be: COME HOME.');
+  await d.say('Elias', 'Home. As far as I know, I have never been to Veyra.');
+  await d.say('Elias', 'Ten years ago, at 2:17 in the morning, every person in this village disappeared. The stories say a few of them stayed.');
+  await d.narr('Ten years ago I was found on a country road with no memory and this lantern in my hand. It has been my living ever since. In its light I can see what a place remembers.');
+  d.found('case');
+  await d.pan(A.clock.x, A.clock.y + 30, 1600);
+  await d.toll(A.clock.x, A.clock.y);
+  await d.wait(500);
+  await d.toll(A.clock.x, A.clock.y);
+  await d.narr('They say the clock tower hasn’t rung in ten years. It rang the moment I set foot in the square.');
+  // Nia's toy horse rolls out of the dark and stops at his boots. (Pays off in the finale.)
+  await d.follow();
+  await d.wait(500);
+  const horse = d.world.add.image(d.player.x + 230, d.player.y, 'w_horse').setOrigin(0.5, 1).setDepth(7).setFlipX(true);
+  const roll = { x: horse.x };
+  let lastClick = 0;
+  await new Promise<void>((res) => d.world.tweens.add({
+    targets: roll, x: d.player.x + 16, duration: 3200, ease: 'Sine.Out',
+    onUpdate: () => {
+      horse.x = roll.x;
+      horse.y = d.player.y - (Math.floor(roll.x / 4) % 2); // wheels bump over the cobbles
+      if (Math.abs(roll.x - lastClick) > 18) { lastClick = roll.x; d.sfx('click', 0.25, -400); }
+    },
+    onComplete: () => res(),
+  }));
+  d.face(1);
+  await d.wait(700);
+  await d.narr('A wooden horse on wheels, its paint worn down to the grain. Nobody comes after it.');
+  horse.destroy();
+  await d.narr('I put it in my coat pocket. I could not have told you why.');
+}
+
 export const EPISODES: Episode[] = [
   // ------------------------------------------------------------------ 1
   {
@@ -30,40 +73,7 @@ export const EPISODES: Episode[] = [
     title: 'ENTER VEYRA',
     run: async (d) => {
       const A = d.a;
-      d.teleport(A.start.x, A.start.y);
-      await d.fadeIn(1200);
-      await d.walkTo(A.start.x + 140);
-      await d.nameCard('ELIAS VANE', 'Ghost hunter');
-      await d.narr('The letter came with no stamp and no return address. Two words in pencil, in a child’s round, careful hand, and a smudge where a name should be: COME HOME.');
-      await d.say('Elias', 'Home. As far as I know, I have never been to Veyra.');
-      await d.say('Elias', 'Ten years ago, at 2:17 in the morning, every person in this village disappeared. The stories say a few of them stayed.');
-      await d.narr('Ten years ago I was found on a country road with no memory and this lantern in my hand. It has been my living ever since. In its light I can see what a place remembers.');
-      d.found('case');
-      await d.pan(A.clock.x, A.clock.y + 30, 1600);
-      await d.toll(A.clock.x, A.clock.y);
-      await d.wait(500);
-      await d.toll(A.clock.x, A.clock.y);
-      await d.narr('They say the clock tower hasn’t rung in ten years. It rang the moment I set foot in the square.');
-      // Nia's toy horse rolls out of the dark and stops at his boots. (Pays off in the finale.)
-      await d.follow();
-      await d.wait(500);
-      const horse = d.world.add.image(d.player.x + 230, d.player.y, 'w_horse').setOrigin(0.5, 1).setDepth(7).setFlipX(true);
-      const roll = { x: horse.x };
-      let lastClick = 0;
-      await new Promise<void>((res) => d.world.tweens.add({
-        targets: roll, x: d.player.x + 16, duration: 3200, ease: 'Sine.Out',
-        onUpdate: () => {
-          horse.x = roll.x;
-          horse.y = d.player.y - (Math.floor(roll.x / 4) % 2); // wheels bump over the cobbles
-          if (Math.abs(roll.x - lastClick) > 18) { lastClick = roll.x; d.sfx('click', 0.25, -400); }
-        },
-        onComplete: () => res(),
-      }));
-      d.face(1);
-      await d.wait(700);
-      await d.narr('A wooden horse on wheels, its paint worn down to the grain. Nobody comes after it.');
-      horse.destroy();
-      await d.narr('I put it in my coat pocket. I could not have told you why.');
+      await playOpening(d);
       // The figure in the window.
       await d.pan(A.houseWindow.x, A.houseWindow.y + 40, 1200);
       const fig = d.npc('figure', A.houseWindow.x, A.houseWindow.y + 66, { tint: 0x000000 });
@@ -473,10 +483,12 @@ export const EPISODES: Episode[] = [
       d.world.props.get('well')?.setAlpha(0.35);
       await d.narr('The key was never meant for a door. It was meant for what lies underneath.');
       d.objective('Climb down the well and dig through the rubble.', { x: A.well.x, y: A.well.y, label: 'The old well' });
+      d.allowWellDig(true); // the only place, and the only time, digging works
       d.guide.teach(['dig']);
       const descent = wellDescent(d); // then climb down the deep shaft; some planks are only in the lantern's light
       await d.explore([], () => descent.done());
       descent.end();
+      d.allowWellDig(false);
       d.objective(null);
     },
   },
@@ -658,14 +670,12 @@ export const EPISODES: Episode[] = [
         d.score('none');
         d.audio.tone('sting');
         d.flash(900);
-        d.teleport(A.start.x, A.start.y);
-        await d.fadeIn(1500);
-        await d.walkTo(A.start.x + 140);
-        await d.narr('The letter came with no stamp and no return address. The paper is soft from folding, as if I have read it a hundred times. This year the rain hasn’t touched it: COME HOME, ELI.');
-        await d.say('Elias', 'Nobody has ever called me Eli. And as far as I know, I have never been to Veyra.');
-        d.audio.bell(2);
-        await d.narr('They say the clock tower hasn’t rung in ten years. It rang the moment I set foot in the square.');
-        await d.banner('2:17', '#e07070', 2400);
+        await d.fadeOut(900);
+        // The loop: a last chapter card in red, then the opening again, word for word.
+        await d.episodeCard('', 'VEYRA, AGAIN?', '#e07070');
+        d.audio.music('night');
+        await playOpening(d);
+        await d.fadeOut(1400);
       }
     },
   },

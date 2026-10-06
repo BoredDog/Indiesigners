@@ -75,10 +75,12 @@ const TRY_OUT: Record<string, (d: Director) => Promise<unknown>> = {
     d.world.props.get('well')?.setAlpha(0.35);
     d.teleport(A.well.x - 28, A.well.y);
     d.objective('Climb down the well and dig through the rubble.', { x: A.well.x, y: A.well.y, label: 'The old well' });
+    d.allowWellDig(true);
     d.guide.teach(['dig']);
     const desc = wellDescent(d);
     await d.explore([], () => desc.done());
     desc.end();
+    d.allowWellDig(false);
     d.objective(null);
   },
   bridge: async (d) => {
@@ -725,11 +727,11 @@ export class Director {
     await this.wait(300);
   }
 
-  async episodeCard(n: string, title: string) {
+  async episodeCard(n: string, title: string, color?: string) {
     const ui = this.scene;
     const bg = ui.add.rectangle(0, 0, W, H, 0x05040a, 1).setOrigin(0).setDepth(40);
     const a = ptext(ui, W / 2, H / 2 - 90, n, 48, '#7fe0d4').setOrigin(0.5).setDepth(41);
-    const b = label(ui, W / 2, H / 2, title, 120).setOrigin(0.5).setDepth(41);
+    const b = label(ui, W / 2, H / 2, title, 120, color ? { color } : {}).setOrigin(0.5).setDepth(41);
     const c = ptext(ui, W / 2, H / 2 + 100, 'ECHOES OF SORROW', 36, '#8a86b8').setOrigin(0.5).setDepth(41);
     await this.wait(2200);
     ui.tweens.add({ targets: [bg, a, b, c], alpha: 0, duration: 800, onComplete: () => [bg, a, b, c].forEach((o) => o.destroy()) });
@@ -877,6 +879,12 @@ export class Director {
         return !this.exploring;
       });
     });
+  }
+
+  /** Digging is only ever allowed in the rubble under the well, and only while that quest is on. */
+  allowWellDig(on: boolean) {
+    const wx = Math.floor(this.a.well.x / 16), surf = Math.floor(this.a.well.y / 16);
+    this.world.digArea = on ? (x, y) => Math.abs(x - wx) <= 1 && y > surf && y <= surf + 8 : undefined;
   }
 
   /**

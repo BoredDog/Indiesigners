@@ -75,6 +75,8 @@ export class StoryScene extends Phaser.Scene {
   private glow!: Phaser.GameObjects.Image;
   private dropUntil = 0;
   dug = 0;
+  /** Where digging is allowed (only the rubble under the well, once that quest is given). Nowhere if unset. */
+  digArea?: (tx: number, ty: number) => boolean;
 
   constructor() {
     super({ key: 'Story', physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 0 } } } });
@@ -442,7 +444,7 @@ export class StoryScene extends Phaser.Scene {
     const canDig = (x: number, y: number) => {
       if (x < 0 || y < 0 || x >= WT || y >= HT) return false;
       const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y - 20, x * TILE + 8, y * TILE + 8);
-      return MINABLE.has(this.world.fg[y][x]) && dist <= 5 * TILE && y > SURF; // the town itself can't be dug up
+      return !!this.digArea?.(x, y) && MINABLE.has(this.world.fg[y][x]) && dist <= 5 * TILE && y > SURF; // the town itself can't be dug up
     };
     let tx = Math.floor(wp.x / TILE), ty = Math.floor(wp.y / TILE);
     const inside = tx >= 0 && ty >= 0 && tx < WT && ty < HT;
@@ -452,7 +454,7 @@ export class StoryScene extends Phaser.Scene {
     // Show what's under the cursor: gold if you can dig it, a faint red if it's solid but not
     // diggable from here (too far, or part of the town).
     this.digCursor.clear();
-    if (inside && id0 && !this.director.pointerOnUi && ty > SURF - 1 && dist <= 8 * TILE) {
+    if (this.digArea && inside && id0 && !this.director.pointerOnUi && ty > SURF - 1 && dist <= 8 * TILE) {
       this.digCursor.lineStyle(1, diggable ? 0xffe08a : 0xe05050, diggable ? 0.9 : 0.35).strokeRect(tx * TILE + 0.5, ty * TILE + 0.5, TILE - 1, TILE - 1);
     }
     // Three ways to dig: hold the left button, tap it repeatedly, or hold X (digs the block under
