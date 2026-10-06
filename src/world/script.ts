@@ -403,7 +403,7 @@ export const EPISODES: Episode[] = [
       d.objective(null);
       await d.narr('In the records, Veyra’s staff register, every entry in one careful hand. A photograph is pinned to the archivist’s page. The woman from the doorway.');
       d.found('register');
-      const hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
+      let hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
       hanna.sprite.setAlpha(0);
       await d.fadeNpc(hanna, 0.85);
       await d.nameCard('HANNA', 'The village archivist');
@@ -424,7 +424,23 @@ export const EPISODES: Episode[] = [
       d.shake(800, 0.005);
       d.audio.tone('drone');
       await d.narr('A sound from under the ground, low, like a held note. Hanna follows it out of the house, down the street, to the old well.');
-      await followHanna(d, hanna, A.well.x, A.well.y); // activity: follow her through the memory to the well
+      // Activity: follow her through the memory to the well. BACK leaves the memory; the house reopens it.
+      await d.gate({
+        spot: { id: 'house', x: A.house.x + 30, y: A.house.y, label: 'Old house' },
+        objective: 'Come back to the old house to follow Hanna’s memory.',
+        run: () => followHanna(d, hanna, A.well.x, A.well.y),
+        leave: async () => {
+          d.world.removeNpc(hanna);
+          d.memory(false);
+          await d.fadeOut(300);
+          d.teleport(A.house.x + 30, A.house.y);
+          await d.fadeIn(300);
+        },
+        enter: () => {
+          d.memory(true);
+          hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
+        },
+      });
       await d.pan(A.well.x, A.well.y - 30, 900);
       const fig = d.npc('figure', A.well.x - 30, A.well.y, { tint: 0x101018 });
       await d.narr('Below the well, a lantern burns. The figure stands beside it.');

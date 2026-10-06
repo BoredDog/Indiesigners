@@ -7,18 +7,22 @@ import Phaser from 'phaser';
 import { H, W } from '../scenes/coreUi';
 import type { Director } from '../world/Director';
 import type { Npc } from '../scenes/StoryScene';
+import { backButton } from './back';
 
 const NEAR = 120; // px: close enough that she keeps walking
 const SPEED = 38; // px/s, a little slower than Elias walks
 const PRINTS = 3;
 
-export async function followHanna(d: Director, hanna: Npc, wellX: number, streetY: number) {
+/** Resolves true once Elias reaches the well behind her, or false if the player goes BACK. */
+export async function followHanna(d: Director, hanna: Npc, wellX: number, streetY: number): Promise<boolean> {
   const startX = hanna.sprite.x;
   const mid = startX - (startX - wellX) * 0.45;
   const ui = d.scene;
   // The memory dims as you fall behind.
   const dim = ui.add.rectangle(0, 0, W, H, 0x05040a, 0).setOrigin(0).setDepth(3);
-  let gone = false, allFound = false;
+  let gone = false, allFound = false, back = false;
+  const backLayer = ui.add.container(0, 0).setDepth(12);
+  const offBack = backButton(ui, backLayer, () => (back = true));
   const prints: string[] = [];
 
   await d.follow(700);
@@ -52,14 +56,18 @@ export async function followHanna(d: Director, hanna: Npc, wellX: number, street
   };
   d.world.events.on(Phaser.Scenes.Events.UPDATE, onUpdate);
   try {
-    await d.explore([], () => gone && prints.every((p) => d.revealed(p)) && Math.abs(d.player.x - wellX) < 60);
+    await d.explore([], () => back || (gone && prints.every((p) => d.revealed(p)) && Math.abs(d.player.x - wellX) < 60));
   } finally {
     d.world.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
     d.following = undefined;
+    offBack();
+    backLayer.destroy();
     ui.tweens.add({ targets: dim, alpha: 0, duration: 400, onComplete: () => dim.destroy() });
     d.objective(null);
   }
+  if (back) return false;
   // She is at the well when you get there.
   hanna.sprite.setPosition(wellX + 20, hanna.sprite.y);
   await d.fadeNpc(hanna, 0.85, 900);
+  return true;
 }
