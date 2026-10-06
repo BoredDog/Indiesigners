@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { StoryAudio } from '../story/audio';
+import { StoryAudio, type Surface } from '../story/audio';
 import { comicSettings } from '../comic';
 import { Director, type StorySave } from '../world/Director';
 import { Lighting, type LightSource } from '../world/Lighting';
@@ -226,6 +226,7 @@ export class StoryScene extends Phaser.Scene {
    * floats), and when the memory ends it drains away.
    */
   setRiver(full: boolean, ms = 1600) {
+    this.director?.audio.water(full);
     this.tweens.add({ targets: this.waterLayer, alpha: full ? 0.8 : 0, duration: ms, ease: 'Sine.InOut' });
     const boat = this.props.get('boat');
     if (!boat) return;
@@ -266,12 +267,21 @@ export class StoryScene extends Phaser.Scene {
     body.setGravityY(900).setMaxVelocity(200, 600);
     // Footsteps land on the walk cycle's two contact frames, so the sound matches the feet.
     this.player.on(Phaser.Animations.Events.ANIMATION_UPDATE, (anim: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame) => {
-      if (anim.key === 'elias_walk' && (frame.index === 1 || frame.index === 4) && body.blocked.down) this.director?.audio.step();
+      if (anim.key === 'elias_walk' && (frame.index === 1 || frame.index === 4) && body.blocked.down) this.director?.audio.step(this.surface(), this.player.y > (SURF + 4) * TILE);
     });
     this.physics.add.collider(this.player, this.fgLayer, undefined, () => this.time.now > this.dropUntil || !this.onPlank());
     this.physics.world.setBounds(0, 0, WT * TILE, HT * TILE);
     this.player.setCollideWorldBounds(true);
   }
+  /** What Elias is standing on, for his footsteps. */
+  private surface(): Surface {
+    const id = this.fgLayer.getTileAtWorldXY(this.player.x, this.player.y + 2)?.index ?? T.EMPTY;
+    if (id === T.PLANK || id === T.WOODLEGS) return 'wood';
+    if (id === T.MUD) return 'mud';
+    if (id === T.GRASS || id === T.GRASS2 || id === T.GRASS3 || id === T.DIRT || id === T.DIRT2 || id === T.DIRT3) return 'grass';
+    return 'stone'; // cobbles, town walls, the tower, tunnels and rubble
+  }
+
   private onPlank() {
     const t = this.fgLayer.getTileAtWorldXY(this.player.x, this.player.y + 2);
     return t?.index === T.PLANK;

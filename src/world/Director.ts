@@ -16,6 +16,9 @@ import { Guide } from './guide';
 import { PANEL, panel, pbutton, ptext } from './ui';
 import { NODES, openBoard } from './board';
 
+/** Speakers who are ghosts: their lines get a faint shimmer (StoryAudio.tone('whisper')). */
+const GHOST_VOICES = new Set(['Ivy', 'Luke', 'Hanna', 'Nia', 'The woman']);
+
 export interface StorySave {
   episode: number;
   flags: Record<string, number | boolean | string>;
@@ -140,6 +143,7 @@ export class Director {
 
   // ---------------------------------------------------------------- running
   async run(episodes: Episode[]) {
+    this.setBed();
     try {
       while (this.save.episode < episodes.length) {
         const ep = episodes[this.save.episode];
@@ -158,6 +162,9 @@ export class Director {
   }
 
   update(dt: number) {
+    // A little either side of the line, so climbing around in the well shaft doesn't flip it back and forth.
+    const y = this.player.y, line = (60 + 4) * 16;
+    if (!this.inMemory && this.deep !== undefined && (this.deep ? y < line - 24 : y > line + 24)) this.setBed();
     this.lastDt = dt;
     this.waiters = this.waiters.filter((w) => !w());
     this.updateSight(dt);
@@ -468,8 +475,28 @@ export class Director {
       lines.fillStyle(0xa0e6ff, 0.06);
       for (let y = 0; y < H; y += 6) lines.fillRect(0, y, W, 2);
       this.memoryFx.push(tint, lines);
-      this.audio.ambience('memory');
-    } else this.audio.ambience(this.player.y > (60 + 4) * 16 ? 'under' : 'night');
+    }
+    this.inMemory = on;
+    this.setBed();
+  }
+
+  private inMemory = false;
+  private deep?: boolean;
+  /** Pick the ambience and score for where Elias is: a memory, under Veyra, or the village. */
+  private setBed() {
+    const deep = this.player.y > (60 + 4) * 16;
+    this.deep = deep;
+    const zone = this.inMemory ? 'memory' : deep ? 'under' : 'night';
+    this.audio.ambience(zone);
+    // The finale and endings set their own music; leave it alone until the next episode.
+    if (!this.scoreLocked) this.audio.music(zone);
+  }
+  /** Set by the finale so climbing or memories don't swap its music back. */
+  scoreLocked = false;
+  /** Called by the script for the finale and the endings. */
+  score(mood: 'finale' | 'dawn' | 'none') {
+    this.scoreLocked = true;
+    this.audio.music(mood);
   }
 
   // ---------------------------------------------------------------- dialogue
@@ -529,6 +556,7 @@ export class Director {
   /** A character speaks (portrait + typewriter). Click / Space / E to continue. */
   async say(name: string, text: string, opts: { narration?: boolean; keep?: boolean } = {}) {
     this.busyUi = true;
+    if (GHOST_VOICES.has(name)) this.audio.tone('whisper');
     const box = this.dialogueBox(name, text, opts);
     const cps = comicSettings.reduceMotion ? 999 : 55;
     let shown = 0, skipped = false;

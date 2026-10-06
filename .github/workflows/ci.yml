@@ -49,9 +49,10 @@ jobs:
         uses: actions/deploy-pages@v4
 
   # Uploads the same build to itch.io with butler. The itch page must already exist (create it on
-  # itch.io first); BUTLER_API_KEY is a repo secret.
+  # itch.io first); BUTLER_API_KEY is a repo secret. Pause uploads with the repo variable
+  # ITCH_DEPLOY=off (`gh variable set ITCH_DEPLOY --body off`); set it to on to resume.
   itch:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && vars.ITCH_DEPLOY != 'off'
     needs: build
     runs-on: ubuntu-latest
     env:

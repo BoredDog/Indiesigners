@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { comicSettings, pageTurn } from '../comic';
+import { StoryAudio } from '../story/audio';
 import { H, W, label, openPause } from './coreUi';
 import { loadStory } from './StoryScene';
 import { EPISODES } from '../world/script';
@@ -27,6 +28,9 @@ export class TitleScene extends Phaser.Scene {
     this.menu = this.overlay = undefined;
     this.backdropLayers();
     this.rain();
+    const audio = new StoryAudio(this);
+    audio.ambience('rain');
+    audio.music('title');
 
     label(this, W / 2, 270, 'ECHOES OF SORROW', 150, { strokeThickness: 16 }).setOrigin(0.5);
     ptext(this, W / 2, 380, 'Ten years ago, a village vanished. Something is calling you home.', 40, '#bfefff').setOrigin(0.5);

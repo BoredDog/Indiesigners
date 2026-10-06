@@ -24,8 +24,10 @@ export type WitnessStatus = 'unvisited' | 'active' | 'resolved';
 export type FinaleState = 'locked' | 'ready' | 'revealed' | 'complete';
 
 export interface Settings {
-  music: number; // 0..1 (audio parked, kept for the menu)
-  sfx: number;
+  music: number; // 0..1, the MUSIC row in settings (src/story/music.ts)
+  sfx: number; // 0..1, the SOUND row: effects and ambience
+  /** Bumped when the audio defaults change, so old saves pick up the new ones once. */
+  audioV?: number;
   textSize: 100 | 125 | 150;
   textSpeed: 'instant' | 'typewriter';
   reduceMotion: boolean;
@@ -60,13 +62,22 @@ type Events = {
 };
 
 const DEFAULT_SETTINGS: Settings = {
-  music: 0.3,
-  sfx: 0.6,
+  music: 0.8,
+  sfx: 1,
+  audioV: 1,
   textSize: 100,
   textSpeed: 'instant',
   reduceMotion: false,
   reduceFlashing: false,
 };
+
+/** Saved settings over the defaults. Saves from before the audio pass held placeholder volumes
+ *  (music 0.3, sound 0.6) that nothing used, so those two reset to the new defaults once. */
+function withDefaults(saved?: Partial<Settings>): Settings {
+  const s = { ...DEFAULT_SETTINGS, ...saved };
+  if (saved?.audioV !== DEFAULT_SETTINGS.audioV) Object.assign(s, { music: DEFAULT_SETTINGS.music, sfx: DEFAULT_SETTINGS.sfx, audioV: DEFAULT_SETTINGS.audioV });
+  return s;
+}
 
 function fresh(settings: Settings = { ...DEFAULT_SETTINGS }): SaveData {
   return {
@@ -93,7 +104,7 @@ export class GameState extends Emitter<Events> {
     super();
     // Settings survive between sessions even before a game is started.
     const saved = SaveManager.read<SaveData>();
-    if (saved?.settings) this.d.settings = { ...DEFAULT_SETTINGS, ...saved.settings };
+    if (saved?.settings) this.d.settings = withDefaults(saved.settings);
     this.applySettings();
   }
 
@@ -115,7 +126,7 @@ export class GameState extends Emitter<Events> {
       deductions: { ...base.deductions, ...saved.deductions },
       witnesses: { ...base.witnesses, ...saved.witnesses },
       casebookSeen: { ...base.casebookSeen, ...saved.casebookSeen },
-      settings: { ...DEFAULT_SETTINGS, ...saved.settings },
+      settings: withDefaults(saved.settings),
       evidence: (saved.evidence ?? []).filter(isEvidenceId),
     };
     this.applySettings();
