@@ -373,6 +373,22 @@ export function buildWorldTextures(scene: Phaser.Scene) {
     c.fillStyle = '#6a3a14'; c.fillRect(15, 0, 3, 4); c.fillRect(0, 11, 4, 3);
   });
   canvasTex(scene, 'w_candle', 4, 8, (c) => { c.fillStyle = '#e8dcc0'; c.fillRect(1, 3, 2, 5); c.fillStyle = '#ffb040'; c.fillRect(1, 0, 2, 3); });
+  // A cobweb in a top-left corner (flip it for the right): spokes from the corner and sagging threads.
+  canvasTex(scene, 'w_web', 20, 20, (c) => {
+    c.strokeStyle = 'rgba(222,226,236,0.7)';
+    c.lineWidth = 1;
+    const spokes = [[19.5, 0.5], [19.5, 7], [14, 14], [7, 19.5], [0.5, 19.5]];
+    for (const [x, y] of spokes) { c.beginPath(); c.moveTo(0.5, 0.5); c.lineTo(x, y); c.stroke(); }
+    c.strokeStyle = 'rgba(222,226,236,0.5)';
+    for (const r of [5, 10, 15]) {
+      c.beginPath();
+      spokes.forEach(([x, y], i) => {
+        const k = r / Math.hypot(x, y), px = 0.5 + x * k + (i % 2 ? 0.6 : 0), py = 0.5 + y * k + (i % 2 ? 0.6 : 0);
+        if (i) c.lineTo(px, py); else c.moveTo(px, py);
+      });
+      c.stroke();
+    }
+  });
   canvasTex(scene, 'w_crack', 16, 16, (c) => {
     c.fillStyle = 'rgba(0,0,0,0.75)';
     for (const [x, y, w, h] of [[3, 3, 1, 5], [3, 7, 5, 1], [8, 2, 1, 7], [9, 9, 4, 1], [12, 9, 1, 4], [5, 11, 4, 1]]) c.fillRect(x, y, w, h);

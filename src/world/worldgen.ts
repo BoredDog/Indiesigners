@@ -67,8 +67,11 @@ export function generateWorld(): World {
       fg[SURF][x] = r > t + 0.25 ? grass : r > t - 0.3 ? T.COBBLE_MOSS : x % 2 ? T.COBBLE : T.COBBLE2;
     }
   }
-  // World edges: tall stone walls.
-  for (let y = 0; y < HT; y++) for (const x of [0, 1, 2, WT - 3, WT - 2, WT - 1]) set(x, y, T.STONE2);
+  // World edges: stone walls, except above ground at the east end past the river, where the
+  // village fades into fog instead (StoryScene stops Elias inside it with an invisible wall).
+  for (let y = 0; y < HT; y++) for (const x of [0, 1, 2, WT - 3, WT - 2, WT - 1]) if (x < 3 || y > SURF) set(x, y, T.STONE2);
+  fog.push({ x: px(WT - 22), y: floorY(SURF) - 120, w: px(22), h: 120, density: 2.4 });
+  fog.push({ x: px(WT - 12), y: floorY(SURF) - 200, w: px(12), h: 200, density: 3.2 });
 
   // ---- river + dock ----
   // In the present the river is dry: a shallow bed of cracked mud you can walk across and climb
@@ -128,6 +131,12 @@ export function generateWorld(): World {
     props.push({ key: 'w_candle', x: px(X.towerL + 1) + 8, y: floorY(ly), depth: 2 });
   }
   anchors.clock = { x: towerMid, y: floorY(top - 2) - 36 };
+  // Cobwebs: both top corners under the bell, and a few in the corners of the landings.
+  props.push({ key: 'w_web', x: px(X.towerL + 1) + 10, y: floorY(top) + 20, depth: 1 });
+  props.push({ key: 'w_web', x: px(X.towerR - 1) + 6, y: floorY(top) + 20, depth: 1, flip: true });
+  for (const [wy, right] of [[SURF - 9, true], [SURF - 18, false], [SURF - 27, true]] as const) {
+    props.push({ key: 'w_web', x: right ? px(X.towerR - 1) + 6 : px(X.towerL + 1) + 10, y: floorY(wy) + 20, depth: 1, flip: right });
+  }
   // A cold cloud that clings to the spire and spills down the tower's shoulders.
   fog.push({ x: towerMid - 110, y: floorY(top - 11), w: 220, h: 110, density: 2.2 });
   fog.push({ x: towerMid - 160, y: floorY(top + 1), w: 320, h: 60, density: 1.3 });
@@ -182,6 +191,9 @@ export function generateWorld(): World {
   }
   anchors.vault = { x: px(X.vault), y: floorY(shaftBottom + 1) };
   anchors.collapse = { x: px(X.collapse), y: floorY(shaftBottom + 1) };
+  // Cobwebs in the vault's top corners.
+  props.push({ key: 'w_web', x: px(X.vault - 9) + 10, y: floorY(shaftBottom - 9) + 20, depth: 1 });
+  props.push({ key: 'w_web', x: px(X.vault + 9) + 6, y: floorY(shaftBottom - 9) + 20, depth: 1, flip: true });
   // The echo bridge: a pit too wide to jump, under a taller cavern. Its bridge only exists in the
   // lantern's light (src/story/bridge.ts). A plank on the pit wall climbs back out.
   carve(X.pitL, shaftBottom - 6, X.pitR, shaftBottom);
@@ -201,6 +213,8 @@ export function generateWorld(): World {
   props.push({ key: 'gv_column', x: px(X.chamber - 9), y: floorY(chamberFloor), depth: -1, scale: 0.8 });
   props.push({ key: 'gv_column', x: px(X.chamber + 9), y: floorY(chamberFloor), depth: -1, scale: 0.8, flip: true });
   anchors.chamber = { x: px(X.chamber), y: floorY(chamberFloor) };
+  props.push({ key: 'w_web', x: px(X.chamber - 12) + 10, y: floorY(chamberFloor - 12) + 20, depth: 1 });
+  props.push({ key: 'w_web', x: px(X.chamber + 12) + 6, y: floorY(chamberFloor - 12) + 20, depth: 1, flip: true });
   fog.push({ x: px(X.chamber - 12), y: floorY(chamberFloor) - 40, w: px(24), h: 40, density: 0.8 });
   anchors.pedestal = { x: px(X.chamber) + 8, y: floorY(chamberFloor) - 22 };
   lights.push({ x: px(X.chamber) + 8, y: floorY(chamberFloor) - 22, r: 4 }); // the Echo Lantern smoulders even before it wakes
