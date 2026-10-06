@@ -40,7 +40,9 @@ const STEP = `
   // Choices: numbered buttons "1. …".
   const choices = all.filter((o) => o.name && /^btn:\\d\\. /.test(o.name) && o.active);
   if (choices.length) {
-    const want = choices.length === 2 && /REMEMBER|FORGET/.test(choices[0].name) ? (${forget} ? 1 : 0) : Math.min(${pick}, choices.length - 1);
+    // The final choice is a lantern action: FORGET means holding F (the runner does that).
+    if (choices.length === 2 && /REMEMBER/.test(choices[0].name) && ${forget}) return 'forget-hold';
+    const want = choices.length === 2 && /REMEMBER|FORGET/.test(choices[0].name) ? 0 : Math.min(${pick}, choices.length - 1);
     choices[want].emit('pointerup');
     return 'choice:' + choices[want].name;
   }
@@ -70,6 +72,17 @@ let failed = 0;
 try {
   await page.goto('http://localhost:4192/?scene=Story&fresh=1');
   await page.waitForFunction(() => (window as any).__story, undefined, { polling: 250, timeout: 60_000 });
+  // Trace the story's beats, so a stall can say where it stopped.
+  await js(`const d = window.__story, P = Object.getPrototypeOf(d); window.__trace = [];
+    for (const k of ['say', 'wait', 'pan', 'follow', 'toll', 'walkTo', 'nameCard', 'found', 'fadeIn', 'fadeOut', 'explore', 'choice', 'banner', 'memory', 'deduce']) {
+      const f = P[k];
+      P[k] = function (...a) {
+        const t = window.__trace; t.push(k + ' ' + JSON.stringify(a).slice(0, 50)); if (t.length > 30) t.shift();
+        const r = f.apply(this, a);
+        if (r && r.then) r.then(() => t.push('  done ' + k), (e) => t.push('  REJECT ' + k + ' ' + e));
+        return r;
+      };
+    }`);
   await js(`window.__echoes.gameState.setSetting('reduceMotion', true)`);
   const t0 = Date.now();
   let last = '', same = 0, episode = -1;
@@ -78,13 +91,18 @@ try {
     const ep = await js<number>('return window.__story?.save.episode ?? -1');
     if (ep !== episode) { episode = ep; console.log(`episode ${ep}  (${((Date.now() - t0) / 1000) | 0}s)`); }
     if (r === 'summary') break;
+    if (r === 'forget-hold') { await page.keyboard.down('f'); await page.waitForTimeout(4000); await page.keyboard.up('f'); }
     if (r === 'sight') { await page.keyboard.down('f'); await page.waitForTimeout(900); await page.keyboard.up('f'); }
     if (r === 'qte') for (let k = 0; k < 3; k++) await page.keyboard.press('Space'); // a burst, like a player mashing
     else if (r === 'advance' || r === 'boot') await page.keyboard.press('Space');
     // QTEs repeat until passed (and get easier), so time spent in one isn't a stall.
     same = r === last && !r.startsWith('qte') ? same + 1 : 0;
     last = r;
-    if (same > 400) throw new Error(`stalled on "${r}" in episode ${ep}`);
+    if (same > 400) {
+      const info = await js<string>(`const d = window.__story, cam = d.world.cameras.main; return JSON.stringify({ trace: (window.__trace || []).slice(-12), busy: d.busyUi, waiters: d.waiters.length, locked: d.world.locked, autoWalk: d.autoWalk, x: Math.round(d.player.x), panning: cam.panEffect && cam.panEffect.isRunning, timeScale: d.world.time.timeScale, paused: d.world.time.paused, now: Math.round(d.world.time.now) }, null, 1)`);
+      console.log(info);
+      throw new Error(`stalled on "${r}" in episode ${ep}`);
+    }
     await page.waitForTimeout(r === 'qte-wait' ? 10 : r === 'qte' ? 40 : 120);
   }
   const done = await js<boolean>(`const ui = window.__echoes.game.scene.getScene('StoryUI'); const all=[]; const walk=(o)=>{all.push(o);(o.list||[]).forEach(walk)}; ui.children.list.forEach(walk); return all.some((o)=>o.name==='btn:PLAY AGAIN');`);

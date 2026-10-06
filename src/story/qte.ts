@@ -3,13 +3,16 @@
 //   mash   — fill the bar by hammering the key before time runs out
 //   timing — press as the shrinking ring crosses the gold one
 // Every QTE first waits on an instruction card until the player presses to start, so nobody is
-// caught off guard. The story only moves on once it's passed: a miss shows TRY AGAIN, and each
-// retry is a little more forgiving.
+// caught off guard. A miss shows TRY AGAIN, and each retry is a little more forgiving. After three
+// misses a CONTINUE option appears too: it moves the story on with the "missed" version of the
+// scene (and is the way out for anyone who can't do the action at all).
 import Phaser from 'phaser';
 import { COLORS, FONTS, TEXT_RESOLUTION, comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import type { Director } from '../world/Director';
-import { PIX } from '../world/ui';
+import { PANEL, PIX } from '../world/ui';
+
+const PANEL_FILL = PANEL.fill;
 
 type KeyName = 'SPACE' | 'E' | 'F';
 const DEPTH = 70;
@@ -31,7 +34,7 @@ export class Qte {
    * Builds the overlay, then waits on the instructions until the player presses the key (or
    * clicks) to start. Nothing counts until then.
    */
-  private async frame(kind: 'press' | 'mash' | 'timing', prompt: string, key: KeyName, how: string, attempt: number) {
+  private async frame(kind: 'press' | 'mash' | 'timing', prompt: string, key: KeyName, how: string, attempt: number): Promise<{ layer: Phaser.GameObjects.Container; g: Phaser.GameObjects.Graphics; pulse: () => void } | null> {
     const s = this.d.scene;
     this.state = { kind, phase: 'intro', window: false };
     const layer = s.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH);
@@ -60,13 +63,35 @@ export class Qte {
     const start = label(s, W / 2, H * 0.44, `PRESS ${key} TO START`, 60, { color: '#ffe08a', strokeThickness: 10 }).setOrigin(0.5);
     layer.add(start);
     s.tweens.add({ targets: start, alpha: 0.45, yoyo: true, repeat: -1, duration: 500 });
+    // After three misses: a way to move on without passing.
+    let skip = false;
+    let offSkip = () => {};
+    if (attempt >= 3) {
+      const bx = W / 2, by = H * 0.86;
+      const btn = s.add.container(bx, by);
+      const bg = s.add.rectangle(0, 0, 420, 70, PANEL_FILL, 0.95).setStrokeStyle(3, 0xffe08a);
+      const bt = s.add.text(0, 0, 'CONTINUE  [ENTER]', { fontFamily: PIX, fontSize: '36px', color: '#ffe08a', resolution: TEXT_RESOLUTION }).setOrigin(0.5);
+      btn.add([bg, bt]).setSize(420, 70).setInteractive({ useHandCursor: true }).setName('btn:CONTINUE');
+      btn.on('pointerdown', () => (skip = true));
+      layer.add(btn);
+      layer.add(s.add.text(bx, by - 62, 'Skip this one and carry on with the story', { fontFamily: PIX, fontSize: '28px', color: '#aab8d8', resolution: TEXT_RESOLUTION }).setOrigin(0.5));
+      const onEnter = (e: KeyboardEvent) => { if (e.key === 'Enter') skip = true; };
+      s.input.keyboard?.on('keydown', onEnter);
+      offSkip = () => s.input.keyboard?.off('keydown', onEnter);
+    }
     await this.d.wait(350); // ignore a key press that was already on its way
     let go = false;
     const off = this.listen(key, () => (go = true));
     try {
-      await this.d.until(() => go);
+      await this.d.until(() => go || skip);
     } finally {
       off();
+      offSkip();
+    }
+    if (skip) {
+      layer.destroy();
+      this.state = null;
+      return null;
     }
     start.destroy();
     const now = label(s, W / 2, H * 0.44, 'GO!', 80, { color: '#7fe0d4', strokeThickness: 12 }).setOrigin(0.5);
@@ -104,14 +129,20 @@ export class Qte {
     return ok;
   }
 
-  /** Runs a QTE until it's passed. */
-  private async untilPassed(run: (attempt: number) => Promise<boolean>) {
-    for (let attempt = 0; ; attempt++) if (await run(attempt)) return true;
+  /** Runs a QTE until it's passed (true) or the player chooses CONTINUE (false). */
+  private async untilPassed(run: (attempt: number) => Promise<boolean | 'skip'>) {
+    for (let attempt = 0; ; attempt++) {
+      const r = await run(attempt);
+      if (r === 'skip') return false;
+      if (r) return true;
+    }
   }
 
   async press(prompt: string, key: KeyName = 'SPACE', ms = 1800): Promise<boolean> {
     return this.untilPassed(async (attempt) => {
-      const { layer, g, pulse } = await this.frame('press', prompt, key, 'Press before the ring closes', attempt);
+      const f = await this.frame('press', prompt, key, 'Press before the ring closes', attempt);
+      if (!f) return 'skip';
+      const { layer, g, pulse } = f;
       const total = Math.max(ms, 2400) * this.slow * (1 + 0.4 * attempt);
       let hit = false;
       const off = this.listen(key, () => ((hit = true), pulse()));
@@ -132,7 +163,9 @@ export class Qte {
 
   async mash(prompt: string, key: KeyName = 'SPACE', ms = 3600, need = 14): Promise<boolean> {
     return this.untilPassed(async (attempt) => {
-      const { layer, g, pulse } = await this.frame('mash', prompt, key, 'Tap fast to fill the bar before the time runs out', attempt);
+      const f = await this.frame('mash', prompt, key, 'Tap fast to fill the bar before the time runs out', attempt);
+      if (!f) return 'skip';
+      const { layer, g, pulse } = f;
       const total = (Math.max(ms, 5000) + attempt * 1000) * this.slow;
       const taps = Math.max(6, need - attempt * 3);
       let fill = 0, full = false;
@@ -145,7 +178,8 @@ export class Qte {
       try {
         await this.d.until(() => {
           t += this.d.lastDt;
-          if (!full) fill = Math.max(0, fill - (this.d.lastDt / 1000) * 0.12);
+          // The drain eases off with each retry, so slower tappers can still fill it.
+          if (!full) fill = Math.max(0, fill - (this.d.lastDt / 1000) * 0.12 * Math.max(0, 1 - attempt * 0.35));
           const bx = W / 2 - 400, by = H * 0.42;
           g.clear().fillStyle(0x0b1a1f, 0.9).fillRect(bx, by, 800, 44).fillStyle(0x7fe0d4, 1).fillRect(bx, by, 800 * fill, 44);
           g.lineStyle(6, COLORS.ink).strokeRect(bx, by, 800, 44);
@@ -161,7 +195,9 @@ export class Qte {
 
   async timing(prompt: string, key: KeyName = 'SPACE', rounds = 3, need = 2): Promise<boolean> {
     return this.untilPassed(async (attempt) => {
-      const { layer, g, pulse } = await this.frame('timing', prompt, key, `Press as the bright ring crosses the gold one. ${need} of ${rounds} to pass.`, attempt);
+      const f = await this.frame('timing', prompt, key, `Press as the bright ring crosses the gold one. ${need} of ${rounds} to pass.`, attempt);
+      if (!f) return 'skip';
+      const { layer, g, pulse } = f;
       const s = this.d.scene;
       // The gold target sits outside the key cap so the moving ring is never hidden behind it.
       const period = 1700 * this.slow, target = 190, tol = 30 + attempt * 12, cx = W / 2, cy = H * 0.62;

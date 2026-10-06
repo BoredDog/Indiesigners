@@ -29,7 +29,7 @@ interface Landmark {
 export class Guide {
   private d: Director;
   private queue: Lesson[] = [];
-  private card?: { id: Lesson; c: Phaser.GameObjects.Container };
+  private card?: { id: Lesson; c: Phaser.GameObjects.Container; since: number };
   private signs: { lm: Landmark; t: Phaser.GameObjects.Text }[] = [];
   private arrows: Phaser.GameObjects.Graphics;
   private arrowText: Phaser.GameObjects.Text[] = [];
@@ -89,20 +89,25 @@ export class Guide {
     // The lantern lesson jumps the queue the moment something hidden is near.
     const lantern = !d.save.flags.tut_lantern && d.nearTrace;
     if (lantern && !this.queue.includes('lantern')) this.queue.unshift('lantern');
+    // A card the player ignores for 15 s goes to the back of the line, so one skipped control
+    // (say, never running) can't hide the rest.
+    if (this.card && this.card.id !== 'lantern' && d.world.time.now - this.card.since > 15000 && this.queue.length > 1) {
+      this.queue = [...this.queue.filter((q) => q !== this.card!.id), this.card.id];
+    }
     const want = free ? (this.queue.find((q) => q !== 'lantern' || lantern) ?? null) : null;
     if (this.card && this.card.id !== want) {
       const old = this.card.c;
       this.card = undefined;
       d.scene.tweens.add({ targets: old, alpha: 0, y: old.y + 20, duration: 200, onComplete: () => old.destroy() });
     }
-    if (want && !this.card) this.card = { id: want, c: this.drawCard(want) };
+    if (want && !this.card) this.card = { id: want, c: this.drawCard(want), since: d.world.time.now };
 
     // ---- location signs
     const px = d.player.x;
     for (const { lm, t } of this.signs) {
       const p = d.toScreen(lm.x, lm.y);
       const near = Math.abs(lm.x - px) < 15 * 16 && Math.abs(lm.y - d.player.y) < 16 * 16;
-      const target = near && !d.busyUi ? 0.92 : 0;
+      const target = near && !d.busyUi && !d.qte.state && !d.world.locked ? 0.92 : 0;
       t.setPosition(p.x, p.y).setAlpha(t.alpha + (target - t.alpha) * 0.1);
     }
 
