@@ -16,6 +16,7 @@ import { collapseTiles, wellTiles, SURF } from './worldgen';
 import { TILE } from './tiles';
 import { ECHO_FIRST } from '../story/tuner';
 import { followHanna } from '../story/follow';
+import { echoBridge } from '../story/bridge';
 import { IVY_CANDLES } from '../story/candles';
 import { LUKE_RIVER } from '../story/river';
 
@@ -435,7 +436,9 @@ export const EPISODES: Episode[] = [
       await d.say('Elias', 'Someone in Veyra rewrote what people remembered. Ivy, Luke, Hanna. All of them.');
       await d.narr('A last page on the floor: THREE WITNESSES. ONE APPRENTICE. Someone has cut the apprentice’s name out with a knife.');
       d.objective('Go deeper.', { x: A.collapse.x + 40, y: A.collapse.y, label: 'Deeper' });
+      const endBridge = echoBridge(d); // puzzle: cross the pit on the bridge only the lantern remembers
       await d.explore([], () => d.player.x > A.collapse.x);
+      endBridge();
       d.shake(800, 0.012);
       d.sfx('slam', 0.6, -1200);
       const moved = await d.qte.press('THE CEILING IS GIVING WAY. RUN!', 'SPACE', 1300);
