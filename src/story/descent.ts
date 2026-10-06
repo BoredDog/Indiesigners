@@ -9,7 +9,7 @@ import type { Director } from '../world/Director';
 import { T, TILE } from '../world/tiles';
 import { descentTiles, SURF } from '../world/worldgen';
 
-const SAFE_DROP = 5 * TILE + 4; // more than five blocks is a deadly fall
+const SAFE_DROP = 4 * TILE + 4; // a step is four blocks; the deadly drops are six or more
 const ZONE_TOP = (SURF + 7) * TILE; // falls only count below the rubble
 
 export function wellDescent(d: Director) {
@@ -33,14 +33,28 @@ export function wellDescent(d: Director) {
   const die = async () => {
     dying = true;
     d.lock();
+    const p = d.player;
+    body.setVelocity(0, 0);
+    body.enable = false;
     d.shake(400, 0.012);
-    d.flash(300, 160, 20, 20);
     d.sfx('slam', 0.6, -1400);
+    // He crumples: tips over onto his back, dust kicks up, and the lantern gutters.
+    for (let i = 0; i < 10; i++) {
+      const bit = w.add.rectangle(p.x + (Math.random() - 0.5) * 16, p.y - 2, 2, 2, 0x8a7a6a).setDepth(9);
+      w.tweens.add({ targets: bit, x: bit.x + (Math.random() - 0.5) * 30, y: bit.y - 6 - Math.random() * 10, alpha: 0, duration: 600, onComplete: () => bit.destroy() });
+    }
+    w.tweens.add({ targets: w, lantern: 0.2, duration: 500 });
+    await new Promise<void>((res) => w.tweens.add({ targets: p, angle: w.facing > 0 ? -90 : 90, y: p.y - 8, duration: 320, ease: 'Quad.In', onComplete: () => res() }));
+    d.flash(250, 160, 20, 20);
     const t = label(d.scene, W / 2, H * 0.4, 'YOU FELL', 110, { color: '#e07070', strokeThickness: 16 }).setOrigin(0.5).setDepth(30);
-    await d.wait(1100);
+    await d.wait(1300);
     await d.fadeOut(500);
     t.destroy();
+    p.setAngle(0);
+    w.lantern = 0.75;
     d.teleport(d.a.well.x - 28, d.a.well.y);
+    body.enable = true;
+    body.reset(p.x, p.y);
     groundY = d.player.y;
     await d.fadeIn(600);
     d.objective('Too far to fall. Climb down plank by plank, and light the ones that aren’t there.');

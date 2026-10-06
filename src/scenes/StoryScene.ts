@@ -335,6 +335,8 @@ export class StoryScene extends Phaser.Scene {
   }
 
   lanternPos() {
+    // On the ground beside him if he's fallen (the well descent).
+    if (this.player.angle !== 0) return { x: this.player.x + this.facing * 16, y: this.player.y - 2 };
     // Held at the hip; raised to shoulder height while echo sight is on.
     return { x: this.player.x + this.facing * 9, y: this.player.y - 18 - this.lanternBoost * 12 };
   }

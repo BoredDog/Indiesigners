@@ -162,9 +162,10 @@ export function generateWorld(): World {
   for (let y = SURF + 3; y <= SURF + 6; y++) for (let x = X.well - 1; x <= X.well + 1; x++) set(x, y, T.RUBBLE);
   // Below the rubble the shaft opens into a wide drop. Planks zig-zag down it: the wooden ones
   // are real; the others (descentTiles) exist only in the lantern's light (src/story/descent.ts).
-  // Every safe way down is three blocks at a time; anything more is a deadly fall.
+  // Every safe step down is four blocks, always onto the next plank (the teal ones need the
+  // lantern). The wooden planks are eight apart and the last is six above the floor: deadly drops.
   carve(X.well - 6, SURF + 7, X.well + 6, shaftBottom);
-  for (const [y, x0, x1] of [[SURF + 10, X.well - 2, X.well + 2], [SURF + 16, X.well - 3, X.well + 1], [SURF + 22, X.well - 4, X.well - 2]]) for (let x = x0; x <= x1; x++) set(x, y, T.PLANK);
+  for (const [y, x0, x1] of [[SURF + 10, X.well - 2, X.well + 2], [SURF + 18, X.well - 3, X.well + 2]]) for (let x = x0; x <= x1; x++) set(x, y, T.PLANK);
   anchors.shaft = { x: px(X.well) + 8, y: floorY(shaftBottom + 1) };
   // Tunnel along the bottom of the shaft.
   carve(X.well - 1, shaftBottom - 3, 104, shaftBottom);
@@ -216,7 +217,7 @@ export function wellTiles(): [number, number][] {
 /** The well descent's echo planks (only solid in the lantern's light). */
 export function descentTiles(): [number, number][] {
   const out: [number, number][] = [];
-  for (const [y, x0, x1] of [[SURF + 13, X.well + 3, X.well + 6], [SURF + 19, X.well + 2, X.well + 5]]) for (let x = x0; x <= x1; x++) out.push([x, y]);
+  for (const [y, x0, x1] of [[SURF + 14, X.well + 3, X.well + 6], [SURF + 22, X.well + 3, X.well + 6]]) for (let x = x0; x <= x1; x++) out.push([x, y]);
   return out;
 }
 /** The echo bridge's planks across the pit (two are missing even in the memory). */
