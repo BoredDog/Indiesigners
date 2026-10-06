@@ -6,7 +6,7 @@
 //   await d.explore([spot, spot], () => done);                                    // free roam until done
 import Phaser from 'phaser';
 import type { StoryScene, Npc } from '../scenes/StoryScene';
-import { TILE, ZOOM } from './tiles';
+import { ZOOM } from './tiles';
 import { StoryAudio, type SoundKey } from '../story/audio';
 import { Qte } from '../story/qte';
 import { ECHO_FIRST, ECHO_NOTE, Tuner } from '../story/tuner';
@@ -76,7 +76,7 @@ const TRY_OUT: Record<string, (d: Director) => Promise<unknown>> = {
     d.teleport(A.well.x - 28, A.well.y);
     d.objective('Climb down the well.');
     const desc = wellDescent(d);
-    await d.explore([], () => !desc.dying() && d.player.y > (SURF + 23) * TILE);
+    await d.explore([], () => desc.done());
     desc.end();
     d.objective(null);
   },
