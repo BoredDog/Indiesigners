@@ -31,6 +31,12 @@ const STEP = `
     d.closeBoard();
     return 'board:' + (q || 'close');
   }
+  // Tuning puzzle: snap the knobs onto the echo and wait for it to lock.
+  if (d.tuner && d.tuner.state) { if (!d.tuner.state.locked) d.tuner.state.auto(); return 'tune'; }
+  // River channels: turn every piece into place.
+  if (d.river && d.river.state) { if (!d.river.state.solved && !d.river.state.started) { d.river.state.started = true; d.river.state.auto(); } return 'river'; }
+  // Classroom candles: press the rest of the solution.
+  if (d.candles && d.candles.state) { if (!d.candles.state.solved && !d.candles.state.started) { d.candles.state.started = true; d.candles.state.auto(); } return 'candles'; }
   // Choices: numbered buttons "1. …".
   const choices = all.filter((o) => o.name && /^btn:\\d\\. /.test(o.name) && o.active);
   if (choices.length) {
@@ -52,6 +58,7 @@ const STEP = `
     // Nothing visible left: stand by a hidden echo trace and raise the lantern (the runner holds F).
     const tr = (d.traces || []).find((t) => !t.revealed);
     if (!spot && tr) { d.teleport(tr.img.x, d.a.footprints.y); return 'sight'; }
+    if (!spot && d.following) { d.teleport(d.following.x(), d.a.well.y); return 'follow'; }
     if (spot) { d.teleport(spot.x, spot.y); d.tryInteract(); return 'spot:' + spot.id; }
     const A = d.a, S = 60, T = 16;
     if (w.world.fg[S][40] === 0 && d.player.y < (S + 8) * T) { for (let y = S + 1; y <= S + 7; y++) for (let x = 39; x <= 41; x++) if (w.world.fg[y][x]) w.clearTile(x, y); d.teleport(A.shaft.x, A.shaft.y); return 'dig'; }

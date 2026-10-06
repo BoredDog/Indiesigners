@@ -85,7 +85,7 @@ export class StoryScene extends Phaser.Scene {
     StoryAudio.preload(this);
   }
 
-  create(data: { fresh?: boolean | string; episode?: string | number } = {}) {
+  create(data: { fresh?: boolean | string; episode?: string | number; try?: string } = {}) {
     // Phaser reuses this instance on RESTART / PLAY AGAIN: reset everything per-run.
     this.did = { move: false, run: false, jump: false, dig: false };
     this.digTaps = 0;
@@ -140,7 +140,7 @@ export class StoryScene extends Phaser.Scene {
     ui.events.once(Phaser.Scenes.Events.CREATE, () => {
       this.director = new Director(this, ui, save, writeStory);
       (window as unknown as { __story: Director }).__story = this.director; // test hook
-      void this.director.run(EPISODES);
+      void this.director.run(EPISODES, data.try);
     });
   }
 
@@ -293,7 +293,9 @@ export class StoryScene extends Phaser.Scene {
     const named = base === 'ivy' || base === 'luke' || base === 'hanna';
     // Nia is a child: the villager woman sprite at child height.
     const tex = named ? `ghx_${base}` : { woman: 'gv_woman_idle', nia: 'gv_woman_idle', bearded: 'gv_bearded_idle', oldman: 'gv_oldman_idle', figure: 'gv_figure_idle', elias: 'gv_hatman_idle' }[base];
-    const sprite = this.add.sprite(x, y, tex).setOrigin(0.5, 1).setDepth(DEPTH.actors - 1).setFlipX(!!opts.flip);
+    // `flip` means "face left". The village sprites face right, but Ivy, Luke and Hanna's art faces
+    // left, so theirs is the other way round.
+    const sprite = this.add.sprite(x, y, tex).setOrigin(0.5, 1).setDepth(DEPTH.actors - 1).setFlipX(named ? !opts.flip : !!opts.flip);
     if (!named) sprite.play(`${base === 'nia' ? 'woman' : base}_idle`);
     if (base === 'nia') sprite.setScale(0.62);
     if (named) sprite.setScale(52 / sprite.height); // same height as Elias

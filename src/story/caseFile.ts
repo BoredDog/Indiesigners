@@ -111,7 +111,7 @@ function pages(ending: Ending, flags: Record<string, unknown>): PanelDef[][] {
               { key: 'gv_hatman_idle', x: 0.44, y: 0.99, scale: 9 },
               { key: 'gv_woman_idle', x: 0.54, y: 0.99, scale: 5.6, flip: true },
             ],
-            caption: '2:18. The first minute Veyra has had in ten years. We went home together. Case closed.',
+            caption: '2:18. The first minute Veyra has had in ten years. I kept the horse. Case closed.',
           }
         : {
             x: M, y: TOP, w: CW, h: CH, bg: 'cf_village', focus: [0.5, 0.75], zoom: 1.4,

@@ -78,9 +78,9 @@ The goal: nobody can name the figure by the end of Episode 1, and the evidence l
 - **Episode 3:** an optional echo under Ivy's desk spells ELI in chalk.
 - **Episode 4:** Hanna's staff register becomes a clue, and nine opened COME HOME letters sit on her desk ("They come every year. So do you."). An optional echo in the burned half of the photograph shows a lantern on a staff, held by someone young. "Stop. E—" is the first time anyone says his initial.
 - **Episode 5:** the vault notes are in the same hand as Hanna's register, and the apprentice's name is cut out leaving "—a". Elias suspects Hanna.
-- **Episode 6:** the register is a trap answer to "Who is the figure?" ("That's what the records say. Someone rewrote the records."). The cut line read APPRENTICE: ELIAS, BROTHER OF NIA; he kept Hanna's register, so the hands match. Plant: "I walked out of the well on my own feet. I have never been sure all of me did."
+- **Episode 6:** the register is a trap answer to "Who is the figure?" ("That's what the records say. Someone rewrote the records."). The cut line read APPRENTICE: ELIAS, BROTHER OF NIA; he kept Hanna's register, so the hands match.
 - **Episode 7, COME HOME:** the choice is a lantern action. Hold F (or right mouse, or hold FORGET) to raise it to your face, or set it down to REMEMBER.
-  - REMEMBER: Elias fades at sunrise with Nia and the ghosts; he was halfway too.
+  - REMEMBER: the clock moves to 2:18, the ghosts and Nia say goodbye at sunrise, and Elias stays, keeping the wooden horse. (Garv, 6 Oct: no "Elias is halfway too".)
   - FORGET: the loop restarts, and this time the letter reads clean: COME HOME, ELI.
 
 ## The throughline
