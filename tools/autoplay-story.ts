@@ -55,7 +55,7 @@ const STEP = `
     const spot = d.spots.find((s) => !s.when || s.when());
     // Nothing visible left: stand by a hidden echo trace and raise the lantern (the runner holds F).
     const tr = (d.traces || []).find((t) => !t.revealed);
-    if (!spot && tr) { d.teleport(tr.img.x, d.a.footprints.y); return 'sight'; }
+    if (!spot && tr) { d.teleport(tr.img.x, tr.img.y); return 'sight'; }
     if (!spot && d.following) { d.teleport(d.following.x(), d.a.well.y); return 'follow'; }
     if (spot) { d.teleport(spot.x, spot.y); d.tryInteract(); return 'spot:' + spot.id; }
     const A = d.a, S = 60, T = 16;

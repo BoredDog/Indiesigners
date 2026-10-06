@@ -17,6 +17,7 @@ import { TILE } from './tiles';
 import { ECHO_FIRST } from '../story/tuner';
 import { followHanna } from '../story/follow';
 import { echoBridge } from '../story/bridge';
+import { wellDescent } from '../story/descent';
 import { IVY_CANDLES } from '../story/candles';
 import { LUKE_RIVER } from '../story/river';
 
@@ -401,7 +402,9 @@ export const EPISODES: Episode[] = [
       await d.narr('The key was never meant for a door. It was meant for what lies underneath.');
       d.objective('Climb down the well and dig through the rubble.', { x: A.well.x, y: A.well.y, label: 'The old well' });
       d.guide.teach(['dig']);
-      await d.explore([], () => d.player.y > (SURF + 8) * TILE);
+      const descent = wellDescent(d); // then climb down the deep shaft; some planks are only in the lantern's light
+      await d.explore([], () => !descent.dying() && d.player.y > (SURF + 23) * TILE);
+      descent.end();
       d.objective(null);
     },
   },
@@ -411,7 +414,7 @@ export const EPISODES: Episode[] = [
     title: 'UNDER VEYRA',
     run: async (d) => {
       const A = d.a;
-      if (d.player.y < (SURF + 8) * TILE) d.teleport(A.shaft.x, A.shaft.y);
+      if (d.player.y < (SURF + 20) * TILE) d.teleport(A.shaft.x, A.shaft.y);
       d.memory(false);
       await d.narr('Tunnels, and the drip of water. Symbols on the walls glow as the lantern passes, and fade behind me.');
       const read = new Set<number>();

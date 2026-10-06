@@ -6,7 +6,7 @@
 //   await d.explore([spot, spot], () => done);                                    // free roam until done
 import Phaser from 'phaser';
 import type { StoryScene, Npc } from '../scenes/StoryScene';
-import { ZOOM } from './tiles';
+import { TILE, ZOOM } from './tiles';
 import { StoryAudio, type SoundKey } from '../story/audio';
 import { Qte } from '../story/qte';
 import { ECHO_FIRST, ECHO_NOTE, Tuner } from '../story/tuner';
@@ -14,6 +14,8 @@ import { Candles, IVY_CANDLES } from '../story/candles';
 import { River, LUKE_RIVER } from '../story/river';
 import { followHanna } from '../story/follow';
 import { echoBridge } from '../story/bridge';
+import { wellDescent } from '../story/descent';
+import { wellTiles, SURF } from './worldgen';
 import { comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import { playCaseFile } from '../story/caseFile';
@@ -66,6 +68,18 @@ const TRY_OUT: Record<string, (d: Director) => Promise<void>> = {
   tune2: (d) => d.tuner.tune(ECHO_NOTE),
   candles: (d) => d.candles.play(IVY_CANDLES),
   river: (d) => d.river.play(LUKE_RIVER),
+  descent: async (d) => {
+    // The end of Episode 4: the well is open and the rubble dug, ready to climb down.
+    const A = d.a;
+    for (const [x, y] of wellTiles()) d.world.clearTile(x, y);
+    for (let y = SURF + 1; y <= SURF + 6; y++) for (let x = 39; x <= 41; x++) if (d.world.world.fg[y][x]) d.world.clearTile(x, y);
+    d.teleport(A.well.x - 28, A.well.y);
+    d.objective('Climb down the well.');
+    const desc = wellDescent(d);
+    await d.explore([], () => !desc.dying() && d.player.y > (SURF + 23) * TILE);
+    desc.end();
+    d.objective(null);
+  },
   bridge: async (d) => {
     // Episode 5's tunnel, just past the vault.
     const A = d.a;
