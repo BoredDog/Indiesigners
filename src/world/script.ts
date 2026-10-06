@@ -16,6 +16,7 @@ import { collapseTiles, wellTiles, SURF } from './worldgen';
 import { TILE } from './tiles';
 import { ECHO_FIRST } from '../story/tuner';
 import { IVY_CANDLES } from '../story/candles';
+import { LUKE_RIVER } from '../story/river';
 
 const GHOST = 0xd8f4ff;
 
@@ -286,6 +287,7 @@ export const EPISODES: Episode[] = [
       await d.say('Luke', 'Someone helped me push the last boat out that night. I never thanked him. Never saw his face.');
       await d.narr('The lantern flares on its own. It wants this one.');
       d.memory(true);
+      await d.river.play(LUKE_RIVER); // puzzle: turn the river back to the dock
       d.world.setRiver(true, 2200);
       await d.banner('LUKE’S MEMORY, 2:05 AM', '#bfefff', 1300);
       await d.narr('Luke is alone on the dock, mending a net by lamplight. The village is asleep.');
