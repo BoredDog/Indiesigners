@@ -151,7 +151,7 @@ export const EPISODES: Episode[] = [
             run: async () => {
               seen.add('school');
               await d.narr('The school clock stopped at 2:17, like every other clock here. On a desk, a crayon drawing of a boy and a little girl, holding hands. The paper is torn across the boy’s name. What’s left reads: — + NIA.');
-              await d.say('Elias', 'A brother and a sister. The brother is holding a lantern like mine. …And it’s the same round hand as my letter.');
+              await d.say('Elias', 'A brother and a sister. The brother is holding a lantern like mine.');
               d.found('drawing');
             },
           },
