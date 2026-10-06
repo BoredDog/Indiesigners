@@ -14,6 +14,10 @@
 import type { Episode } from './Director';
 import { collapseTiles, wellTiles, SURF } from './worldgen';
 import { TILE } from './tiles';
+import { ECHO_FIRST } from '../story/tuner';
+import { followHanna } from '../story/follow';
+import { IVY_CANDLES } from '../story/candles';
+import { LUKE_RIVER } from '../story/river';
 
 const GHOST = 0xd8f4ff;
 
@@ -201,6 +205,7 @@ export const EPISODES: Episode[] = [
       await d.deduce('qKey');
       d.objective(null);
       await d.narr('The lantern in my hand begins to hum. The flame leans toward the school, the way a plant leans toward a window.');
+      await d.tuner.tune(ECHO_FIRST); // puzzle: tune the lantern to the echo
       await d.banner('MEMORY ECHO DETECTED');
     },
   },
@@ -213,6 +218,7 @@ export const EPISODES: Episode[] = [
       d.objective('Follow the humming lantern to the school.');
       await d.explore([{ id: 'school', x: A.school.x, y: A.school.y, label: 'School', run: async () => 'done' }]);
       d.objective(null);
+      await d.candles.play(IVY_CANDLES); // puzzle: light the dark classroom; Ivy appears in the candlelight
       const ivy = d.npc('ivy', A.school.x + 40, A.school.y, { ghost: true, tint: GHOST, flip: true });
       ivy.sprite.setAlpha(0);
       await d.fadeNpc(ivy, 0.85);
@@ -282,6 +288,7 @@ export const EPISODES: Episode[] = [
       await d.say('Luke', 'Someone helped me push the last boat out that night. I never thanked him. Never saw his face.');
       await d.narr('The lantern flares on its own. It wants this one.');
       d.memory(true);
+      await d.river.play(LUKE_RIVER); // puzzle: turn the river back to the dock
       d.world.setRiver(true, 2200);
       await d.banner('LUKE’S MEMORY, 2:05 AM', '#bfefff', 1300);
       await d.narr('Luke is alone on the dock, mending a net by lamplight. The village is asleep.');
@@ -369,8 +376,7 @@ export const EPISODES: Episode[] = [
       d.shake(800, 0.005);
       d.audio.tone('drone');
       await d.narr('A sound from under the ground, low, like a held note. Hanna follows it out of the house, down the street, to the old well.');
-      d.watch(hanna);
-      await d.npcWalk(hanna, A.well.x + 20, 80);
+      await followHanna(d, hanna, A.well.x, A.well.y); // activity: follow her through the memory to the well
       await d.pan(A.well.x, A.well.y - 30, 900);
       const fig = d.npc('figure', A.well.x - 30, A.well.y, { tint: 0x101018 });
       await d.narr('Below the well, a lantern burns. The figure stands beside it.');
