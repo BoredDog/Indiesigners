@@ -248,7 +248,7 @@ export class TitleScene extends Phaser.Scene {
       'Bhumi Chaudhari: art and story, characters, dialogue',
       'Arya Pandey: art and story, environments, content, QA',
       '',
-      'Developed with AI assistance.',
+      'Developed with AI assistance; some art is AI-generated.',
       '',
       'Gothicvania Town, Cemetery and Church by ansimuz (CC0)',
       'Kenney Particle, RPG Audio and Impact Sounds (CC0)',
