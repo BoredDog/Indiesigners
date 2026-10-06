@@ -9,10 +9,10 @@
       "openingNarration": "The bell stopped the same way every clock did.",
       "closingNarration": "The evidence was clearer than the memory.",
       "panels": [
-        { "id": "P1", "drawn": "Ivy in classroom; register and clock visible.", "dialogue": [{ "speaker": "mira", "line": "The lesson ended before the bell.", "tone": "normal" }], "narration": "The village still looked ordinary before the minute that broke it.", "evidence": ["ev_mira_bell"], "moment": null, "silhouette": false },
+        { "id": "P1", "drawn": "Mira in classroom; register and clock visible.", "dialogue": [{ "speaker": "mira", "line": "The lesson ended before the bell.", "tone": "normal" }], "narration": "The village still looked ordinary before the minute that broke it.", "evidence": ["ev_mira_bell"], "moment": null, "silhouette": false },
         { "id": "P2", "drawn": "School clock, wall clock and register.", "dialogue": [{ "speaker": "mira", "line": "They all stopped together.", "tone": "uneasy" }], "narration": "The clocks agreed too perfectly.", "evidence": ["ev_mira_clocks"], "moment": null, "silhouette": false },
         { "id": "P3", "drawn": "Clock tower rope untouched; lantern symbol glowing in stone. Under the light: 'E.V.' scratched on the bell frame.", "dialogue": [{ "speaker": "mira", "line": "Who rang it?", "tone": "tense" }], "narration": "No hand had pulled the rope. Something else had.", "evidence": ["ev_mira_resonance"], "moment": "sis_1", "silhouette": false },
-        { "id": "P4", "drawn": "Ivy writes in the wall ledger by her own wristwatch.", "dialogue": [{ "speaker": "mira", "line": "This was written after the bell.", "tone": "shocked" }], "narration": "The clocks had stopped. Her pen hadn't.", "evidence": ["ev_mira_later_entry"], "moment": "sis_2", "silhouette": false },
+        { "id": "P4", "drawn": "Mira writes in the wall ledger by her own wristwatch.", "dialogue": [{ "speaker": "mira", "line": "This was written after the bell.", "tone": "shocked" }], "narration": "The clocks had stopped. Her pen hadn't.", "evidence": ["ev_mira_later_entry"], "moment": "sis_2", "silhouette": false },
         { "id": "P5", "drawn": "Sickroom doorway: black residue and the silhouette's hand on the frame, holding a lantern staff with cracked glass. Under the light: a teal handprint on the door frame; the Figure's rim shows a lantern with cracked glass.", "dialogue": [{ "speaker": "mira", "line": "That hand...", "tone": "whisper" }], "narration": "I knew the tools before I knew the face.", "evidence": ["ev_mira_staff"], "moment": "sis_3", "silhouette": true },
         { "id": "P6", "drawn": "Register with a scraped entry beside Nia's sickroom note.", "dialogue": [], "narration": "Someone had scraped a name from the register: [[Elias Vane]].", "evidence": ["ev_mira_clinic", "ev_mira_erased_entry"], "moment": null, "silhouette": false }
       ]
@@ -22,11 +22,11 @@
       "setting": "River road and sluice path, incident night",
       "layout": "2x3 grid; P2/P4 wide action panels",
       "silhouette": "P4 on the dry riverbed",
-      "openingNarration": "A ferryman remembers water. Luke remembered it leaving.",
+      "openingNarration": "A ferryman remembers water. Arun remembered it leaving.",
       "closingNarration": "The time on his watch was the time they erased.",
       "panels": [
         { "id": "P1", "drawn": "Riverbank; boat tied at normal water level.", "dialogue": [{ "speaker": "arun", "line": "The river was moving.", "tone": "firm" }], "narration": "The water was the last ordinary thing he remembered.", "evidence": ["ev_arun_splash"], "moment": null, "silhouette": false },
-        { "id": "P2", "drawn": "Luke's watch ticking while the tower shows 2:17.", "dialogue": [{ "speaker": "arun", "line": "My watch kept going.", "tone": "frightened" }], "narration": "The watch remembered a different night.", "evidence": ["ev_arun_tick"], "moment": "bro_2", "silhouette": false },
+        { "id": "P2", "drawn": "Arun's watch ticking while the tower shows 2:17.", "dialogue": [{ "speaker": "arun", "line": "My watch kept going.", "tone": "frightened" }], "narration": "The watch remembered a different night.", "evidence": ["ev_arun_tick"], "moment": "bro_2", "silhouette": false },
         { "id": "P3", "drawn": "Open emergency sluice and dry river channel.", "dialogue": [{ "speaker": "arun", "line": "This was not a drought.", "tone": "angry" }], "narration": "No drought leaves a riverbed this clean.", "evidence": ["ev_arun_clank"], "moment": "bro_1", "silhouette": false },
         { "id": "P4", "drawn": "Silhouette carrying a child across the dry riverbed toward the lantern-house. Under the light: teal footprints across the riverbed; the Figure's rim shows a long coat and a high collar.", "dialogue": [{ "speaker": "arun", "line": "Someone was carrying Nia.", "tone": "shaken" }], "narration": "He walked where the river should have been.", "evidence": ["ev_arun_footsteps", "ev_arun_cloth"], "moment": "bro_3", "silhouette": true },
         { "id": "P5", "drawn": "Close on the figure; lantern case with a scratched patch. Under the light: 'E.V.' on the case.", "dialogue": [{ "speaker": "arun", "line": "I knew the coat.", "tone": "whisper" }], "narration": "That case. I had seen one like it.", "evidence": ["ev_arun_hiss"], "moment": null, "silhouette": true },
@@ -38,13 +38,13 @@
       "setting": "Lantern workshop and underground archive, minutes before and after the overload",
       "layout": "2x3 grid; P1/P4 wide setup panels",
       "silhouette": "P4 and P6 at the lantern console",
-      "openingNarration": "The lantern had rules. Hanna had written every one.",
+      "openingNarration": "The lantern had rules. Leela had written every one.",
       "closingNarration": "The machine did not malfunction. Someone told it to do this.",
       "panels": [
         { "id": "P1", "drawn": "Echo Lantern workbench with diagrams. Under the light: 'E.V.' carved into the apprentice's stool.", "dialogue": [{ "speaker": "leela", "line": "It records. It extracts. It can transfer.", "tone": "warning" }], "narration": "The lantern was never a simple lamp.", "evidence": ["ev_leela_tink"], "moment": "mom_1", "silhouette": false },
         { "id": "P2", "drawn": "Village network blueprint; rules board. Under the light: rule two on the board, pencil margin notes on the blueprint.", "dialogue": [{ "speaker": "leela", "line": "Never connect all nodes at once.", "tone": "urgent" }], "narration": "The warning was written in her own hand.", "evidence": ["ev_leela_hum", "ev_leela_rule"], "moment": null, "silhouette": false },
         { "id": "P3", "drawn": "An empty child-sized chair with straps; Nia's clinic card clipped to it (no hairclip).", "dialogue": [{ "speaker": "leela", "line": "She was the test.", "tone": "hesitant" }], "narration": "Someone had already asked the lantern a question it could not answer.", "evidence": ["ev_leela_beep"], "moment": null, "silhouette": false },
-        { "id": "P4", "drawn": "Young Elias (silhouette) at the console with the staff, Hanna reaching for him.", "dialogue": [{ "speaker": "leela", "line": "Elias, stop.", "tone": "fragmented memory" }, { "speaker": "elias", "line": "Just once.", "tone": "fragmented memory" }], "narration": "She remembered his words. Not his face.", "evidence": ["ev_leela_click"], "moment": "mom_2", "silhouette": true },
+        { "id": "P4", "drawn": "Young Elias (silhouette) at the console with the staff, Leela reaching for him.", "dialogue": [{ "speaker": "leela", "line": "Elias, stop.", "tone": "fragmented memory" }, { "speaker": "elias", "line": "Just once.", "tone": "fragmented memory" }], "narration": "She remembered his words. Not his face.", "evidence": ["ev_leela_click"], "moment": "mom_2", "silhouette": true },
         { "id": "P5", "drawn": "Console overload; village map lights across every node; black residue spreads.", "dialogue": [{ "speaker": "leela", "line": "Shut it down!", "tone": "shouting" }], "narration": "The lantern did what it had been told to do.", "evidence": ["ev_leela_whoom", "ev_leela_crack"], "moment": "mom_3", "silhouette": true },
         { "id": "P6", "drawn": "Archive collapsing; silhouette at the purge control. Under the light: the Figure's rim at the console reads young and slight.", "dialogue": [], "narration": "After the overload, someone took his own name out of the evidence.", "evidence": ["ev_leela_ash", "ev_leela_paper"], "moment": null, "silhouette": true }
       ]

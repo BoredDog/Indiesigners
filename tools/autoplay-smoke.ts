@@ -98,17 +98,6 @@ try {
     await wait(700);
   }
   await scene('Village');
-  // First visit (script §4): the unknown woman's room, then back to the Village.
-  await scene('UnknownWoman');
-  await wait(1200);
-  check(await find(page, 'line:warning'), "unknown woman: \"don't trust the first memory you see\"");
-  await shot('03a-unknown-woman');
-  await page.mouse.click(300, 500);
-  await wait(400);
-  check(!(await find(page, 'unknownWoman')), 'she vanishes on click (no fade)');
-  await click('btn:CONTINUE');
-  await scene('Village');
-  check(await state<boolean>("gs.flag('metUnknownWoman')"), 'unknown woman beat seen once (flag saved)');
   await shot('03-village');
 
   // Hover + conversation
@@ -157,11 +146,9 @@ try {
     await click('btn:CONFIRM');
     await click('btn:CONFIRM', 1800);
     if (i === 0) await shot('09-deduction-confirmed');
-    // CONFIRM (hypothesis popup) and CONTINUE both fade in; a click that lands mid-fade is dropped.
-    // So press whichever is on screen until Memory is back (up to ~20 s).
-    for (let tries = 0; tries < 40 && !(await activeScene('Memory')); tries++) {
-      if (await find(page, 'btn:CONTINUE')) await click('btn:CONTINUE', 400);
-      else if (await find(page, 'btn:CONFIRM')) await click('btn:CONFIRM', 1800);
+    // CONTINUE fades in; a click that lands mid-fade is dropped, so retry until Memory is back.
+    for (let tries = 0; tries < 3 && !(await activeScene('Memory')); tries++) {
+      if (await find(page, 'btn:CONTINUE')) await click('btn:CONTINUE');
       else await wait(500);
     }
     await scene('Memory');
@@ -202,20 +189,7 @@ try {
   check(await state<number>("gs.deductionsConfirmed('mira')") === 3, 'Continue restores 3/3 deductions');
   check(await state<string>("gs.witnessStatus('mira')") === 'resolved', 'Continue restores witness state');
   check(await state<number>('gs.allEvidence().length') === 6, 'Continue restores evidence');
-  check(!(await activeScene('UnknownWoman')), 'unknown woman does not return on Continue');
   await shot('14-continued');
-
-  // The burned photograph (script §4): close-up with IDENTITY UNKNOWN, then pinned in the Casebook.
-  await click('spot:photo');
-  check(await find(page, 'photo:fourth'), 'photo close-up: fourth face IDENTITY UNKNOWN');
-  check(await find(page, 'photo:mira'), 'photo close-up: met witness is named');
-  await shot('15-photo');
-  await click('btn:CLOSE');
-  check(await state<boolean>("gs.hasEvidence('ev_photo_burned')"), 'burned photograph added as evidence');
-  await click('btn:CASEBOOK');
-  await scene('Casebook');
-  check(await find(page, 'figure:identity-unknown'), 'casebook pins the photo as IDENTITY UNKNOWN');
-  await shot('16-casebook-photo');
 } catch (e) {
   failed++;
   console.error('FAIL', e);

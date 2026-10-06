@@ -1,9 +1,6 @@
 import Phaser from 'phaser';
 import { Bubble, ComicButton, COLORS, comicSettings, dur, FONTS, TEXT_RESOLUTION, ts } from '../comic';
 import { casebookDeps, type CaseCard, type CaseThread } from './casebook/CasebookDeps';
-import { makeBeatArt } from '../dev/beatArt';
-import { PX, hasPixel } from '../pixel/pixel';
-import { PHOTO_EVIDENCE, PHOTO_TEXT, photoImage } from './beats/photo';
 import type { Witness } from './memory/MemoryData';
 
 export interface CasebookSceneData {
@@ -15,7 +12,7 @@ const CARD_W = 330;
 const CARD_H = 180;
 const COLS: Record<Witness, number> = { mira: 300, arun: 730, leela: 1160 };
 const ROW_Y = [370, 590, 810];
-const NAMES: Record<Witness, string> = { mira: 'IVY', arun: 'LUKE', leela: 'HANNA' };
+const NAMES: Record<Witness, string> = { mira: 'MIRA', arun: 'ARUN', leela: 'LEELA' };
 const THREAD_STYLE: Record<CaseThread['type'], { color: number; label: string }> = {
   corroborates: { color: 0x2f6f4f, label: 'CORROBORATES' },
   contradicts: { color: 0xb3261e, label: 'CONTRADICTS' },
@@ -47,13 +44,8 @@ export class CasebookScene extends Phaser.Scene {
     this.cardPos.clear();
     const deps = casebookDeps();
 
-    if (hasPixel(this, 'ui_casebook_bg')) {
-      // Pixel corkboard (design/pixel scene 12): drawn at ×4, frame included in the art.
-      this.add.image(0, 0, PX('ui_casebook_bg')).setOrigin(0).setScale(4).setInteractive();
-    } else {
-      this.add.tileSprite(0, 0, 1920, 1080, 'cork').setOrigin(0).setTint(0xd9b27c).setInteractive();
-      this.add.rectangle(0, 0, 1920, 1080).setOrigin(0).setStrokeStyle(28, 0x3b2a1a);
-    }
+    this.add.tileSprite(0, 0, 1920, 1080, 'cork').setOrigin(0).setTint(0xd9b27c).setInteractive();
+    this.add.rectangle(0, 0, 1920, 1080).setOrigin(0).setStrokeStyle(28, 0x3b2a1a);
 
     this.add.text(60, 36, 'CASEBOOK', this.sfxStyle(64, COLORS.paperCss)).setDepth(5);
     this.add
@@ -233,8 +225,7 @@ export class CasebookScene extends Phaser.Scene {
 
   private drawFigureCards(cards: CaseCard[]) {
     const deps = casebookDeps();
-    const photo = deps.hasEvidence(PHOTO_EVIDENCE); // script §4: the burned photograph, IDENTITY UNKNOWN
-    const figureSeen = photo || deps.hasEvidence('ev_mira_staff') || cards.some((c) => c.witness !== 'mira' && c.confirmed);
+    const figureSeen = deps.hasEvidence('ev_mira_staff') || cards.some((c) => c.witness !== 'mira' && c.confirmed);
     const niaSeen = deps.hasEvidence('ev_mira_clinic') || deps.hasEvidence('ev_arun_cloth');
     const x = 1640;
 
@@ -242,17 +233,7 @@ export class CasebookScene extends Phaser.Scene {
     fig.add(this.add.rectangle(6, 8, 300, 330, 0x000000, 0.35));
     fig.add(this.add.rectangle(0, 0, 300, 330, 0x1b1b20).setStrokeStyle(3, COLORS.ink));
     fig.add(this.add.circle(0, -155, 11, 0xc0392b).setStrokeStyle(3, COLORS.ink));
-    if (photo) {
-      makeBeatArt(this);
-      fig.add(photoImage(this, 0, -10, false, 270, -3).img.setName('figure:photo'));
-      fig.add(
-        this.add
-          .text(0, 72, PHOTO_TEXT.unknown, this.sfxStyle(30, '#c0392b'))
-          .setOrigin(0.5)
-          .setAngle(-8)
-          .setName('figure:identity-unknown'),
-      );
-    } else if (this.textures.exists('ph_figure') && figureSeen) {
+    if (this.textures.exists('ph_figure') && figureSeen) {
       fig.add(this.add.image(0, 20, 'ph_figure').setScale(0.42).setTintFill(0x000000));
     } else fig.add(this.add.text(0, 10, '?', this.sfxStyle(90, '#55555f')).setOrigin(0.5));
     fig.add(this.add.text(0, -140, 'THE FIGURE', this.sfxStyle(34, COLORS.paperCss)).setOrigin(0.5, 0));

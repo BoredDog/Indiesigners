@@ -1,11 +1,8 @@
 import Phaser from 'phaser';
 import { makePlaceholders } from '../dev/placeholders';
-import { BEAT_ART } from '../dev/beatArt';
-import { loadPixelLayers } from '../pixel/pixel';
 
 /** Art file name (art/incoming/<you>/<name>.png) → the placeholder texture it replaces. */
 const ART_REPLACES: Record<string, string> = {
-  ...BEAT_ART, // unknown woman's room, rocking chair, the woman, burned photo (both states)
   bg_village: 'ph_village',
   char_figure: 'ph_figure',
   char_mira: 'ph_mira',
@@ -26,7 +23,6 @@ export class BootScene extends Phaser.Scene {
     // Processed art (npm run art) replaces the matching placeholder: same key, same canvas size.
     // ?art=placeholder skips it (compare against the stand-ins).
     if (new URLSearchParams(location.search).get('art') === 'placeholder') return;
-    loadPixelLayers(this); // pixel-art layers (npm run pixel), crisp ×4
     this.load.json('art-manifest', 'assets/art/manifest.json');
     this.load.once('filecomplete-json-art-manifest', (_key: string, _type: string, manifest: Record<string, string>) => {
       for (const [name, file] of Object.entries(manifest ?? {})) {

@@ -1,11 +1,8 @@
 import Phaser from 'phaser';
-import { PixelStage, hasPixel } from '../pixel/pixel';
 import { attachComicFx, COLORS, comicSettings, dur, impact, RichText, FONTS, TEXT_RESOLUTION } from '../comic';
 import { gameState } from '../core/GameState';
 import { story } from '../core/StoryData';
 import { PH } from '../dev/placeholders';
-import { makeBeatArt } from '../dev/beatArt';
-import { photoImage } from './beats/photo';
 import { FRAME, SequenceScene, type FrameBuilder } from './sequence/SequenceScene';
 
 /**
@@ -38,9 +35,9 @@ export class FinaleScene extends SequenceScene {
       // 1 — Three witness panels slide into one investigation board.
       (layer) => {
         const crops = [
-          { x: 780, y: 90, w: 470, h: 340, who: 'IVY', clue: 'The bell rang with no hand on the rope.' },
-          { x: 0, y: 760, w: 600, h: 320, who: 'LUKE', clue: 'The watch kept going: 2:31.' },
-          { x: 1100, y: 430, w: 520, h: 400, who: 'HANNA', clue: 'The lantern binds minds as anchors.' },
+          { x: 780, y: 90, w: 470, h: 340, who: 'MIRA', clue: 'The bell rang with no hand on the rope.' },
+          { x: 0, y: 760, w: 600, h: 320, who: 'ARUN', clue: 'The watch kept going: 2:31.' },
+          { x: 1100, y: 430, w: 520, h: 400, who: 'LEELA', clue: 'The lantern binds minds as anchors.' },
         ];
         crops.forEach((c, i) => {
           const frame = { x: 0, y: FRAME.y + 220, w: 480, h: 360 };
@@ -63,7 +60,7 @@ export class FinaleScene extends SequenceScene {
         this.narration(layer, n(0), FRAME.x + 300, FRAME.y + 80);
         this.sfxWord(layer, f[0].sfx, FRAME.x + 1300, FRAME.y + 820, 46, 600, '#b3261e');
       },
-      // 2 — 2:17 clocks overlaid with Luke's 2:31 watch; the 2:31 hand keeps moving.
+      // 2 — 2:17 clocks overlaid with Arun's 2:31 watch; the 2:31 hand keeps moving.
       (layer) => {
         this.panel(layer, PH.village, { x: 643, y: 150, w: 534, h: 300 });
         const wx = FRAME.x + 1250;
@@ -79,13 +76,10 @@ export class FinaleScene extends SequenceScene {
       },
       // 3 — Nia's clinic record beside the child from the memory echo; the redacted name resolves.
       (layer) => {
-        if (hasPixel(this, 'panel_bedside')) new PixelStage(this, layer, FRAME).image('panel_bedside'); // pixel scene 11
-        else {
-          const bgPanel = this.panel(layer, PH.village, { x: 0, y: 690, w: 1920, h: 390 });
-          bgPanel.setColour(0.25, 0);
-          const nia = this.add.image(FRAME.x + 1260, FRAME.y + FRAME.h - 40, PH.nia).setOrigin(0.5, 1).setScale(1.7).setAlpha(0.85);
-          layer.add(nia);
-        }
+        const bgPanel = this.panel(layer, PH.village, { x: 0, y: 690, w: 1920, h: 390 });
+        bgPanel.setColour(0.25, 0);
+        const nia = this.add.image(FRAME.x + 1260, FRAME.y + FRAME.h - 40, PH.nia).setOrigin(0.5, 1).setScale(1.7).setAlpha(0.85);
+        layer.add(nia);
         const { doc, text } = this.document(layer, FRAME.x + 560, FRAME.y + 520, 680, 420, 'VEYRA CLINIC · RECORD', '', false, -3);
         text.setVisible(false);
         const body = (redacted: boolean) =>
@@ -107,18 +101,6 @@ export class FinaleScene extends SequenceScene {
       },
       // 4 — Master console and village network lit simultaneously; lines spread across the map.
       (layer) => {
-        if (hasPixel(this, 'panel_network')) {
-          // Pixel scene 11: the network panel, with the lantern teal pulsing over it.
-          const st = new PixelStage(this, layer, FRAME);
-          st.image('panel_network');
-          const glow = this.add.rectangle(st.x, st.y, 480 * st.scale, 270 * st.scale, COLORS.spiritTeal, 0).setOrigin(0).setBlendMode(Phaser.BlendModes.ADD);
-          layer.add(glow);
-          if (!comicSettings.reduceFlashing) this.tweens.add({ targets: glow, fillAlpha: 0.12, duration: dur(900) || 1, delay: 300, yoyo: true, repeat: 2 });
-          this.narration(layer, n(3));
-          this.sfxWord(layer, f[3].sfx, FRAME.x + 1360, FRAME.y + 150, 80, 1800);
-          this.time.delayedCall(dur(1800), () => impact(this));
-          return;
-        }
         layer.add(this.add.rectangle(FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h / 2, FRAME.w, FRAME.h, 0x10131a).setStrokeStyle(6, COLORS.ink));
         const cx = FRAME.x + FRAME.w / 2;
         const cy = FRAME.y + FRAME.h / 2 + 60;
@@ -126,7 +108,7 @@ export class FinaleScene extends SequenceScene {
         layer.add(g);
         const nodes: { x: number; y: number }[] = [];
         for (let i = 0; i < 32; i++) {
-          // 32 village anchor points (Hanna's HUM! clue), scattered deterministically.
+          // 32 village anchor points (Leela's HUM! clue), scattered deterministically.
           const a = i * 2.39996;
           const r = 140 + ((i * 97) % 300);
           nodes.push({ x: cx + Math.cos(a) * r * 1.9, y: cy + Math.sin(a) * r * 0.85 });
@@ -233,14 +215,6 @@ export class FinaleScene extends SequenceScene {
         const young = this.add.image(x, y, PH.elias).setOrigin(0.5, 1).setScale(1.3);
         const shadow = this.add.image(x, y, PH.figure).setOrigin(0.5, 1).setScale(1.3).setTintFill(0x000000);
         layer.add([young, shadow]);
-        // Script §11: the scratched-out face in the burned photograph becomes his own.
-        makeBeatArt(this);
-        const px = FRAME.x + 380;
-        const py = FRAME.y + 430;
-        const scratched = photoImage(this, px, py, false, 378, -4).img.setName('finale:photo');
-        const revealed = photoImage(this, px, py, true, 378, -4).img.setAlpha(0).setName('finale:photo-revealed');
-        layer.add([scratched, revealed]);
-        this.tweens.add({ targets: revealed, alpha: 1, duration: dur(2600), delay: 900, ease: 'Sine.InOut' });
         const fx = attachComicFx(young);
         if (fx) fx.ink = 1;
         // Edges first, face last: the ink recedes from the highlights while the black mask fades.
@@ -252,13 +226,6 @@ export class FinaleScene extends SequenceScene {
       },
       // 8 — Young Elias activates the machine, then reaches for the self-purge control.
       (layer) => {
-        if (hasPixel(this, 'panel_erase')) {
-          new PixelStage(this, layer, FRAME).image('panel_erase'); // pixel scene 11: young Elias at the purge
-          this.narration(layer, n(7), FRAME.x + 330, FRAME.y + 90);
-          this.sfxWord(layer, f[7].sfx, FRAME.x + 1150, FRAME.y + 330, 54, 1200, COLORS.paperCss);
-          this.button(layer, f[7].button ?? 'CONTINUE', FRAME.x + FRAME.w - 200, FRAME.y + FRAME.h - 70, () => this.next());
-          return;
-        }
         layer.add(this.add.rectangle(FRAME.x + FRAME.w / 2, FRAME.y + FRAME.h / 2, FRAME.w, FRAME.h, 0x12141b).setStrokeStyle(6, COLORS.ink));
         const console_ = this.add.rectangle(FRAME.x + 1160, FRAME.y + 600, 520, 300, 0x2a2a30).setStrokeStyle(6, COLORS.spiritTeal);
         const purge = this.add.circle(FRAME.x + 1300, FRAME.y + 560, 40, 0xb3261e).setStrokeStyle(4, COLORS.ink);

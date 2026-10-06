@@ -1,8 +1,8 @@
 {
   "_source": "Script v2 (design/script_v2.md d10, d11; applied 5 Oct 2026), from Blueprint L2 (finale frames) and L3 (truth ending, epilogue, summary). 'see', 'shows' and 'animation' are direction for the panel art, not on-screen text. 'prop' / 'bubble' / 'niaEcho' / 'closing' / 'stamp' are on-screen text.",
   "frames": [
-    { "id": 1, "see": "Three witness panels and their resolved evidence cards.", "narration": "I thought I was solving three separate stories.", "shows": "Crop labels: IVY 'The bell rang with no hand on the rope.' / LUKE 'The watch kept going: 2:31.' / HANNA 'The lantern binds minds as anchors.'", "sfx": "LOW HEARTBEAT...", "animation": "Panels slide into one investigation board." },
-    { "id": 2, "see": "2:17 clocks overlaid with Luke's 2:31 watch.", "narration": "The clocks stopped. The night did not.", "shows": "The fixed time is shown as a false anchor.", "sfx": "TICK...", "animation": "The 2:31 hand keeps moving." },
+    { "id": 1, "see": "Three witness panels and their resolved evidence cards.", "narration": "I thought I was solving three separate stories.", "shows": "Crop labels: MIRA 'The bell rang with no hand on the rope.' / ARUN 'The watch kept going: 2:31.' / LEELA 'The lantern binds minds as anchors.'", "sfx": "LOW HEARTBEAT...", "animation": "Panels slide into one investigation board." },
+    { "id": 2, "see": "2:17 clocks overlaid with Arun's 2:31 watch.", "narration": "The clocks stopped. The night did not.", "shows": "The fixed time is shown as a false anchor.", "sfx": "TICK...", "animation": "The 2:31 hand keeps moving." },
     { "id": 3, "see": "Nia's clinic record beside the child from the memory echo.", "narration": "I remembered a disappearance. I did not remember my sister.", "shows": "Clinic record: 'Patient: Nia Vane / Sister of the lantern apprentice / Memory preservation trial: requested.'", "sfx": "PAPER!", "animation": "The redacted name resolves." },
     { "id": 4, "see": "Master console and village network lit simultaneously.", "narration": "I gave the lantern all of Veyra.", "shows": "The activation record shows every node opening.", "sfx": "WHOOM!", "animation": "Lines spread across the village map." },
     { "id": 5, "see": "Casebook threads converge on THE FIGURE.", "narration": "The stories were never separate.", "shows": "Every decisive clue points to the same silhouette and tools.", "sfx": "THUMP!", "animation": "Threads snap into one point." },
@@ -15,7 +15,6 @@
     "narration": "I came here looking for the person who erased the village. It was me.",
     "panels": ["Nia", "The overloaded lantern", "The vanished village", "Elias facing the archive"],
     "niaEcho": "You came back.",
-    "clockLine": "The village didn't forget what happened.\nI did.",
     "closing": "I unkeyed the lantern. The anchors let go.",
     "closingSee": "Closing desk panel: the case file, the cracked lantern and Nia's hairclip (art B6).",
     "finalState": "No more loops. The silhouette is gone and Elias is fully visible."
@@ -25,7 +24,7 @@
     "outcome": "The final page briefly shows the master log being archived under Elias's real name.",
     "narration": "The truth was never missing. I was.",
     "stamp": "CASE CLOSED. Signed: Elias Vane.",
-    "panel": "The master log, archived and signed under Elias's real name. (The clock moving 2:17 → 2:18 now plays for every player, after the truth panels.)",
+    "panel": "The village clock advances from 2:17 to 2:18.",
     "finalState": "The casebook closes on a complete timeline with every required clue connected."
   },
   "summary": {

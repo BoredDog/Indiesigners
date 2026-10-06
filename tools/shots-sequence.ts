@@ -27,12 +27,9 @@ const expect = (ok: boolean, what: string) => {
 await page.goto('http://localhost:4187/?scene=Opening');
 await page.waitForFunction(() => (window as any).__echoes?.game.scene.isActive('Opening'));
 await page.waitForTimeout(2200);
-// 6 frames, plus the 5 "Ten years ago" panels when the pixel art is built.
-const openingFrames: number = await page.evaluate(() => (window as any).__echoes.game.scene.getScene('Opening').frames().length);
-expect(openingFrames === 6 || openingFrames === 11, `Opening has ${openingFrames} frames (6, or 11 with the history panels)`);
-for (let i = 1; i <= openingFrames; i++) {
+for (let i = 1; i <= 6; i++) {
   await shot(`opening-${i}`);
-  if (i < openingFrames) await advance();
+  if (i < 6) await advance();
 }
 await advance(1800);
 expect((await active()).includes('Village'), 'Opening ends in Village');
@@ -49,31 +46,8 @@ await advance(2500);
 expect((await active()).includes('Ending'), 'Finale ends in Ending');
 await page.waitForTimeout(2500);
 await shot('ending-1-truth');
-// Every player: the clock frame (2:17 → 2:18), then the closing desk, then the summary.
-await advance(2600);
-await shot('ending-2-clock');
-// Plain JS strings: tsx would inject its __name helper into named functions sent to the browser.
-const FIND_IN_ENDING = `(name) => {
-  const walk = (list) => { for (const o of list) { if (o.name === name) return o; const h = o.list && walk(o.list); if (h) return h; } return null; };
-  return walk(window.__echoes.game.scene.getScene('Ending').children.list);
-}`;
-const findInEnding = (name: string) =>
-  page.evaluate(([code, n]) => {
-    const o = new Function(`return (${code})`)()(n);
-    return o ? { angle: o.angle as number, alpha: o.alpha as number } : null;
-  }, [FIND_IN_ENDING, name] as const);
-// Comic art: a drawn minute hand turns to 108°. Pixel art: the 2:18 ending art fades in over the 2:17 face.
-const pixel218 = await findInEnding('clock:2:18');
-if (pixel218) expect(pixel218.alpha > 0.9, `clock reaches 2:18 for every player (pixel 2:18 art at alpha ${pixel218.alpha})`);
-else {
-  const minute = (await findInEnding('clock:minute'))?.angle;
-  expect(Math.abs(((minute ?? 0) + 360) % 360 - 108) < 1, `clock reaches 2:18 for every player (minute hand at ${minute}°)`);
-}
-for (let i = 3; i <= 5 && !(await findInEnding('btn:PLAY AGAIN')); i++) {
-  await advance(2000);
-  await shot(`ending-${i}`);
-}
-await shot('ending-summary');
+await advance(2000);
+await shot('ending-2-summary');
 expect(
   await page.evaluate(() => (window as any).__echoes.gameState.finale === 'complete'),
   'finale state is complete',

@@ -1,108 +1,192 @@
 import Phaser from 'phaser';
-import { COLORS, FONTS, comicSettings, dur, pageTurn } from '../comic';
-import { gameState } from '../core/GameState';
-import { story } from '../core/StoryData';
-import { H, W, backdrop, button, hasScene, label, openPause, popup } from './coreUi';
-import { PX, PixelStage, hasPixel, lanternLight } from '../pixel/pixel';
+import { comicSettings, pageTurn } from '../comic';
+import { H, W, label, openPause } from './coreUi';
+import { loadStory } from './StoryScene';
+import { EPISODES } from '../world/script';
+import { panel, pbutton, ptext } from '../world/ui';
 
 /**
- * Title (Blueprint F1): logo, subtitle, "CLICK TO INVESTIGATE"; after the first click,
- * Continue (only if a save exists), New Game, Settings, Credits. Idle: rain + lantern flicker.
+ * Title for the story mode: the night town in pixel art, everything centred. "Press any key",
+ * then STORY MODE (continues a save) · RESTART STORY · HOW TO PLAY · SETTINGS · CREDITS.
  */
 export class TitleScene extends Phaser.Scene {
+  private menu?: Phaser.GameObjects.Container;
+  private overlay?: Phaser.GameObjects.Container;
+
   constructor() {
     super('Title');
   }
 
-  /** Pixel title (design/pixel scene 12): logo top-left, menu down the left, Elias under his lantern. */
-  private pixel = false;
+  preload() {
+    for (const [k, f] of [['gv_town_bg', 'town-bg'], ['gv_town_mid', 'town-mid'], ['gv_cem_bg', 'cem-bg']] as const) {
+      if (!this.textures.exists(k)) this.load.image(k, `assets/gv/${f}.png`);
+    }
+  }
 
   create() {
-    const t = story.ui.title;
-    this.pixel = hasPixel(this, 'ui_title_bg', 'ui_logo', 'char_elias_walk');
-    if (this.pixel) this.pixelBackdrop();
-    else {
-      backdrop(this, 0.35);
-      this.rain();
-      label(this, W / 2, 250, t.logo, 150, { strokeThickness: 16 }).setOrigin(0.5);
-    }
-    this.add
-      .text(this.pixel ? 22 * 4 : W / 2, this.pixel ? 98 * 4 : 360, t.subtitle, { fontFamily: `"${FONTS.narration}"`, fontSize: '40px', color: COLORS.paperCss })
-      .setOrigin(this.pixel ? 0 : 0.5, 0.5)
-      .setShadow(3, 3, '#000', 0, true, true);
+    this.menu = this.overlay = undefined;
+    this.backdropLayers();
+    this.rain();
 
-    const cta = label(this, this.pixel ? 30 * 4 : W / 2, this.pixel ? 114 * 4 + 32 : 760, t.cta, 56)
-      .setOrigin(this.pixel ? 0 : 0.5, 0.5)
-      .setName('cta');
-    if (!comicSettings.reduceFlashing) {
-      this.tweens.add({ targets: cta, alpha: 0.45, duration: dur(900), yoyo: true, repeat: -1 });
-    }
+    label(this, W / 2, 270, 'ECHOES OF SORROW', 150, { strokeThickness: 16 }).setOrigin(0.5);
+    ptext(this, W / 2, 380, 'Veyra, 2:17 AM. Something is calling you home.', 40, '#bfefff').setOrigin(0.5);
 
+    const cta = ptext(this, W / 2, 760, 'PRESS ANY KEY', 52, '#ffe08a').setOrigin(0.5);
+    if (!comicSettings.reduceFlashing) this.tweens.add({ targets: cta, alpha: 0.35, duration: 900, yoyo: true, repeat: -1 });
+    // Click or key, whichever comes first, opens the menu exactly once.
     const start = () => {
+      this.input.off('pointerup', start);
+      this.input.keyboard?.off('keydown', start);
       cta.destroy();
       this.showMenu();
     };
-    this.input.once('pointerup', start);
-    this.input.keyboard?.once('keydown-ENTER', start);
-    this.input.keyboard?.once('keydown-SPACE', start);
+    this.input.on('pointerup', start);
+    this.input.keyboard?.on('keydown', start);
+  }
+
+  private backdropLayers() {
+    this.cameras.main.setBackgroundColor(0x07060f);
+    // Each 384px Gothicvania layer is scaled to span the whole screen once, so no house repeats.
+    // A slow sway (less than the overscan) gives a little life without exposing an edge.
+    const layer = (key: string, tint: number, bottom: number, sway: number) => {
+      this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+      const img = this.add.image(W / 2, bottom, key).setOrigin(0.5, 1).setTint(tint);
+      img.setScale((W + 2 * sway + 8) / img.width);
+      if (!comicSettings.reduceMotion) this.tweens.add({ targets: img, x: W / 2 + sway, duration: 14000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      return img;
+    };
+    layer('gv_town_bg', 0x6a6aa0, H + 260, 24);
+    layer('gv_town_mid', 0x7a76a8, H + 330, 48);
+    this.add.rectangle(0, 0, W, H, 0x05040a, 0.5).setOrigin(0);
+    // Fade the sky and the ground into darkness so the menu reads cleanly.
+    const g = this.add.graphics();
+    g.fillGradientStyle(0x07060f, 0x07060f, 0x07060f, 0x07060f, 1, 1, 0, 0).fillRect(0, 0, W, 300);
+    g.fillGradientStyle(0x07060f, 0x07060f, 0x07060f, 0x07060f, 0, 0, 1, 1).fillRect(0, H - 260, W, 260);
   }
 
   private showMenu() {
-    const t = story.ui.title;
+    const save = loadStory();
     const items: [string, () => void][] = [];
-    if (gameState.hasSave()) items.push([t.continue, () => this.continueGame()]);
-    items.push([t.newGame, () => this.newGame()]);
-    items.push([t.settings, () => openPause(this, 'Title')]);
-    items.push([t.credits, () => this.credits()]);
-    if (this.pixel) {
-      // Spec: menu at x 30, first button at y 114, step 20, width 72 (canvas px, ×4).
-      items.forEach(([text, fn], i) => button(this, (30 + 36) * 4, (114 + i * 20) * 4 + 32, text, fn, { width: 72 * 4, fontSize: 36 }));
-      return;
-    }
-    items.forEach(([text, fn], i) => button(this, W / 2, 620 + i * 96, text, fn, { width: 380, fontSize: 40 }));
+    // Always pass explicit data: Phaser reuses a scene's last start data when given none, so a
+    // CONTINUE after RESTART or PLAY AGAIN used to start fresh and wipe the save.
+    const play = (fresh: boolean) => pageTurn(this, () => this.scene.start('Story', { fresh, episode: undefined }));
+    const finished = !!save && save.episode >= EPISODES.length;
+    if (finished) items.push(['PLAY AGAIN', () => play(true)]);
+    else if (save && save.episode > 0) {
+      items.push([`CONTINUE: ${EPISODES[save.episode].n}`, () => play(false)]);
+      items.push(['RESTART STORY', () => this.confirmRestart()]);
+    } else items.push(['STORY MODE', () => play(false)]);
+    items.push(['HOW TO PLAY', () => this.howToPlay()]);
+    items.push(['SETTINGS', () => openPause(this, 'Title')]);
+    items.push(['CREDITS', () => this.credits()]);
+
+    const bw = 560, bh = 78, gap = 18;
+    const total = items.length * bh + (items.length - 1) * gap;
+    const top = 640 - total / 2 + 60;
+    const c = this.add.container(0, 0);
+    items.forEach(([text, fn], i) => c.add(pbutton(this, W / 2, top + i * (bh + gap) + bh / 2, bw, bh, text, fn, 40)));
+    c.add(ptext(this, W / 2, H - 50, 'Team Indiesigners  |  TGC GameJam 2026', 28, '#7f8fb8').setOrigin(0.5));
+    this.menu = c;
   }
 
-  private pixelBackdrop() {
-    const st = new PixelStage(this, this.add.container(0, 0), { x: 0, y: 0, w: W, h: H });
-    st.image('ui_title_bg');
-    const logo = this.add.image(22 * 4, 34 * 4, PX('ui_logo')).setOrigin(0).setScale(4).setName('logo');
-    st.layer.add(logo);
-    if (!this.anims.exists('elias_idle')) {
-      this.anims.create({ key: 'elias_idle', frames: this.anims.generateFrameNumbers(PX('char_elias_walk'), { start: 4, end: 5 }), frameRate: 2, repeat: -1 });
-    }
-    const FEET = 236;
-    const EX = 334;
-    st.sprite('char_elias_walk', EX, FEET, 0, 56 / 58).play('elias_idle');
-    if (hasPixel(this, 'prop_lantern')) {
-      const lan = st.sprite('prop_lantern', EX + 12, FEET - 52, 0.5, 0);
-      this.time.addEvent({ delay: 120, loop: true, callback: () => lan.setFrame((Number(lan.frame.name) + 1) % 3) });
-    }
-    const light = lanternLight(st, () => st.at(EX + 12, FEET - 46), 58);
-    this.events.on(Phaser.Scenes.Events.UPDATE, () => light(this.time.now));
+  /**
+   * Centred, opaque modal. `buttons` sit in one row along the bottom edge; the first is the default
+   * for Enter and the last is the cancel for Esc. Returns the container to add content to.
+   */
+  private modal(w: number, h: number, title: string, buttons: [string, () => void][] = [['CLOSE', () => undefined]]) {
+    this.overlay?.destroy();
+    this.menu?.setVisible(false);
+    const c = this.add.container(0, 0).setDepth(10);
+    c.add(this.add.rectangle(0, 0, W, H, 0x000000, 0.75).setOrigin(0).setInteractive());
+    c.add(panel(this, W / 2 - w / 2, H / 2 - h / 2, w, h, 1));
+    c.add(label(this, W / 2, H / 2 - h / 2 + 60, title, 64).setOrigin(0.5));
+    const keys = this.input.keyboard;
+    const close = () => {
+      keys?.off('keydown-ESC', onEsc);
+      c.destroy();
+      this.overlay = undefined;
+      this.menu?.setVisible(true);
+    };
+    const onEsc = () => close();
+    keys?.on('keydown-ESC', onEsc);
+    const bw = 280, gap = 40;
+    const row = buttons.length * bw + (buttons.length - 1) * gap;
+    buttons.forEach(([text, fn], i) => {
+      const x = W / 2 - row / 2 + bw / 2 + i * (bw + gap);
+      c.add(pbutton(this, x, H / 2 + h / 2 - 70, bw, 72, text, () => (close(), fn()), 34));
+    });
+    this.overlay = c;
+    return c;
   }
 
-  private continueGame() {
-    gameState.load();
-    pageTurn(this, () => this.scene.start('Village'));
+  private howToPlay() {
+    const w = 1300, h = 900;
+    const c = this.modal(w, h, 'HOW TO PLAY');
+    const left = W / 2 - 560, colR = W / 2 + 50;
+    const section = (x: number, y: number, head: string, lines: string[]) => {
+      c.add(ptext(this, x, y, head, 38, '#ffe08a'));
+      c.add(ptext(this, x, y + 50, lines.join('\n'), 32, '#ffffff', w / 2 - 110).setLineSpacing(8));
+    };
+    const top = H / 2 - h / 2 + 120;
+    section(left, top, 'THE STORY', [
+      'You are Elias Vane, a ghost hunter.',
+      'A letter with no sender calls you',
+      'to Veyra, where every villager',
+      'vanished at 2:17 AM ten years ago.',
+      'Find out what happened that night.',
+    ]);
+    section(left, top + 290, 'CONTROLS', [
+      'A / D          Walk',
+      'W / Space      Jump',
+      'S              Drop through a plank',
+      'E              Examine or talk',
+      'Left mouse     Dig loose rubble',
+      'C              Evidence board',
+      'Esc            Pause',
+    ]);
+    section(colR, top, 'INVESTIGATE', [
+      'Walk up to a ! and press E.',
+      'Every clue is pinned to the',
+      'evidence board. Click a card to',
+      'see its links. Red questions need',
+      'the right clue linked to them.',
+    ]);
+    section(colR, top + 290, 'CHOICES & ACTION', [
+      'Choose replies with the mouse or',
+      'the 1–4 keys. When a bar drains,',
+      'the clock is ticking, and silence',
+      'is an answer too. People remember',
+      'what you say. When a key appears',
+      'on screen, press it quickly.',
+    ]);
   }
 
-  private newGame() {
-    gameState.newGame();
-    const next = hasScene(this, 'Opening') ? 'Opening' : 'Village';
-    pageTurn(this, () => this.scene.start(next));
+  private confirmRestart() {
+    const c = this.modal(900, 440, 'RESTART STORY?', [
+      ['RESTART', () => pageTurn(this, () => this.scene.start('Story', { fresh: true, episode: undefined }))],
+      ['CANCEL', () => undefined],
+    ]);
+    c.add(ptext(this, W / 2, H / 2 - 10, 'Start again from Episode One?\nYour current progress will be lost.', 36, '#d8d0e8').setOrigin(0.5).setAlign('center').setLineSpacing(10));
   }
 
   private credits() {
-    void popup(
-      this,
-      'ECHOES OF SORROW\nTeam Indiesigners - TGC GameJam 2026\nGarv, Nav, Vansh (code) - Bhumi, Arya (art)\nThird-party assets: see CREDITS.md',
-      ['CLOSE'],
-    );
+    const c = this.modal(1100, 640, 'CREDITS');
+    const lines = [
+      'ECHOES OF SORROW. Team Indiesigners, TGC GameJam 2026',
+      '',
+      'Code: Garv, Nav, Vansh        Art: Bhumi, Arya',
+      '',
+      'Gothicvania Town, Cemetery and Church by ansimuz (CC0)',
+      'Kenney Particle, RPG Audio and Impact Sounds (CC0)',
+      'Fonts: Bangers, VT323 (SIL OFL)',
+      'Full list in CREDITS.md',
+    ];
+    c.add(ptext(this, W / 2, H / 2 - 30, lines.join('\n'), 32, '#ffffff').setOrigin(0.5).setAlign('center').setLineSpacing(6));
   }
 
   private rain() {
     if (comicSettings.reduceMotion) return;
-    const g = this.add.graphics().setAlpha(0.35);
+    const g = this.add.graphics().setAlpha(0.3);
     const drops = Array.from({ length: 140 }, () => ({ x: Math.random() * W, y: Math.random() * H, v: 14 + Math.random() * 10 }));
     this.events.on(Phaser.Scenes.Events.UPDATE, () => {
       g.clear().lineStyle(2, 0xb8c4d8);

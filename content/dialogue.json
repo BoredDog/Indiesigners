@@ -2,57 +2,57 @@
   "_source": "Script v2 (design/script_v2.md d3; applied 5 Oct 2026), from Blueprint G2 (first conversation, repeat line, post-memory line), K (resolution), B3/C (names, roles). 'questions' are NOT in the blueprint: A10 asks for evidence-gated investigation questions but none are written, so they were added (marked added: true; proofread). Each question appears once its 'requires' evidence is known.",
   "witnesses": {
     "mira": {
-      "name": "Ivy",
-      "role": "Ivy, 28 - schoolteacher. Nia was her pupil.",
+      "name": "Mira",
+      "role": "Mira, 28 - schoolteacher. Nia was her pupil.",
       "location": "Schoolhouse",
       "enterButton": "ENTER HER MEMORY",
-      "first": ["The bell rang at 2:17.", "Nobody touched the rope.", "I remember a hand. Never the face above it.", "Look where I looked."],
+      "first": ["You came back.", "The bell rang at 2:17.", "Nobody touched the rope.", "I remember a hand. Never the face above it.", "Look where I looked."],
       "repeat": "The rope was untouched. Look at the bell.",
       "postMemory": "You found the hand I could not remember.",
       "questions": [
-        { "id": "q_mira_watch", "requires": ["ev_arun_tick"], "ask": "Luke's watch says 2:31.", "answer": "My ledger says 2:31 too. Clocks lie. Ink doesn't.", "added": true },
-        { "id": "q_mira_figure", "requires": ["ev_arun_footsteps"], "ask": "Luke saw a figure on the river path.", "answer": "A coat. A staff. A hand on Nia's door.", "added": true },
-        { "id": "q_mira_lantern", "requires": ["ev_leela_tink"], "ask": "Hanna says the lantern records memories.", "answer": "Then the bell was not ringing for us. It was listening.", "added": true },
+        { "id": "q_mira_watch", "requires": ["ev_arun_tick"], "ask": "Arun's watch says 2:31.", "answer": "My ledger says 2:31 too. Clocks lie. Ink doesn't.", "added": true },
+        { "id": "q_mira_figure", "requires": ["ev_arun_footsteps"], "ask": "Arun saw a figure on the river path.", "answer": "A coat. A staff. A hand on Nia's door.", "added": true },
+        { "id": "q_mira_lantern", "requires": ["ev_leela_tink"], "ask": "Leela says the lantern records memories.", "answer": "Then the bell was not ringing for us. It was listening.", "added": true },
         { "id": "q_mira_name", "requires": ["ev_mira_erased_entry"], "ask": "Someone scraped a name from your register.", "answer": "Elias. The lantern apprentice. Nia's brother.", "added": true },
         { "id": "q_mira_you", "requires": ["ev_leela_paper"], "ask": "Why did you say I came back?", "answer": "Because you did. I can't see your face either.", "added": true }
       ],
       "resolution": {
         "unresolvedLoop": "Cannot say who rang the bell, or whose hand took Nia.",
-        "scene": "The investigator lays the bell card beside the lantern residue. Ivy recognizes the machine's signature and lets her loop go.",
+        "scene": "The investigator lays the bell card beside the lantern residue. Mira recognizes the machine's signature and lets her loop go.",
         "lastLine": "Now I remember the hand."
       }
     },
     "arun": {
-      "name": "Luke",
-      "role": "Luke, 34 - ferryman and timeline witness.",
+      "name": "Arun",
+      "role": "Arun, 24 - ferryman and timeline witness.",
       "location": "River road",
       "enterButton": "ENTER HIS MEMORY",
       "first": ["The river was moving.", "Nobody crosses without my ferry.", "My watch says 2:31.", "Every clock says 2:17.", "Someone carried a child toward the lantern-house."],
       "repeat": "Do not trust the clocks.",
       "postMemory": "The night kept moving after they stopped it.",
       "questions": [
-        { "id": "q_arun_bell", "requires": ["ev_mira_bell"], "ask": "Ivy heard the bell at 2:17.", "answer": "Everyone heard it. Nobody pulled it.", "added": true },
-        { "id": "q_arun_staff", "requires": ["ev_mira_staff"], "ask": "Ivy saw an apprentice lantern staff.", "answer": "He crossed the riverbed with it. Coat like yours.", "added": true },
-        { "id": "q_arun_nia", "requires": ["ev_leela_beep"], "ask": "Hanna's notes name a child: Nia Vane.", "answer": "Nia. Silver clip. Her brother kept the lanterns.", "added": true },
+        { "id": "q_arun_bell", "requires": ["ev_mira_bell"], "ask": "Mira heard the bell at 2:17.", "answer": "Everyone heard it. Nobody pulled it.", "added": true },
+        { "id": "q_arun_staff", "requires": ["ev_mira_staff"], "ask": "Mira saw an apprentice lantern staff.", "answer": "He crossed the riverbed with it. Coat like yours.", "added": true },
+        { "id": "q_arun_nia", "requires": ["ev_leela_beep"], "ask": "Leela's notes name a child: Nia Vane.", "answer": "Nia. Silver clip. Her brother kept the lanterns.", "added": true },
         { "id": "q_arun_initials", "requires": ["ev_arun_hiss"], "ask": "The case was marked E.V.", "answer": "Scratched deep. Yours is scratched in the same spot.", "added": true }
       ],
       "resolution": {
         "unresolvedLoop": "Cannot reconcile the 2:31 watch with the 2:17 clocks or identify the child.",
-        "scene": "The 2:31 watch and the hairclip are laid side by side. Luke accepts that the walker carried Nia after the clocks stopped.",
+        "scene": "The 2:31 watch and the hairclip are laid side by side. Arun accepts that the walker carried Nia after the clocks stopped.",
         "lastLine": "The night did not end at two-seventeen."
       }
     },
     "leela": {
-      "name": "Hanna",
-      "role": "Hanna, 56 - lantern-keeper and archivist. She taught the apprentice.",
+      "name": "Leela",
+      "role": "Leela, 56 - lantern-keeper and archivist. She taught the apprentice.",
       "location": "Lantern-house",
       "enterButton": "ENTER THE ARCHIVE MEMORY",
-      "first": ["I kept records under the floor.", "The lantern was never a toy.", "If you find the master log, read all of it."],
+      "first": ["You have grown.", "I kept records under the floor.", "The lantern was never a toy.", "If you find the master log, read all of it."],
       "repeat": "The apprentice knew the rules.",
       "postMemory": "Some truths were buried because I helped bury them.",
       "questions": [
-        { "id": "q_leela_staff", "requires": ["ev_mira_staff"], "ask": "Ivy saw the apprentice lantern staff.", "answer": "Only one apprentice ever carried it.", "added": true },
-        { "id": "q_leela_sluice", "requires": ["ev_arun_clank"], "ask": "Luke found a sluice beneath the workshop.", "answer": "It cools the lantern. I sealed the channels after.", "added": true },
+        { "id": "q_leela_staff", "requires": ["ev_mira_staff"], "ask": "Mira saw the apprentice lantern staff.", "answer": "Only one apprentice ever carried it.", "added": true },
+        { "id": "q_leela_sluice", "requires": ["ev_arun_clank"], "ask": "Arun found a sluice beneath the workshop.", "answer": "It cools the lantern. I sealed the channels after.", "added": true },
         { "id": "q_leela_residue", "requires": ["ev_tower_residue"], "ask": "The clock tower carries lantern residue.", "answer": "Then the network is still awake.", "added": true },
         { "id": "q_leela_ghosts", "requires": ["ev_leela_hum"], "ask": "Thirty-two anchors. Why only three of you?", "answer": "The rest are sleeping. We saw too much to sleep.", "added": true },
         { "id": "q_leela_elias", "requires": ["ev_leela_click"], "ask": "Where is Elias now?", "answer": "He walked out of Veyra. Nobody followed.", "added": true },
@@ -60,7 +60,7 @@
       ],
       "resolution": {
         "unresolvedLoop": "Cannot accept that she allowed the trials on Nia and failed to stop him.",
-        "scene": "The master log is read aloud. Hanna faces the record of the activation, her warning, and the trials she allowed.",
+        "scene": "The master log is read aloud. Leela faces the record of the activation, her warning, and the trials she allowed.",
         "lastLine": "I should have stopped him."
       }
     }

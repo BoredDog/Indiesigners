@@ -38,7 +38,7 @@ export class AccusationScene extends Phaser.Scene {
     this.busy = false;
     const a = Accusation.text;
 
-    backdrop(this, 0.8, 'bg_accusation_room');
+    backdrop(this, 0.8);
     hudIcons(this, 'Accusation');
     label(this, 80, 40, a.title, 56);
     this.add.existing(new Bubble(this, 650, 168, { kind: 'narration', text: a.intro, maxWidth: 900, fontSize: 34, scaleCap: 1.15 }));

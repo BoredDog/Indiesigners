@@ -9,8 +9,8 @@
     },
     {
       "id": "th_sis2_bro2", "from": "sis_2", "type": "contradicts", "to": "bro_2",
-      "why": "The fixed 2:17 clocks conflict with Luke's 2:31 watch.",
-      "caption": "The 2:17 freeze conflicts with Luke's 2:31 watch.",
+      "why": "The fixed 2:17 clocks conflict with Arun's 2:31 watch.",
+      "caption": "The 2:17 freeze conflicts with Arun's 2:31 watch.",
       "reaction": { "speaker": "arun", "line": "So my watch was right." }
     },
     {
@@ -33,7 +33,7 @@
     },
     {
       "id": "th_mom2_sis3", "from": "mom_2", "type": "corroborates", "to": "sis_3",
-      "why": "The purge explains the name scraped from Ivy's register.",
+      "why": "The purge explains the name scraped from Mira's register.",
       "caption": "The deleted apprentice entry explains the missing identity.",
       "reaction": { "speaker": "mira", "line": "The name was removed, not forgotten." }
     }

@@ -255,16 +255,6 @@ class Run {
     }
     await this.scene('Village');
     this.check(true, `opening → village (${defaultSettings ? 'default settings' : 'Reduce Motion'})`);
-    // First visit (script §4): the unknown woman, then back to the Village.
-    await this.scene('UnknownWoman');
-    await this.page.waitForFunction(() => (window as any).__unknownWoman?.line, undefined, { polling: 250, timeout: 20_000 });
-    await this.page.mouse.click(300, 500);
-    await this.click('btn:CONTINUE', 400, 30_000);
-    await this.scene('Village');
-    this.check(await this.gs<boolean>("gs.flag('metUnknownWoman')"), 'unknown woman beat → village');
-    await this.click('spot:photo');
-    await this.click('btn:CLOSE');
-    this.check(await this.gs<boolean>("gs.hasEvidence('ev_photo_burned')"), 'burned photograph found');
 
     // Clock tower Echo Path first (Blueprint F3: the first spirit-lantern use), from the village.
     await this.click('spot:tower');
@@ -310,15 +300,6 @@ class Run {
 
     await this.scene('Finale');
     await this.shot('finale');
-    // The scratched face in the burned photograph becomes young Elias during the reveal (frame 7).
-    // It starts at alpha 0, so look it up by name (any alpha), stop advancing, and wait for the fade.
-    const photoAlpha = () => this.page.evaluate(PHOTO_ALPHA) as Promise<number>;
-    for (let k = 0; k < 40 && (await photoAlpha()) < 0; k++) {
-      await this.page.keyboard.press('Space');
-      await this.wait(500);
-    }
-    await this.page.waitForFunction(PHOTO_ALPHA + ' > 0.9', undefined, { polling: 250, timeout: 15_000 }).catch(() => {});
-    this.check((await photoAlpha()) > 0.9, 'finale: photo reveals the fourth face');
     for (let k = 0; k < 80 && !(await this.active()).includes('Ending'); k++) {
       if (await this.find('CONTINUE')) await this.click('CONTINUE', 300, 2000).catch(() => {});
       else await (this.page.keyboard.press('Space'), this.wait(500));
@@ -334,14 +315,6 @@ class Run {
     this.check((await this.gs<number>('gs.deductionsConfirmed()')) === 9, '9/9 deductions in the save');
   }
 }
-
-// Alpha of the Finale's revealed photo (-1 if not drawn yet). Plain JS string: tsx would inject __name.
-const PHOTO_ALPHA = `(() => {
-  const f = window.__echoes.game.scene.getScene('Finale');
-  const walk = (l) => { for (const o of l) { if (o.name === 'finale:photo-revealed') return o; if (o.list) { const h = walk(o.list); if (h) return h; } } return null; };
-  const o = f && f.sys.isActive() ? walk(f.children.list) : null;
-  return o ? o.alpha : -1;
-})()`;
 
 async function launch(): Promise<Browser> {
   const args = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];

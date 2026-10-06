@@ -4,19 +4,14 @@ import { gameState } from '../core/GameState';
 import { evidence, fmt, story, witnessName, WITNESSES, type WitnessId } from '../core/StoryData';
 import { PH } from '../dev/placeholders';
 import { H, W, ghost, hasScene, hudIcons, label, popup, witnessStatusText } from './coreUi';
-import { BEAT, makeBeatArt } from '../dev/beatArt';
-import { MET_FLAG } from './UnknownWomanScene';
-import { PHOTO_EVIDENCE, showPhoto } from './beats/photo';
-import { PX, PixelStage, hasPixel } from '../pixel/pixel';
 
 // Hotspot centres on the 1920×1080 village (placeholder art; move when Arya's bg_village lands).
-const SPOTS: Record<WitnessId | 'tower' | 'record' | 'photo', { x: number; y: number; w: number; h: number }> = {
+const SPOTS: Record<WitnessId | 'tower' | 'record', { x: number; y: number; w: number; h: number }> = {
   mira: { x: 470, y: 760, w: 220, h: 320 }, // schoolhouse
   arun: { x: 760, y: 1010, w: 240, h: 300 }, // river road
   leela: { x: 1500, y: 790, w: 220, h: 320 }, // lantern-house
   tower: { x: 910, y: 480, w: 200, h: 640 }, // clock tower
   record: { x: 1180, y: 760, w: 180, h: 160 }, // well / lantern-house: THE RECORD
-  photo: { x: 1040, y: 1000, w: 150, h: 110 }, // burned photograph on the cobbles (script §4)
 };
 
 // Blueprint K: a resolved witness's location "becomes clearer and gains a permanent evidence mark".
@@ -46,14 +41,12 @@ export class VillageScene extends Phaser.Scene {
 
   create(data: VillageData = {}) {
     this.busy = false;
-    if (hasPixel(this, 'bg_village_sky', 'bg_village')) this.pixelHub();
-    else this.add.image(0, 0, PH.village).setOrigin(0).setDisplaySize(W, H);
+    this.add.image(0, 0, PH.village).setOrigin(0).setDisplaySize(W, H);
     this.hud = hudIcons(this, 'Village');
 
     for (const w of WITNESSES) if (gameState.witnessStatus(w) === 'resolved') this.addResolvedMark(w);
     for (const w of WITNESSES) this.addWitness(w);
     this.addTower();
-    this.addPhoto();
     if (gameState.finale !== 'locked') this.addRecord();
 
     this.events.on(Phaser.Scenes.Events.RESUME, () => this.hud.refresh());
@@ -64,10 +57,6 @@ export class VillageScene extends Phaser.Scene {
       if (isNew) this.time.delayedCall(300, () => this.showEvidence(data.justFound!));
     } else if (gameState.finale === 'ready' && !gameState.flag('archiveAnnounced')) {
       this.time.delayedCall(400, () => this.announceArchive());
-    } else if (gameState.snapshot().started && !gameState.flag(MET_FLAG) && hasScene(this, 'UnknownWoman')) {
-      // Script §4: the first time Elias walks into Veyra, the unknown woman is waiting.
-      this.busy = true;
-      this.time.delayedCall(600, () => pageTurn(this, () => this.scene.start('UnknownWoman')));
     }
   }
 
@@ -106,25 +95,6 @@ export class VillageScene extends Phaser.Scene {
     );
   }
 
-  /**
-   * Pixel hub (design/pixel scene 5): sky + village at ×4. There is no lantern on this screen, so
-   * the cursor is the light: the hidden symbols (residue layer) show only around the pointer.
-   */
-  private pixelHub() {
-    const st = new PixelStage(this, this.add.container(0, 0), { x: 0, y: 0, w: W, h: H });
-    st.image('bg_village_sky');
-    st.image('bg_village');
-    if (!hasPixel(this, 'bg_village_residue')) return;
-    const residue = st.image('bg_village_residue');
-    const light = this.make.graphics({}, false);
-    residue.setMask(light.createGeometryMask());
-    const glow = this.add.circle(-999, -999, 150, COLORS.spiritTeal, 0.08).setBlendMode(Phaser.BlendModes.ADD);
-    this.input.on(Phaser.Input.Events.POINTER_MOVE, (p: Phaser.Input.Pointer) => {
-      light.clear().fillStyle(0xffffff).fillCircle(p.x, p.y, 130);
-      glow.setPosition(p.x, p.y);
-    });
-  }
-
   /** Permanent evidence mark for a resolved witness: a soft lantern glow + a pinned, stamped note. */
   private addResolvedMark(w: WitnessId) {
     const s = SPOTS[w];
@@ -152,32 +122,6 @@ export class VillageScene extends Phaser.Scene {
       this.tweens.add({ targets: note, scale: 1, alpha: 1, duration: 420, delay: 350, ease: 'Back.Out' });
     }
     gameState.setFlag(`markShown_${w}`);
-  }
-
-  /** The burned photograph lying in the street: the fourth face scratched out (script §4). */
-  private addPhoto() {
-    makeBeatArt(this);
-    const s = SPOTS.photo;
-    const found = gameState.hasEvidence(PHOTO_EVIDENCE);
-    const img = hasPixel(this, 'prop_photo_burned')
-      ? this.add.image(s.x, s.y, PX('prop_photo_burned')).setOrigin(0.5, 1).setScale(4).setName('photoProp')
-      : this.add.image(s.x, s.y - s.h / 2, BEAT.photo).setScale(0.13).setAngle(-14).setName('photoProp');
-    if (!found && !comicSettings.reduceMotion && !comicSettings.reduceFlashing) {
-      const glint = this.add.circle(s.x + 40, s.y - s.h / 2 - 20, 10, COLORS.spiritTeal, 0.8);
-      this.tweens.add({ targets: glint, alpha: 0.1, scale: 1.8, duration: dur(900), yoyo: true, repeat: -1 });
-    }
-    img.setAlpha(found ? 0.85 : 1);
-    this.hotspot(
-      'photo',
-      async () => {
-        this.busy = true;
-        await showPhoto(this);
-        const isNew = gameState.addEvidence(PHOTO_EVIDENCE);
-        this.busy = false;
-        if (isNew) this.hud.refresh();
-      },
-      () => (found ? 'The burned photograph' : 'Something in the street'),
-    );
   }
 
   private addTower() {

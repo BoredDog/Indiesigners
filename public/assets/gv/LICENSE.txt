@@ -1,0 +1,3 @@
+Gothicvania Town, Gothicvania Cemetery and Gothicvania Church packs by ansimuz (Luis Zuno).
+License: CC0 1.0 (public domain). https://opengameart.org/content/gothicvania-town · /gothicvania-cemetery-pack · /gothicvania-church-pack
+Sprite frames packed into horizontal strips; otherwise unmodified.
