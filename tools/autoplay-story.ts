@@ -65,6 +65,17 @@ let failed = 0;
 try {
   await page.goto('http://localhost:4192/?scene=Story&fresh=1');
   await page.waitForFunction(() => (window as any).__story, undefined, { polling: 250, timeout: 60_000 });
+  // Trace the story's beats, so a stall can say where it stopped.
+  await js(`const d = window.__story, P = Object.getPrototypeOf(d); window.__trace = [];
+    for (const k of ['say', 'wait', 'pan', 'follow', 'toll', 'walkTo', 'nameCard', 'found', 'fadeIn', 'fadeOut', 'explore', 'choice', 'banner', 'memory', 'deduce']) {
+      const f = P[k];
+      P[k] = function (...a) {
+        const t = window.__trace; t.push(k + ' ' + JSON.stringify(a).slice(0, 50)); if (t.length > 30) t.shift();
+        const r = f.apply(this, a);
+        if (r && r.then) r.then(() => t.push('  done ' + k), (e) => t.push('  REJECT ' + k + ' ' + e));
+        return r;
+      };
+    }`);
   await js(`window.__echoes.gameState.setSetting('reduceMotion', true)`);
   const t0 = Date.now();
   let last = '', same = 0, episode = -1;
@@ -80,7 +91,11 @@ try {
     // QTEs repeat until passed (and get easier), so time spent in one isn't a stall.
     same = r === last && !r.startsWith('qte') ? same + 1 : 0;
     last = r;
-    if (same > 400) throw new Error(`stalled on "${r}" in episode ${ep}`);
+    if (same > 400) {
+      const info = await js<string>(`const d = window.__story, cam = d.world.cameras.main; return JSON.stringify({ trace: (window.__trace || []).slice(-12), busy: d.busyUi, waiters: d.waiters.length, locked: d.world.locked, autoWalk: d.autoWalk, x: Math.round(d.player.x), panning: cam.panEffect && cam.panEffect.isRunning, timeScale: d.world.time.timeScale, paused: d.world.time.paused, now: Math.round(d.world.time.now) }, null, 1)`);
+      console.log(info);
+      throw new Error(`stalled on "${r}" in episode ${ep}`);
+    }
     await page.waitForTimeout(r === 'qte-wait' ? 10 : r === 'qte' ? 40 : 120);
   }
   const done = await js<boolean>(`const ui = window.__echoes.game.scene.getScene('StoryUI'); const all=[]; const walk=(o)=>{all.push(o);(o.list||[]).forEach(walk)}; ui.children.list.forEach(walk); return all.some((o)=>o.name==='btn:PLAY AGAIN');`);
