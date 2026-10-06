@@ -482,7 +482,7 @@ export const EPISODES: Episode[] = [
       for (const [x, y] of wellTiles()) d.world.clearTile(x, y);
       d.world.props.get('well')?.setAlpha(0.35);
       await d.narr('The key was never meant for a door. It was meant for what lies underneath.');
-      d.objective('Climb down the well and dig through the rubble.', { x: A.well.x, y: A.well.y, label: 'The old well' });
+      d.objective('Climb down the well and dig through the rubble (hold X, or click the blocks).', { x: A.well.x, y: A.well.y, label: 'The old well' });
       d.allowWellDig(true); // the only place, and the only time, digging works
       d.guide.teach(['dig']);
       const descent = wellDescent(d); // then climb down the deep shaft; some planks are only in the lantern's light
@@ -503,9 +503,9 @@ export const EPISODES: Episode[] = [
       await d.narr('Tunnels, and the drip of water. Symbols on the walls glow as the lantern passes, and fade behind me.');
       const read = new Set<number>();
       const DOCS = [
-        'ECHO LANTERN: MEMORY EXTRACTION. Notes in a careful hand, the same hand as Hanna’s staff register. “What the lantern draws out, the subject no longer carries. Grief. Fear. Perhaps even illness.”',
+        'ECHO LANTERN: MEMORY EXTRACTION. Notes in a careful hand, the same hand as the entries in Hanna’s staff register. “What the lantern draws out, the subject no longer carries. Grief. Fear. Perhaps even illness.”',
         'MEMORY TRANSFER. “The subject keeps the shape of the event, but not who was in it.”',
-        'MEMORY ALTERATION. Pages and pages, in the archive’s hand. The lantern doesn’t only show memories. It can rewrite them.',
+        'MEMORY ALTERATION. Pages and pages, in the archivist’s hand. The lantern doesn’t only show memories. It can rewrite them.',
       ];
       d.objective('Read the notes in the vault (0/3).');
       await d.explore(
@@ -567,7 +567,7 @@ export const EPISODES: Episode[] = [
       await d.banner('THE FIGURE WAS ME', '#e0a33a');
       await d.nameCard('ELIAS', 'The apprentice, ten years ago');
       await d.narr('My sister Nia has been sick all winter. In January the doctor stopped coming.');
-      await d.narr('The lantern draws things out of people: fear, grief, whole afternoons. I have read every page. If it can draw out a memory, it can draw out a fever.');
+      await d.narr('The lantern draws things out of people: fear, grief, whole afternoons. I have read every page of the notes. If it can draw out a memory, it can draw out a fever.');
       await d.narr('So I carried her down here in her blanket, at two in the morning, while Veyra slept.');
       const nia = d.npc('nia', A.pedestal.x + 10, A.chamber.y, { ghost: true, tint: GHOST });
       d.found('nia');

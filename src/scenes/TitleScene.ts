@@ -149,7 +149,7 @@ export class TitleScene extends Phaser.Scene {
       'S              Drop down a plank',
       'E              Examine or talk',
       'F / R-mouse    Raise the lantern',
-      'Mouse / X      Dig rubble',
+      'Hold X / click Dig rubble',
       'C              Evidence board',
       'Esc            Pause',
     ]);
@@ -202,7 +202,8 @@ export class TitleScene extends Phaser.Scene {
     const lines = [
       'ECHOES OF SORROW. Team Indiesigners, TGC GameJam 2026',
       '',
-      'Code: Garv, Nav, Vansh        Art: Bhumi, Arya',
+      'Game code: Garv, Nav, Vansh',
+      'Art + story: Bhumi, Arya',
       '',
       'Gothicvania Town, Cemetery and Church by ansimuz (CC0)',
       'Kenney Particle, RPG Audio and Impact Sounds (CC0)',

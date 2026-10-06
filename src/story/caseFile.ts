@@ -62,7 +62,7 @@ function pages(ending: Ending, flags: Record<string, unknown>): PanelDef[][] {
         x: M, y: TOP, w: CW, h: row1, bg: 'cf_village', focus: [0.5, 0.45],
         sprites: [{ key: 'gv_hatman_idle', x: 0.4, y: 1.02, scale: 7.5 }],
         letter: { x: 0.76, y: 0.6, angle: -5 },
-        caption: 'The letter had no stamp and no return address. Four words, in pencil, in a child’s hand. I told myself it was just another haunting.',
+        caption: 'The letter had no stamp and no return address. Two words in pencil, in a child’s hand, and a smudge where a name should be. I told myself it was just another haunting.',
       },
       {
         x: M, y: TOP + row1 + GUT, w: half, h: row2, bg: 'cf_tower', focus: [0.5, 0.15], zoom: 1.1,
@@ -116,7 +116,7 @@ function pages(ending: Ending, flags: Record<string, unknown>): PanelDef[][] {
         : {
             x: M, y: TOP, w: CW, h: CH, bg: 'cf_village', focus: [0.5, 0.75], zoom: 1.4,
             letter: { x: 0.5, y: 0.72, angle: 3 },
-            caption: 'Next year the letter will come again, and I will read it like it’s the first time. Case open.',
+            caption: 'Next year the letter will come again, and I will read it as if it were the first time. Case open.',
           },
     ],
   ];
@@ -284,7 +284,7 @@ export async function playCaseFile(scene: Phaser.Scene, opts: { ending: Ending; 
         else await tweenTo(fx, { ink: 0.55 }, 3200);
       }
       for (const o of cap) await tweenTo(o, { alpha: 1 }, 350);
-      await beat(last ? Infinity : 4200);
+      await beat(Infinity); // each panel stays until the player clicks or presses Space / Enter
     }
     if (!last) {
       await beat(skipping ? 0 : 600);

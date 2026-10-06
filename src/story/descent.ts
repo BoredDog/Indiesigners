@@ -57,7 +57,7 @@ export function wellDescent(d: Director) {
     body.reset(p.x, p.y);
     groundY = d.player.y;
     await d.fadeIn(600);
-    d.objective('Too far to fall. Climb down plank by plank, and light the ones that aren’t there.');
+    d.objective('Too far to fall. Climb down plank by plank, and raise the lantern to find the ones you can’t see.');
     d.unlock();
     dying = false;
   };

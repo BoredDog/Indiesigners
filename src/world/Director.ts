@@ -333,7 +333,7 @@ export class Director {
     const ui = this.scene;
     const c = ui.add.container(0, 0).setDepth(25);
     const top = H - 330;
-    const prompt = ptext(ui, W / 2, top, 'The lantern is warm in your hand. What does Elias do?', 40, '#ffffff').setOrigin(0.5);
+    const prompt = ptext(ui, W / 2, top, 'The lantern is warm in his hand. What does Elias do?', 40, '#ffffff').setOrigin(0.5);
     c.add([panel(ui, W / 2 - 760, top - 40, 1520, 80, 0.92), prompt]);
     let pick = -1 as 0 | 1 | -1, holdBtn = false, progress = 0;
     const rem = pbutton(ui, W / 2 - 380, H - 170, 720, 120, '1. REMEMBER. Set the lantern down.', () => (pick = 0), 32);
