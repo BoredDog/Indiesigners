@@ -86,9 +86,9 @@ export class EchoGrid {
       return { x: W / 2 + dx * (bw / 2 + 90), y: by + bh / 2 + dy * (bh / 2 + 64) };
     };
 
-    // The wisp: the lantern's light, walking through the memory.
-    const wispGlow = s.add.image(0, 0, 'w_glow').setTint(0x9fe8ff).setBlendMode(Phaser.BlendModes.ADD).setScale(1.1);
-    const wisp = s.add.image(0, 0, 'pt_lantern').setScale(0.95);
+    // The wisp: a glowing blue orb of the lantern's light (the teal of the echo traces).
+    const wispGlow = s.add.image(0, 0, 'w_glow').setTint(0x7fe0d4).setBlendMode(Phaser.BlendModes.ADD).setScale(CELL / 70);
+    const wisp = s.add.image(0, 0, 'w_glow').setTint(0xd8fbff).setBlendMode(Phaser.BlendModes.ADD).setScale(CELL / 230);
     const hintLayer = s.add.container(0, 0);
     layer.add([hintLayer, wispGlow, wisp]);
 

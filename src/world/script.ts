@@ -15,7 +15,7 @@ import type { Episode } from './Director';
 import { collapseTiles, wellTiles, SURF } from './worldgen';
 import { TILE } from './tiles';
 import { ECHO_FIRST } from '../story/tuner';
-import { IVY_GRID } from '../story/grid';
+import { IVY_CANDLES } from '../story/candles';
 
 const GHOST = 0xd8f4ff;
 
@@ -233,7 +233,7 @@ export const EPISODES: Episode[] = [
       const ok = await d.qte.timing('STEADY THE LANTERN', 'SPACE');
       if (!ok) await d.narr('The light shudders, then catches anyway, as if it wanted to.');
       d.memory(true);
-      await d.grid.play(IVY_GRID); // puzzle: walk the light into her memory
+      await d.candles.play(IVY_CANDLES); // puzzle: light the classroom candles
       await d.banner('IVY’S MEMORY, 2:17 AM', '#bfefff', 1300);
       await d.narr('Ten years ago. Ivy is alone in the school, packing her bag by candlelight.');
       d.shake(700, 0.004);

@@ -33,6 +33,8 @@ const STEP = `
   }
   // Tuning puzzle: snap the knobs onto the echo and wait for it to lock.
   if (d.tuner && d.tuner.state) { if (!d.tuner.state.locked) d.tuner.state.auto(); return 'tune'; }
+  // Classroom candles: press the rest of the solution.
+  if (d.candles && d.candles.state) { if (!d.candles.state.solved && !d.candles.state.started) { d.candles.state.started = true; d.candles.state.auto(); } return 'candles'; }
   // Memory grid: let the solver walk it.
   if (d.grid && d.grid.state) { if (!d.grid.state.solved && !d.grid.state.started) { d.grid.state.started = true; d.grid.state.auto(); } return 'grid'; }
   // Choices: numbered buttons "1. …".
