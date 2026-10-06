@@ -85,6 +85,8 @@ export function wellDescent(d: Director) {
   w.events.on(Phaser.Scenes.Events.UPDATE, onUpdate);
   return {
     dying: () => dying,
+    /** Safely at the bottom: landed on the tunnel floor, not mid-fall and not dying. */
+    done: () => !dying && body.blocked.down && d.player.y > (SURF + 23) * TILE,
     end: () => {
       w.events.off(Phaser.Scenes.Events.UPDATE, onUpdate);
       for (const g of glows) g.setAlpha(0.15);

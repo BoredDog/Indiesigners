@@ -475,7 +475,7 @@ export const EPISODES: Episode[] = [
       d.objective('Climb down the well and dig through the rubble.', { x: A.well.x, y: A.well.y, label: 'The old well' });
       d.guide.teach(['dig']);
       const descent = wellDescent(d); // then climb down the deep shaft; some planks are only in the lantern's light
-      await d.explore([], () => !descent.dying() && d.player.y > (SURF + 23) * TILE);
+      await d.explore([], () => descent.done());
       descent.end();
       d.objective(null);
     },
