@@ -17,6 +17,7 @@ import { TILE } from './tiles';
 import { ECHO_FIRST } from '../story/tuner';
 import { IVY_CANDLES } from '../story/candles';
 import { LUKE_RIVER } from '../story/river';
+import { HANNA_RECORD } from '../story/rewritten';
 
 const GHOST = 0xd8f4ff;
 
@@ -357,6 +358,7 @@ export const EPISODES: Episode[] = [
       ]);
       d.objective(null);
       await d.narr('In the records, a staff register with a photograph pinned to the page. The woman from the doorway.');
+      await d.rewritten.play(HANNA_RECORD); // puzzle: find what was rewritten; her name comes back
       const hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
       hanna.sprite.setAlpha(0);
       await d.fadeNpc(hanna, 0.85);
