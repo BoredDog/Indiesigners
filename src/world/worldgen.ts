@@ -30,6 +30,7 @@ export const X = {
   cemetery: 12, well: 40, school: 52, house: 67, towerL: 80, towerR: 88, workshop: 103, square: 125,
   dockStart: 160, dockEnd: 178, riverL: 156, riverR: 200,
   vault: 64, collapse: 92, chamber: 118,
+  pitL: 75, pitR: 86, // the echo bridge's pit, between the vault and the collapse
 };
 
 export function generateWorld(): World {
@@ -159,7 +160,12 @@ export function generateWorld(): World {
   const shaftBottom = SURF + 23;
   carve(X.well - 1, SURF + 1, X.well + 1, shaftBottom);
   for (let y = SURF + 3; y <= SURF + 6; y++) for (let x = X.well - 1; x <= X.well + 1; x++) set(x, y, T.RUBBLE);
-  for (let y = SURF + 10; y < shaftBottom; y += 4) set(y % 8 ? X.well - 1 : X.well + 1, y, T.PLANK);
+  // Below the rubble the shaft opens into a wide drop. Planks zig-zag down it: the wooden ones
+  // are real; the others (descentTiles) exist only in the lantern's light (src/story/descent.ts).
+  // Every safe step down is four blocks, always onto the next plank (the teal ones need the
+  // lantern). The wooden planks are eight apart and the last is six above the floor: deadly drops.
+  carve(X.well - 6, SURF + 7, X.well + 6, shaftBottom);
+  for (const [y, x0, x1] of [[SURF + 10, X.well - 2, X.well + 2], [SURF + 18, X.well - 3, X.well + 2]]) for (let x = x0; x <= x1; x++) set(x, y, T.PLANK);
   anchors.shaft = { x: px(X.well) + 8, y: floorY(shaftBottom + 1) };
   // Tunnel along the bottom of the shaft.
   carve(X.well - 1, shaftBottom - 3, 104, shaftBottom);
@@ -176,6 +182,14 @@ export function generateWorld(): World {
   }
   anchors.vault = { x: px(X.vault), y: floorY(shaftBottom + 1) };
   anchors.collapse = { x: px(X.collapse), y: floorY(shaftBottom + 1) };
+  // The echo bridge: a pit too wide to jump, under a taller cavern. Its bridge only exists in the
+  // lantern's light (src/story/bridge.ts). A plank on the pit wall climbs back out.
+  carve(X.pitL, shaftBottom - 6, X.pitR, shaftBottom);
+  carve(X.pitL, shaftBottom + 1, X.pitR, shaftBottom + 5);
+  set(X.pitL, shaftBottom + 3, T.PLANK);
+  set(X.pitL + 1, shaftBottom + 3, T.PLANK);
+  anchors.pit = { x: px(X.pitL), y: floorY(shaftBottom + 1) };
+  fog.push({ x: px(X.pitL), y: floorY(shaftBottom + 1), w: px(X.pitR - X.pitL + 1), h: 70, density: 1.6 });
   // Drop into the deepest chamber.
   const chamberFloor = SURF + 36;
   carve(100, shaftBottom - 3, 106, chamberFloor - 1);
@@ -200,6 +214,18 @@ export function wellTiles(): [number, number][] {
   return [[X.well - 1, SURF], [X.well, SURF], [X.well + 1, SURF]];
 }
 /** Tiles that fall in when the tunnel collapses behind you. */
+/** The well descent's echo planks (only solid in the lantern's light). */
+export function descentTiles(): [number, number][] {
+  const out: [number, number][] = [];
+  for (const [y, x0, x1] of [[SURF + 14, X.well + 3, X.well + 6], [SURF + 22, X.well + 3, X.well + 6]]) for (let x = x0; x <= x1; x++) out.push([x, y]);
+  return out;
+}
+/** The echo bridge's planks across the pit (two are missing even in the memory). */
+export function bridgeTiles(): [number, number][] {
+  const out: [number, number][] = [];
+  for (let x = X.pitL; x <= X.pitR; x++) if (x !== X.pitL + 4 && x !== X.pitL + 8) out.push([x, SURF + 24]);
+  return out;
+}
 export function collapseTiles(): [number, number][] {
   const out: [number, number][] = [];
   for (let y = SURF + 20; y <= SURF + 23; y++) for (let x = X.collapse - 3; x <= X.collapse - 2; x++) out.push([x, y]);
