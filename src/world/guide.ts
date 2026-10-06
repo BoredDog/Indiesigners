@@ -17,7 +17,7 @@ const LESSONS: Record<Lesson, { keys: string[][]; text: string }> = {
   interact: { keys: [['E']], text: 'Look at anything marked !' },
   board: { keys: [['C']], text: 'Open the evidence board. Every clue you find is pinned there.' },
   lantern: { keys: [['F'], ['RIGHT MOUSE']], text: 'Hold to raise the lantern. The flame stirs when something hidden is near.' },
-  dig: { keys: [['HOLD OR TAP LEFT MOUSE'], ['X']], text: 'Dig through rubble' },
+  dig: { keys: [['HOLD X'], ['HOLD OR TAP LEFT MOUSE']], text: 'Dig through the rubble' },
 };
 
 interface Landmark {
