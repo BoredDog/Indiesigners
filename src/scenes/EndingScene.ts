@@ -17,7 +17,7 @@ const ASSETS = [
   'Fonts: Bangers, Comic Neue, Caveat (SIL OFL 1.1), Special Elite (Apache 2.0) via Google Fonts',
   'Textures: ambientCG (CC0)',
   'Engine: Phaser 3 (MIT)',
-  'Developed with AI assistance. Full list in CREDITS.md.',
+  'Developed with AI assistance; some art is AI-generated. Full list in CREDITS.md.',
 ];
 
 /**

@@ -1,3 +1,36 @@
+Echoes of Sorrow
+Copyright (c) 2026 Team Indiesigners: Garv Singh, Nav Singhal, Vansh Jaiswal,
+Bhumi Chaudhari, Arya Pandey
+
+This project is licensed in two parts. Both parts require you to credit us.
+
+1. SOURCE CODE (everything in src/, tools/ and the build configuration):
+   the MIT License, below. You must keep the copyright notice above in any copy
+   or substantial portion of the code.
+
+2. ORIGINAL ASSETS (the team's art, story, script, dialogue, characters, music
+   and sound, and the design documents in design/ and content/): the Creative
+   Commons Attribution 4.0 International License (CC BY 4.0),
+   https://creativecommons.org/licenses/by/4.0/
+   You may share and adapt them, including commercially, as long as you give
+   appropriate credit, link to the license, and say if you changed anything.
+
+ATTRIBUTION
+
+If you use, share, adapt or build on any part of this game (code or assets),
+you must credit us visibly, for example in your credits, README or store page:
+
+    Based on "Echoes of Sorrow" by Team Indiesigners
+    (Garv Singh, Nav Singhal, Vansh Jaiswal, Bhumi Chaudhari, Arya Pandey)
+    https://github.com/Gravity006/Indiesigners
+
+Third-party assets (Gothicvania, Kenney, ambientCG, Google Fonts) are not ours
+and keep their own licenses, listed in CREDITS.md with their license files
+next to the assets. Some of the game's art was AI-generated; CREDITS.md lists
+which.
+
+-------------------------------------------------------------------------------
+
 MIT License
 
 Copyright (c) 2026 Team Indiesigners (Garv Singh, Nav Singhal, Vansh Jaiswal,
@@ -20,8 +53,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-This license covers the source code. Original art and writing by the team
-(public/assets/, content/, design/) are licensed CC BY 4.0. Third-party
-assets keep their own licenses; see CREDITS.md.

@@ -62,7 +62,7 @@ npx tsx tools/autoplay-story.ts --gpu [--ending=forget]   # one full playthrough
 **Releases:** every merge to `main` deploys to GitHub Pages. itch.io uploads run on the same merge unless the repository variable `ITCH_DEPLOY` is `off` (`gh variable set ITCH_DEPLOY --body on|off`). The itch upload needs the `BUTLER_API_KEY` secret.
 
 ## Team
-Garv Singh · Nav Singhal · Vansh Jaiswal · Bhumi Chaudhari · Arya Pandey. Roles, asset credits and the AI-assistance note are in [CREDITS.md](CREDITS.md).
+Garv Singh · Nav Singhal · Vansh Jaiswal · Bhumi Chaudhari · Arya Pandey. Roles, asset credits, licenses and the AI-generated assets are listed in [CREDITS.md](CREDITS.md).
 
 ## License
-Code: MIT ([LICENSE](LICENSE)). Original art and writing: CC BY 4.0. Third-party assets: see CREDITS.md.
+Code: MIT. Original assets (art, story, writing, music): CC BY 4.0. **If you use any part of this game, you must credit Team Indiesigners**; the wording is in [LICENSE](LICENSE). Third-party assets keep their own licenses, and some art is AI-generated; both are listed in [CREDITS.md](CREDITS.md).
