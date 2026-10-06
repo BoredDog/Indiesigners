@@ -10,6 +10,7 @@ import { COLORS, TEXT_RESOLUTION, comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import type { Director } from '../world/Director';
 import { PANEL, PIX, panel, ptext } from '../world/ui';
+import { backButton } from './back';
 
 export interface TuneSpec {
   title: string; // CAPS, like a QTE prompt
@@ -58,7 +59,8 @@ export class Tuner {
     this.d = d;
   }
 
-  async tune(spec: TuneSpec): Promise<void> {
+  /** Resolves true once the signal locks, or false if the player goes BACK. */
+  async tune(spec: TuneSpec): Promise<boolean> {
     const d = this.d, s = d.scene;
     const tol = spec.tol ?? { f: 0.15, a: 0.07 };
     const hold = spec.hold ?? 1200;
@@ -151,7 +153,8 @@ export class Tuner {
     const sound = d.audio.tuner();
     s.tweens.add({ targets: layer, alpha: 1, duration: 200 });
 
-    let t = 0, inFor = 0, locked = false, auto = false;
+    let t = 0, inFor = 0, locked = false, auto = false, back = false;
+    const offBack = backButton(s, layer, () => !locked && (back = true));
     const st = { locked: false, closeness: 0, auto: () => (auto = true) };
     this.state = st;
     const still = comicSettings.reduceMotion;
@@ -232,13 +235,16 @@ export class Tuner {
         glow.setScale(1.2 + c * 1.8).setAlpha(0.2 + c * 0.6);
         // In tune, the two hums become one note; apart, they beat against each other.
         sound.set(hz * ef, (0.03 + 0.02 * ea) * swell, hz * f, 0.025 + 0.035 * a);
-        return locked;
+        return locked || back;
       });
+      if (back) return false;
       const done = label(s, sx + sw / 2, cy, spec.lockText ?? 'LOCKED', 90, { color: '#7fe0d4', strokeThickness: 14 }).setOrigin(0.5);
       layer.add(done);
       if (!comicSettings.reduceFlashing) s.tweens.add({ targets: glow, alpha: 1, scale: 4, duration: 300, yoyo: true });
       await d.wait(900);
+      return true;
     } finally {
+      offBack();
       s.input.off('pointermove', onMove);
       s.input.off('pointerup', onUp);
       s.input.keyboard?.off('keydown', onDown);

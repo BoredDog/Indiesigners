@@ -2,7 +2,7 @@
 // candles beside it, above and below. Light them all and her memory shows. Drawn with the story
 // kit: the school's desk planks, the world's candle sprite and its warm halo, the overlay layout of
 // the other puzzles. Click a candle, or move the gold cursor with the arrows / WASD and press
-// Space. Can't get stuck: UNDO, RESET, a HINT after 12 presses, SKIP after 30.
+// Space. UNDO, RESET, a HINT after 12 presses, and BACK to leave (the story waits for it).
 //
 //   await d.candles.play(IVY_CANDLES);
 import Phaser from 'phaser';
@@ -11,6 +11,7 @@ import { H, W, label } from '../scenes/coreUi';
 import type { Director } from '../world/Director';
 import { PIX, panel, pbutton, ptext } from '../world/ui';
 import { T } from '../world/tiles';
+import { backButton } from './back';
 
 export interface CandleSpec {
   title: string;
@@ -23,7 +24,7 @@ export interface CandleSpec {
 
 const DEPTH = 68;
 const CELL = 112;
-const HINT_AFTER = 12, SKIP_AFTER = 30;
+const HINT_AFTER = 12;
 
 export class Candles {
   private d: Director;
@@ -34,7 +35,8 @@ export class Candles {
     this.d = d;
   }
 
-  async play(spec: CandleSpec): Promise<void> {
+  /** Resolves true when every candle is lit, or false if the player goes BACK. */
+  async play(spec: CandleSpec): Promise<boolean> {
     const d = this.d, s = d.scene, n = spec.size;
     const tex = s.textures.get('wtiles');
     if (!tex.has('t1')) for (let id = 1; id < 28; id++) tex.add(`t${id}`, 0, id * 16, 0, 16, 16);
@@ -95,7 +97,6 @@ export class Candles {
       if (hintAt >= 0) fx.lineStyle(6, 0x7fe0d4, 1).strokeCircle(cx(hintAt), cy(hintAt), CELL / 2 - 4);
       count.setText(`LIT ${lit.filter(Boolean).length} OF ${n * n}\nPRESSES ${presses}`);
       hintBtn.setVisible(presses >= HINT_AFTER && !won);
-      skipBtn.setVisible(presses >= SKIP_AFTER && !won);
       const shown = btns.filter((b) => b.visible);
       shown.forEach((b, k) => b.setX(W / 2 + (k - (shown.length - 1) / 2) * 220));
     };
@@ -141,9 +142,11 @@ export class Candles {
       pbutton(s, 0, row, 200, 64, 'UNDO [Z]', undo, 30),
       pbutton(s, 0, row, 200, 64, 'RESET [R]', reset, 30),
       pbutton(s, 0, row, 200, 64, 'HINT', hint, 30),
-      pbutton(s, 0, row, 200, 64, 'SKIP', () => ((won = true), resolveWin()), 30),
     ];
-    const [, , hintBtn, skipBtn] = btns;
+    const [, , hintBtn] = btns;
+    let resolveBack: () => void = () => undefined;
+    const backP = new Promise<void>((r) => (resolveBack = r));
+    const offBack = backButton(s, layer, () => !won && resolveBack());
     layer.add(btns);
     layer.add(ptext(s, W / 2, row + 62, 'Click a candle, or move with the arrow keys or WASD and press Space.', 28, '#aab8d8').setOrigin(0.5));
 
@@ -180,13 +183,16 @@ export class Candles {
     draw();
     s.tweens.add({ targets: layer, alpha: 1, duration: 200 });
     try {
-      await Promise.race([winP, d.until(() => !d.alive)]);
+      const back = await Promise.race([winP.then(() => false), backP.then(() => true), d.until(() => !d.alive).then(() => false)]);
+      if (back) return false;
       state.solved = true;
       d.audio.tone('chime');
       for (const h of halos) s.tweens.add({ targets: h, scale: 2.2, alpha: 0.8, duration: 500 });
       layer.add(label(s, W / 2, by + bw / 2, spec.done ?? 'MEMORY FOUND', 90, { color: '#7fe0d4', strokeThickness: 14 }).setOrigin(0.5));
       await d.wait(1100);
+      return true;
     } finally {
+      offBack();
       s.input.off('pointermove', onMove);
       s.input.off('pointerup', onUp);
       s.input.keyboard?.off('keydown', onKey);
