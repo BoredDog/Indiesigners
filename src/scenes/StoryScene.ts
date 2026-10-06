@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { chapterSave } from '../story/chapters';
 import { StoryAudio, type Surface } from '../story/audio';
 import { comicSettings } from '../comic';
 import { Director, type StorySave } from '../world/Director';
@@ -87,7 +88,7 @@ export class StoryScene extends Phaser.Scene {
     StoryAudio.preload(this);
   }
 
-  create(data: { fresh?: boolean | string; episode?: string | number; try?: string } = {}) {
+  create(data: { fresh?: boolean | string; episode?: string | number; try?: string; chapter?: number } = {}) {
     // Phaser reuses this instance on RESTART / PLAY AGAIN: reset everything per-run.
     this.did = { move: false, run: false, jump: false, dig: false };
     this.digTaps = 0;
@@ -133,6 +134,9 @@ export class StoryScene extends Phaser.Scene {
     const fresh = data.fresh === true || data.fresh === '1' || data.fresh === 'true';
     const save: StorySave = fresh ? { episode: 0, flags: {}, found: [], remembered: [] } : (loadStory() ?? { episode: 0, flags: {}, found: [], remembered: [] });
     if (data.episode !== undefined && data.episode !== '') save.episode = Number(data.episode);
+    // SCENE SELECT: start an unlocked episode from the save it had when the player first reached it.
+    const chapter = data.chapter !== undefined ? chapterSave(Number(data.chapter)) : null;
+    if (chapter) Object.assign(save, chapter);
     // A finished story starts over rather than dropping straight into the ending.
     if (save.episode >= EPISODES.length) Object.assign(save, { episode: 0, flags: {}, found: [], remembered: [] });
     writeStory(save);

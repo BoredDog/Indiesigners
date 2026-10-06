@@ -4,6 +4,7 @@ import { StoryAudio } from '../story/audio';
 import { H, W, label, openPause } from './coreUi';
 import { loadStory } from './StoryScene';
 import { EPISODES } from '../world/script';
+import { loadChapters } from '../story/chapters';
 import { panel, pbutton, ptext } from '../world/ui';
 
 /**
@@ -80,11 +81,14 @@ export class TitleScene extends Phaser.Scene {
       items.push([`CONTINUE: ${EPISODES[save.episode].n}`, () => play(false)]);
       items.push(['RESTART STORY', () => this.confirmRestart()]);
     } else items.push(['STORY MODE', () => play(false)]);
+    // SCENE SELECT once any episode has been finished.
+    if (Object.keys(loadChapters()).length) items.push(['SCENE SELECT', () => this.sceneSelect()]);
     items.push(['HOW TO PLAY', () => this.howToPlay()]);
     items.push(['SETTINGS', () => openPause(this, 'Title')]);
     items.push(['CREDITS', () => this.credits()]);
 
-    const bw = 560, bh = 78, gap = 18;
+    // Seven items need a tighter stack so the tagline stays clear.
+    const bw = 560, bh = items.length > 6 ? 70 : 78, gap = items.length > 6 ? 12 : 18;
     const total = items.length * bh + (items.length - 1) * gap;
     const top = 640 - total / 2 + 60;
     const c = this.add.container(0, 0);
@@ -164,6 +168,25 @@ export class TitleScene extends Phaser.Scene {
       'what you say. When a key appears',
       'on screen, press it to start.',
     ]);
+  }
+
+  /** Every episode, unlocked once reached; picking one starts it with the evidence and choices from then. */
+  private sceneSelect() {
+    const w = 1000, h = 900;
+    const c = this.modal(w, h, 'SCENE SELECT');
+    const chapters = loadChapters();
+    const top = H / 2 - h / 2 + 150, rowH = 76, bw = 760;
+    c.add(ptext(this, W / 2, top - 40, 'Jump back to the start of any episode you have reached.', 30, '#aab8d8').setOrigin(0.5));
+    EPISODES.forEach((ep, i) => {
+      const y = top + 20 + i * rowH;
+      const name = `${ep.n}: ${ep.title}`;
+      if (i === 0 || chapters[i]) {
+        c.add(pbutton(this, W / 2, y, bw, 62, name, () => pageTurn(this, () => this.scene.start('Story', { fresh: false, episode: undefined, chapter: i })), 32));
+      } else {
+        c.add(panel(this, W / 2 - bw / 2, y - 31, bw, 62, 0.5));
+        c.add(ptext(this, W / 2, y, `${ep.n}: LOCKED`, 32, '#5a6a8a').setOrigin(0.5));
+      }
+    });
   }
 
   private confirmRestart() {
