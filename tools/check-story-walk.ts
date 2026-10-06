@@ -67,6 +67,8 @@ try {
   await page.keyboard.press('c');
   await frames(20);
   const S = 60, WX = 40;
+  // Digging only works once the well quest is on (Episode 4); switch it on as the story would.
+  await js(`window.__story.allowWellDig(true)`);
   await js(`const d = window.__story, w = window.__echoes.game.scene.getScene('Story'); for (let y = ${S}; y <= ${S} + 2; y++) for (let x = ${WX - 1}; x <= ${WX + 1}; x++) w.clearTile(x, y); d.teleport(${WX * 16 + 8}, ${(S + 3) * 16});`);
   await frames(30);
   const target = await js<{ x: number; y: number }>(`const cam = window.__echoes.game.scene.getScene('Story').cameras.main; const v = cam.worldView; return { x: (${WX * 16 + 8} - v.x) * cam.zoom, y: (${(S + 3) * 16 + 8} - v.y) * cam.zoom };`);
