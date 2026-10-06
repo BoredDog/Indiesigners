@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
-import { attachComicFx, Bubble, COLORS, comicSettings, dur, FONTS, impact, pageTurn, TEXT_RESOLUTION } from '../comic';
+import { attachComicFx, Bubble, comicSettings, dur, impact, pageTurn, TEXT_RESOLUTION } from '../comic';
+import { ptext } from '../world/ui';
+import { COLORS, FONTS, usePuzzleTheme } from './puzzle/theme';
+import { storyButton, storyPopup } from './puzzle/storyUi';
 import { gameState } from '../core/GameState';
 import { PH, makePlaceholders } from '../dev/placeholders';
 import { getLevel, PUZZLE_TEXT as T } from '../puzzle/levels';
@@ -16,6 +19,10 @@ export interface PuzzleSceneData {
   evidenceId?: string;
   witness?: Witness;
   returnTo?: string;
+  /** Story mode: runs as an overlay on the paused Story scene, in story mode's look, and on win or
+   *  SKIP emits 'story-done' (solved: boolean) and stops instead of starting another scene.
+   *  Start it with Director.puzzle(id). */
+  story?: boolean;
   /** Internal: board progress carried over when the PUZZLE VIEW setting changes mid-puzzle. */
   resume?: { state: State; history: State[]; fails: number };
 }
@@ -80,6 +87,7 @@ export class PuzzleScene extends Phaser.Scene {
 
   create(data: PuzzleSceneData = {}) {
     const { resume, ...rest } = data;
+    usePuzzleTheme(!!data.story);
     this.data0 = { ...rest, returnTo: data.returnTo ?? (data.witness ? 'Memory' : 'Village') };
     this.history = [];
     this.fails = 0;
@@ -154,7 +162,9 @@ export class PuzzleScene extends Phaser.Scene {
     if (this.iso) this.buildCompass();
     this.redraw(false);
 
-    if (level.tip) {
+    if (level.tip && this.data0.story) {
+      ptext(this, PANEL.x + PANEL.w / 2, PANEL.y + 52, level.tip, 34, COLORS.paperCss, 1420).setOrigin(0.5).setDepth(5);
+    } else if (level.tip) {
       const tip = new Bubble(this, PANEL.x + PANEL.w / 2, PANEL.y + 58, {
         kind: 'narration',
         text: level.tip,
@@ -180,11 +190,15 @@ export class PuzzleScene extends Phaser.Scene {
       this.viewDirty = (gameState.settings.puzzleView === '3d') !== !!this.iso;
     };
     gameState.on('settings-changed', onSettings);
-    this.events.on(Phaser.Scenes.Events.RESUME, () => {
+    const onResume = () => {
       if (!this.viewDirty || this.done) return;
       this.scene.restart({ ...this.data0, resume: { state: this.state, history: this.history, fails: this.fails } });
+    };
+    this.events.on(Phaser.Scenes.Events.RESUME, onResume);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      gameState.off('settings-changed', onSettings);
+      this.events.off(Phaser.Scenes.Events.RESUME, onResume);
     });
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => gameState.off('settings-changed', onSettings));
 
     this.cameras.main.fadeIn(dur(200), 0, 0, 0);
     (window as unknown as { __puzzle: PuzzleScene }).__puzzle = this;
@@ -218,12 +232,17 @@ export class PuzzleScene extends Phaser.Scene {
     }
     this.busy = true;
     for (const m of fresh) {
-      await popup(this, T.teach[m], [T.teachOk]);
+      await this.ask(T.teach[m], [T.teachOk]);
       gameState.setFlag(`pz_taught_${m}`);
     }
     this.queued = undefined; // keys pressed while a caption was open must not fire later
     this.busy = false;
     this.teachDone = true;
+  }
+
+  /** A message with buttons: story mode's panel inside the story, the comic popup elsewhere. */
+  private ask(text: string, buttons: string[]) {
+    return (this.data0.story ? storyPopup : popup)(this, text, buttons);
   }
 
   // ------------------------------------------------------------------ public test hooks
@@ -292,6 +311,10 @@ export class PuzzleScene extends Phaser.Scene {
 
   /** The memory panel this fragment sits on, greyed and dimmed behind the board. */
   private drawBackdrop() {
+    if (this.data0.story) {
+      this.drawStoryBackdrop();
+      return;
+    }
     const { witness, evidenceId } = this.data0;
     let key: string = PH.village;
     let src = { x: 700, y: 0, w: 420, h: 480 }; // clock tower (village)
@@ -323,6 +346,17 @@ export class PuzzleScene extends Phaser.Scene {
     const fx = attachComicFx(img);
     if (fx) fx.colour = 0;
     this.add.rectangle(PANEL.x, PANEL.y, PANEL.w, PANEL.h, COLORS.ink, 0.55).setOrigin(0).setStrokeStyle(6, COLORS.paper);
+  }
+
+  /** Story mode: the world stays visible behind the board, dimmed, inside the lantern's teal
+   *  echo-sight vignette, as if Elias is holding the lantern up to a memory. */
+  private drawStoryBackdrop() {
+    this.add.rectangle(0, 0, 1920, 1080, COLORS.ink, 0.72).setOrigin(0);
+    if (this.textures.exists('w_sight')) this.add.image(960, 540, 'w_sight').setDisplaySize(1920, 1080).setAlpha(0.9);
+    const g = this.add.graphics();
+    g.fillStyle(0x000000, 0.35).fillRoundedRect(PANEL.x + 6, PANEL.y + 8, PANEL.w, PANEL.h, 12);
+    g.fillStyle(COLORS.charcoal, 0.55).fillRoundedRect(PANEL.x, PANEL.y, PANEL.w, PANEL.h, 12);
+    g.lineStyle(4, 0x7f9fd8, 0.9).strokeRoundedRect(PANEL.x, PANEL.y, PANEL.w, PANEL.h, 12);
   }
 
   // ------------------------------------------------------------------ static-ish layers
@@ -815,11 +849,13 @@ export class PuzzleScene extends Phaser.Scene {
       })
       .setOrigin(0.5, 0);
 
-    button(this, RAIL_X, 380, T.undo, () => this.undo(), { width: 220, fontSize: 28 });
-    button(this, RAIL_X, 470, T.reset, () => this.reset(), { width: 220, fontSize: 28 });
-    this.hintBtn = button(this, RAIL_X, 580, T.hint, () => this.hint(), { width: 220, fontSize: 28, fill: COLORS.spiritTeal });
-    this.skipBtn = button(this, RAIL_X, 670, T.skip, () => void this.skip(), { width: 220, fontSize: 28 });
-    button(this, RAIL_X, 980, T.back, () => this.finish(false), { width: 220, fontSize: 28 });
+    // Story mode: story-style buttons, and no BACK (the story waits for the puzzle; SKIP comes after 6 slips).
+    const btn = this.data0.story ? storyButton : button;
+    btn(this, RAIL_X, 380, T.undo, () => this.undo(), { width: 220, fontSize: 28 });
+    btn(this, RAIL_X, 470, T.reset, () => this.reset(), { width: 220, fontSize: 28 });
+    this.hintBtn = btn(this, RAIL_X, 580, T.hint, () => this.hint(), { width: 220, fontSize: 28, fill: COLORS.spiritTeal });
+    this.skipBtn = btn(this, RAIL_X, 670, T.skip, () => void this.skip(), { width: 220, fontSize: 28 });
+    if (!this.data0.story) button(this, RAIL_X, 980, T.back, () => this.finish(false), { width: 220, fontSize: 28 });
     this.refreshRail();
   }
 
@@ -1165,7 +1201,7 @@ export class PuzzleScene extends Phaser.Scene {
   private async skip() {
     if (this.busy || this.done) return;
     this.busy = true;
-    const choice = await popup(this, T.skipConfirm, [T.skip, T.back]);
+    const choice = await this.ask(T.skipConfirm, [T.skip, T.back]);
     this.queued = undefined;
     this.busy = false;
     if (choice === T.skip) this.finish(true);
@@ -1201,6 +1237,18 @@ export class PuzzleScene extends Phaser.Scene {
   /** Leave the puzzle: solved → hand the evidence id back to the caller (contract in PuzzleSceneData). */
   private finish(solved: boolean, instant = false) {
     this.done = true;
+    if (this.data0.story) {
+      const end = () => {
+        this.events.emit('story-done', solved);
+        this.scene.stop();
+      };
+      if (instant) end();
+      else {
+        this.cameras.main.fadeOut(dur(300), 11, 10, 24);
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, end);
+      }
+      return;
+    }
     const { returnTo, witness, evidenceId, puzzleId } = this.data0;
     const target = this.scene.manager.keys[returnTo] ? returnTo : 'Village';
     const payload = { witness, justFound: solved ? evidenceId : undefined, solved: solved ? puzzleId : undefined };

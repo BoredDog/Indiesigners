@@ -20,6 +20,13 @@ const js = <T = unknown>(code: string) => page.evaluate((c) => new Function(c)()
 const STEP = `
   const d = window.__story, ui = window.__echoes.game.scene.getScene('StoryUI'), w = window.__echoes.game.scene.getScene('Story');
   if (!d) return 'boot';
+  // An Echo Paths puzzle over the story: clear its first-time captions (Enter), then solve it.
+  const pz = window.__puzzle;
+  if (pz && pz.sys.isActive() && !pz.done) {
+    if (!pz.teachDone) return 'puzzle-teach';
+    pz.solve();
+    return 'puzzle';
+  }
   const all = []; const walk = (o) => { all.push(o); (o.list || []).forEach(walk); };
   ui.children.list.forEach(walk);
   const btn = (name) => all.find((o) => o.name === name && o.active);
@@ -71,6 +78,7 @@ try {
     const ep = await js<number>('return window.__story?.save.episode ?? -1');
     if (ep !== episode) { episode = ep; console.log(`episode ${ep}  (${((Date.now() - t0) / 1000) | 0}s)`); }
     if (r === 'summary') break;
+    if (r === 'puzzle-teach') await page.keyboard.press('Enter');
     if (r === 'sight') { await page.keyboard.down('f'); await page.waitForTimeout(900); await page.keyboard.up('f'); }
     if (r === 'qte') for (let k = 0; k < 3; k++) await page.keyboard.press('Space'); // a burst, like a player mashing
     else if (r === 'advance' || r === 'boot') await page.keyboard.press('Space');

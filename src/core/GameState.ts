@@ -71,7 +71,7 @@ const DEFAULT_SETTINGS: Settings = {
   textSpeed: 'instant',
   reduceMotion: false,
   reduceFlashing: false,
-  puzzleView: '2d',
+  puzzleView: '3d',
 };
 
 /** Saved settings over the defaults. Saves from before the audio pass held placeholder volumes

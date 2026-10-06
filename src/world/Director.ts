@@ -438,6 +438,40 @@ export class Director {
   }
   /** Set by the finale so climbing or memories don't swap its music back. */
   scoreLocked = false;
+  /**
+   * An Echo Paths puzzle (Vansh's isometric board) over the paused story. Resolves true when solved,
+   * false when skipped (SKIP appears after 6 slips), so the story always carries on. Quitting to the
+   * title from the pause menu ends the story scene too, so nothing is left paused behind the title.
+   */
+  puzzle(id: string): Promise<boolean> {
+    const world = this.world;
+    const plugin = world.scene;
+    return new Promise((resolve) => {
+      let finished = false;
+      const pz = plugin.get('Puzzle');
+      const onDone = (solved: boolean) => {
+        finished = true;
+        pz.events.off(Phaser.Scenes.Events.SHUTDOWN, onShutdown);
+        plugin.resume('StoryUI');
+        plugin.resume();
+        resolve(solved);
+      };
+      const onShutdown = () => {
+        if (finished) return;
+        pz.events.off('story-done', onDone);
+        if (!this.alive) return;
+        plugin.stop(); // back to title from the puzzle's pause menu
+      };
+      pz.events.once('story-done', onDone);
+      pz.events.once(Phaser.Scenes.Events.SHUTDOWN, onShutdown);
+      this.audio.hum(false);
+      plugin.pause('StoryUI');
+      plugin.pause();
+      plugin.launch('Puzzle', { puzzleId: id, story: true });
+      plugin.moveAbove('StoryUI', 'Puzzle'); // above the story, below the pause menu
+    });
+  }
+
   /** Called by the script for the finale and the endings. */
   score(mood: 'finale' | 'dawn' | 'none') {
     this.scoreLocked = true;

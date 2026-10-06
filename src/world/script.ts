@@ -226,9 +226,8 @@ export const EPISODES: Episode[] = [
       if (c === 2) { await d.say('Ivy', 'No. I heard it. Everyone heard it.'); d.remember('Ivy', 'noticed you asked about the bell.'); }
       if (c === 3) await d.say('Ivy', 'You’re very quiet. The others were quiet too.');
       await d.say('Ivy', 'You have the look of a boy I used to teach. Clever. Always reaching for the books on the high shelf.');
-      await d.narr('The lantern burns brighter near her. If I can hold it steady, it will show me what she remembers.');
-      const ok = await d.qte.timing('STEADY THE LANTERN', 'SPACE');
-      if (!ok) await d.narr('The light shudders, then catches anyway, as if it wanted to.');
+      await d.narr('The lantern burns brighter near her. If I can lead its light through what she has forgotten, it will show me what she remembers.');
+      await d.puzzle('pz_tower'); // Echo Paths puzzle 1 (Vansh): teaches ink, light and the clock dial
       d.memory(true);
       await d.banner('IVY’S MEMORY, 2:17 AM', '#bfefff', 1300);
       await d.narr('Ten years ago. Ivy is alone in the school, packing her bag by candlelight.');
