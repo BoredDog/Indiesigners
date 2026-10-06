@@ -145,6 +145,7 @@ export class Director {
    * Elias surface in its light and unlock clues that are otherwise invisible.
    */
   sight = 0; // 0..1, eased toward 1 while the lantern is raised
+  forcedSight = 0; // scripts can raise the lantern (the final choice)
   traces: { id: string; img: Phaser.GameObjects.Image; revealed: boolean; onReveal?: () => void }[] = [];
   private sightFx!: Phaser.GameObjects.Image;
   private sightHint!: Phaser.GameObjects.Text;
@@ -266,7 +267,7 @@ export class Director {
     const free = this.isFree();
     const raised = free && this.world.lanternRaised;
     this.sight = Phaser.Math.Clamp(this.sight + (raised ? dt / 260 : -dt / 200), 0, 1);
-    this.world.lanternBoost = this.sight * 0.7;
+    this.world.lanternBoost = Math.max(this.sight * 0.7, this.forcedSight);
     this.sightFx.setAlpha(this.sight * 0.9);
     // Only where it's needed: near something hidden, once the tutorial card has taught it.
     this.sightHint.setVisible(free && this.nearTrace && !!this.save.flags.tut_lantern);
@@ -304,6 +305,60 @@ export class Director {
       const o = { r: 4, a: 0.5 };
       this.world.tweens.add({ targets: o, r: 34, a: 0, duration: 900, ease: 'Sine.Out', onUpdate: () => g.clear().lineStyle(1.5, 0x7fe0d4, o.a).strokeCircle(lp.x, lp.y, o.r), onComplete: () => g.destroy() });
     }
+  }
+
+  /** The lantern flame stirs (a faint ring, a breath of hum): it has noticed an echo. */
+  stir() {
+    const lp = this.world.lanternPos();
+    for (let i = 0; i < 2; i++) {
+      const g = this.world.add.graphics().setDepth(21).setBlendMode(Phaser.BlendModes.ADD);
+      const o = { r: 4, a: 0.6 };
+      this.world.tweens.add({ targets: o, r: 40, a: 0, delay: i * 250, duration: 1000, ease: 'Sine.Out', onUpdate: () => g.clear().lineStyle(1.5, 0x7fe0d4, o.a).strokeCircle(lp.x, lp.y, o.r), onComplete: () => g.destroy() });
+    }
+    this.audio.tone('chime');
+  }
+
+  /**
+   * The final choice, made with the lantern: hold F (or the right mouse button, or press and
+   * hold FORGET) to raise it to your own face and forget; press E / 1 or click REMEMBER to set it
+   * down. Returns 0 = REMEMBER, 1 = FORGET.
+   */
+  async lanternChoice(): Promise<0 | 1> {
+    this.busyUi = true;
+    const ui = this.scene;
+    const c = ui.add.container(0, 0).setDepth(25);
+    const top = H - 330;
+    const prompt = ptext(ui, W / 2, top, 'The lantern is warm in your hand. What does Elias do?', 40, '#ffffff').setOrigin(0.5);
+    c.add([panel(ui, W / 2 - 760, top - 40, 1520, 80, 0.92), prompt]);
+    let pick = -1 as 0 | 1 | -1, holdBtn = false, progress = 0;
+    const rem = pbutton(ui, W / 2 - 380, H - 170, 720, 120, '1. REMEMBER. Set the lantern down.', () => (pick = 0), 32);
+    const fg = pbutton(ui, W / 2 + 380, H - 170, 720, 120, '2. FORGET. Hold F to raise it to your own face.', () => undefined, 32);
+    fg.on('pointerdown', () => (holdBtn = true)).on('pointerup', () => (holdBtn = false)).on('pointerout', () => (holdBtn = false));
+    const bar = ui.add.graphics();
+    c.add([rem, fg, bar]);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'e' || e.key === 'E' || e.code === 'Digit1' || e.code === 'Numpad1') pick = 0;
+    };
+    ui.input.keyboard?.on('keydown', onKey);
+    const twoDown = ui.input.keyboard?.addKey('TWO');
+    try {
+      await this.until(() => {
+        const held = this.world.lanternHeld() || holdBtn || !!twoDown?.isDown;
+        progress = Phaser.Math.Clamp(progress + (held ? this.lastDt / 2600 : -this.lastDt / 900), 0, 1);
+        this.forcedSight = progress * 1.2; // the lantern rises and brightens as you hold
+        bar.clear();
+        if (progress > 0) bar.fillStyle(0x7fe0d4, 0.9).fillRect(W / 2 + 30, H - 104, 700 * progress, 8);
+        if (progress >= 1) pick = 1;
+        return pick !== -1;
+      });
+    } finally {
+      ui.input.keyboard?.off('keydown', onKey);
+      if (twoDown) ui.input.keyboard?.removeKey(twoDown);
+    }
+    c.destroy();
+    this.busyUi = false;
+    if (pick === 0) this.forcedSight = 0;
+    return pick as 0 | 1;
   }
 
   /** The player can walk around and act (not in dialogue, a cutscene or the board). */
@@ -614,7 +669,8 @@ export class Director {
       c.add(b);
     });
     const onKey = (e: KeyboardEvent) => {
-      const n = Number(e.key);
+      // e.code, not e.key: while Shift (run) is held, the number keys type !@#$.
+      const n = /^(Digit|Numpad)\d$/.test(e.code) ? Number(e.code.slice(-1)) : Number(e.key);
       if (n >= 1 && n <= options.length) picked = n - 1;
     };
     ui.input.keyboard?.on('keydown', onKey);
@@ -646,7 +702,7 @@ export class Director {
 
   /** Minecraft: Story Mode-style consequence note. */
   remember(who: string, what = 'will remember that.') {
-    if (!this.save.remembered.includes(`${who}: ${what}`)) this.save.remembered.push(`${who} ${what}`);
+    if (!this.save.remembered.includes(`${who} ${what}`)) this.save.remembered.push(`${who} ${what}`);
     this.onSave(this.save);
     const ui = this.scene;
     // Second toast row (the evidence toast uses the first), so the two never overlap.
@@ -746,8 +802,9 @@ export class Director {
   }
 
   private openCasebook() {
+    // Not over dialogue or a QTE (clicks on the board would count as QTE presses).
+    if (this.boardOpen || this.busyUi || this.qte.state) return;
     this.guide.boardOpened = true;
-    if (this.boardOpen || this.busyUi) return;
     this.boardOpen = true;
     this.busyUi = true;
     this.unseen = 0;

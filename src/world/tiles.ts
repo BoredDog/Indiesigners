@@ -217,6 +217,18 @@ export function buildWorldTextures(scene: Phaser.Scene) {
     // One heavy walker: the left print pressed deeper, as if carrying something in his arms.
     for (let i = 0; i < 8; i++) { c.fillStyle = i % 2 ? 'rgba(255,255,255,0.6)' : '#ffffff'; c.fillRect(i * 7, i % 2 ? 0 : 1, i % 2 ? 3 : 4, i % 2 ? 1 : 2); }
   });
+  canvasTex(scene, 'w_echo_chalk', 13, 5, (c) => {
+    c.fillStyle = '#ffffff'; // ELI, in a child's chalk
+    c.fillRect(0, 0, 1, 5); c.fillRect(1, 0, 2, 1); c.fillRect(1, 2, 2, 1); c.fillRect(1, 4, 2, 1);
+    c.fillRect(5, 0, 1, 5); c.fillRect(6, 4, 2, 1);
+    c.fillRect(10, 0, 3, 1); c.fillRect(11, 1, 1, 3); c.fillRect(10, 4, 3, 1);
+  });
+  canvasTex(scene, 'w_echo_staff', 8, 22, (c) => {
+    c.fillStyle = '#ffffff'; // a lantern hanging from a long staff
+    c.fillRect(3, 0, 1, 22); c.fillRect(3, 1, 4, 1); c.fillRect(6, 2, 1, 2);
+    c.fillRect(4, 4, 5, 1); c.fillRect(4, 5, 1, 4); c.fillRect(8, 5, 1, 4); c.fillRect(4, 9, 5, 1);
+    c.fillStyle = 'rgba(255,255,255,0.6)'; c.fillRect(5, 5, 3, 4);
+  });
   canvasTex(scene, 'w_runes', 26, 12, (c) => {
     c.fillStyle = '#ffffff';
     // Five carved marks: a circle, a hand, a flame, a bell and a crossed line.

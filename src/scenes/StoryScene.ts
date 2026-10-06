@@ -52,6 +52,10 @@ export class StoryScene extends Phaser.Scene {
   lantern = 0.75; // lantern brightness 0..1 (scripts change it)
   lanternBoost = 0; // extra light while the lantern is raised (echo sight)
   lanternRaised = false; // F or the right mouse button held
+  /** F or the right mouse button is down, whether or not the player is free to move. */
+  lanternHeld() {
+    return this.keys.F.isDown || this.input.activePointer.rightButtonDown();
+  }
   extraLights: LightSource[] = [];
   props = new Map<string, Phaser.GameObjects.Image>();
   npcs: Npc[] = [];
@@ -82,6 +86,12 @@ export class StoryScene extends Phaser.Scene {
   }
 
   create(data: { fresh?: boolean | string; episode?: string | number; try?: string } = {}) {
+    // Phaser reuses this instance on RESTART / PLAY AGAIN: reset everything per-run.
+    this.did = { move: false, run: false, jump: false, dig: false };
+    this.digTaps = 0;
+    this.lanternBoost = 0;
+    this.lanternRaised = false;
+    this.mining = undefined;
     buildWorldTextures(this);
     makeAnims(this);
     this.props.clear();
@@ -113,7 +123,8 @@ export class StoryScene extends Phaser.Scene {
     const k = this.input.keyboard!;
     this.keys = k.addKeys('A,D,W,S,F,X,SHIFT,LEFT,RIGHT,UP,DOWN,SPACE') as Record<string, Phaser.Input.Keyboard.Key>;
     // Taps count toward digging too (trackpads with tap-to-click can't hold a button).
-    this.input.on('pointerdown', (p: Phaser.Input.Pointer) => { if (p.leftButtonDown()) this.digTaps++; });
+    // (Only while free: clicks that advance dialogue must not pile up and dig on their own.)
+    this.input.on('pointerdown', (p: Phaser.Input.Pointer) => { if (p.leftButtonDown() && this.director?.isFree()) this.digTaps++; });
     this.input.mouse?.disableContextMenu(); // the right mouse button raises the lantern
     k.on('keydown-ESC', () => openPause(this, 'Story'));
 
@@ -379,6 +390,7 @@ export class StoryScene extends Phaser.Scene {
     if (free) this.updateMining(delta);
     else {
       this.digCursor.clear();
+      this.digTaps = 0;
       if (this.mining) (this.mining.crack.destroy(), (this.mining = undefined));
     }
 
@@ -413,13 +425,13 @@ export class StoryScene extends Phaser.Scene {
     const lp = this.lanternPos();
     const sources: LightSource[] = this.world.lights.map((l) => ({ ...l, strength: 0.85 }));
     const lantern = Math.min(1.5, this.lantern + this.lanternBoost);
-    if (this.player.visible && lantern > 0) sources.push({ x: lp.x, y: lp.y, r: Math.round(5 + lantern * 7), strength: Math.min(1, 0.6 + lantern * 0.35) });
+    if (this.player.visible && this.player.alpha > 0.05 && lantern > 0) sources.push({ x: lp.x, y: lp.y, r: Math.round(5 + lantern * 7), strength: Math.min(1, 0.6 + lantern * 0.35) });
     for (const n of this.npcs) if (n.ghost) sources.push({ x: n.sprite.x, y: n.sprite.y - 20, r: 4, strength: 0.55 });
     sources.push(...this.extraLights);
     this.lighting.update(cam, sources);
     const flick = 0.95 + Math.random() * 0.08;
-    this.lanternImg.setPosition(lp.x, lp.y - 3).setFlipX(this.facing < 0).setVisible(this.player.visible && this.lantern > 0);
-    this.glow.setPosition(lp.x, lp.y).setScale(0.35 + lantern * 0.3 * flick).setAlpha(this.player.visible ? Math.min(0.7, 0.25 + lantern * 0.25) : 0);
+    this.lanternImg.setPosition(lp.x, lp.y - 3).setFlipX(this.facing < 0).setVisible(this.player.visible && this.lantern > 0).setAlpha(this.player.alpha);
+    this.glow.setPosition(lp.x, lp.y).setScale(0.35 + lantern * 0.3 * flick).setAlpha(this.player.visible ? Math.min(0.7, 0.25 + lantern * 0.25) * this.player.alpha : 0);
 
     d?.update(delta);
   }
