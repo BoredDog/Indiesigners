@@ -109,6 +109,9 @@ try {
   const save = await js<{ flags: Record<string, unknown>; found: string[]; remembered: string[] }>('return window.__story.save');
   console.log(`${done ? 'ok  ' : 'FAIL'} reached the summary in ${((Date.now() - t0) / 1000) | 0}s · ending=${save.flags.ending} · found ${save.found.length} · remembered ${save.remembered.length}`);
   if (!done) failed++;
+  const chapters = await js<number>(`return Object.keys(JSON.parse(localStorage.getItem('echoes_story_chapters_v1') || '{}')).length`);
+  console.log(`${chapters >= 6 ? 'ok  ' : 'FAIL'} scene select unlocked ${chapters} checkpoints`);
+  if (chapters < 6) failed++;
   await page.screenshot({ path: 'test-results/story-autoplay-summary.png' });
 } catch (e) {
   console.log('FAIL', e);
