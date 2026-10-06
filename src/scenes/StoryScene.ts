@@ -33,6 +33,7 @@ export interface Npc {
   ghost: boolean;
   homeY: number;
   deco?: Phaser.GameObjects.Image; // follows the sprite (Nia's flower)
+  glow?: Phaser.FX.Glow; // ghosts' soft outline
 }
 
 /**
@@ -57,12 +58,16 @@ export class StoryScene extends Phaser.Scene {
   director!: Director;
   private lighting!: Lighting;
   private digCursor!: Phaser.GameObjects.Graphics;
+  private lanternImg!: Phaser.GameObjects.Image;
+  /** What the player has done at least once (drives the tutorial cards). */
+  did = { move: false, run: false, jump: false, dig: false };
+  private digTaps = 0;
   private waterLayer!: Phaser.Tilemaps.TilemapLayer;
   private parallax: { img: Phaser.GameObjects.TileSprite; f: number }[] = [];
   private skyGrad?: Phaser.GameObjects.Image;
   private skyFeather?: Phaser.GameObjects.Image;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
-  private mining?: { tx: number; ty: number; t: number; crack: Phaser.GameObjects.Image };
+  private mining?: { tx: number; ty: number; t: number; idle?: number; crack: Phaser.GameObjects.Image };
   private glow!: Phaser.GameObjects.Image;
   private dropUntil = 0;
   dug = 0;
@@ -96,6 +101,8 @@ export class StoryScene extends Phaser.Scene {
       const halo = this.add.image(l.x, l.y, 'w_glow').setDepth(DEPTH.glow).setBlendMode(Phaser.BlendModes.ADD).setTint(0xffb860).setAlpha(0.32).setScale(l.r * 0.11);
       if (!comicSettings.reduceFlashing) this.tweens.add({ targets: halo, alpha: 0.24, duration: 900 + Math.random() * 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     }
+    // The lantern itself, in his hand (the light is drawn separately).
+    this.lanternImg = this.add.image(0, 0, 'pt_lantern').setOrigin(0.5, 0.15).setScale(0.22).setDepth(DEPTH.actors + 0.5);
     this.glow = this.add.image(0, 0, 'w_glow').setDepth(DEPTH.glow).setBlendMode(Phaser.BlendModes.ADD).setTint(0x9fe8ff);
 
     const cam = this.cameras.main;
@@ -104,7 +111,9 @@ export class StoryScene extends Phaser.Scene {
     cam.roundPixels = true;
 
     const k = this.input.keyboard!;
-    this.keys = k.addKeys('A,D,W,S,F,LEFT,RIGHT,UP,DOWN,SPACE') as Record<string, Phaser.Input.Keyboard.Key>;
+    this.keys = k.addKeys('A,D,W,S,F,X,SHIFT,LEFT,RIGHT,UP,DOWN,SPACE') as Record<string, Phaser.Input.Keyboard.Key>;
+    // Taps count toward digging too (trackpads with tap-to-click can't hold a button).
+    this.input.on('pointerdown', (p: Phaser.Input.Pointer) => { if (p.leftButtonDown()) this.digTaps++; });
     this.input.mouse?.disableContextMenu(); // the right mouse button raises the lantern
     k.on('keydown-ESC', () => openPause(this, 'Story'));
 
@@ -262,13 +271,16 @@ export class StoryScene extends Phaser.Scene {
     // Ivy / Luke / Hanna use the team's pixel sprites (same faces as their portraits).
     const named = base === 'ivy' || base === 'luke' || base === 'hanna';
     // Nia is a child: the villager woman sprite at child height.
-    const tex = named ? `gh_${base}` : { woman: 'gv_woman_idle', nia: 'gv_woman_idle', bearded: 'gv_bearded_idle', oldman: 'gv_oldman_idle', figure: 'gv_figure_idle', elias: 'gv_hatman_idle' }[base];
+    const tex = named ? `ghx_${base}` : { woman: 'gv_woman_idle', nia: 'gv_woman_idle', bearded: 'gv_bearded_idle', oldman: 'gv_oldman_idle', figure: 'gv_figure_idle', elias: 'gv_hatman_idle' }[base];
     const sprite = this.add.sprite(x, y, tex).setOrigin(0.5, 1).setDepth(DEPTH.actors - 1).setFlipX(!!opts.flip);
     if (!named) sprite.play(`${base === 'nia' ? 'woman' : base}_idle`);
     if (base === 'nia') sprite.setScale(0.62);
-    if (opts.ghost) sprite.setTint(opts.tint ?? 0xaee8ff).setAlpha(0.85);
+    if (named) sprite.setScale(52 / sprite.height); // same height as Elias
+    if (opts.ghost) sprite.setTint(opts.tint ?? 0xaee8ff).setAlpha(0.9);
     else if (opts.tint) sprite.setTint(opts.tint);
     const n: Npc = { sprite, base, ghost: !!opts.ghost, homeY: y };
+    // A soft cold outline so ghosts read clearly against the dark (WebGL only).
+    if (opts.ghost) n.glow = sprite.preFX?.addGlow(0x9fe8ff, 2, 0, false, 0.1, 12);
     // Nia's white flower keeps its real colours even when she is a ghost: the one living thing.
     if (base === 'nia') n.deco = this.add.image(x, y, 'w_flower').setOrigin(0.5, 1).setDepth(DEPTH.actors);
     this.npcs.push(n);
@@ -311,7 +323,8 @@ export class StoryScene extends Phaser.Scene {
   }
 
   lanternPos() {
-    return { x: this.player.x + this.facing * 9, y: this.player.y - 18 };
+    // Held at the hip; raised to shoulder height while echo sight is on.
+    return { x: this.player.x + this.facing * 9, y: this.player.y - 18 - this.lanternBoost * 12 };
   }
 
   // ------------------------------------------------------------------ frame
@@ -325,15 +338,25 @@ export class StoryScene extends Phaser.Scene {
     if (free) {
       if (k.A.isDown || k.LEFT.isDown) move -= 1;
       if (k.D.isDown || k.RIGHT.isDown) move += 1;
-      if ((Phaser.Input.Keyboard.JustDown(k.W) || Phaser.Input.Keyboard.JustDown(k.UP) || Phaser.Input.Keyboard.JustDown(k.SPACE)) && body.blocked.down) body.setVelocityY(-360); // ≈ 4.5 blocks high
+      if ((Phaser.Input.Keyboard.JustDown(k.W) || Phaser.Input.Keyboard.JustDown(k.UP) || Phaser.Input.Keyboard.JustDown(k.SPACE)) && body.blocked.down) (body.setVelocityY(-360), (this.did.jump = true)); // ≈ 4.5 blocks high
       if ((Phaser.Input.Keyboard.JustDown(k.S) || Phaser.Input.Keyboard.JustDown(k.DOWN)) && this.onPlank()) this.dropUntil = this.time.now + 250;
     }
     if (d?.autoWalk !== undefined) {
       const dist = d.autoWalk - this.player.x;
-      move = Math.abs(dist) < 2 ? 0 : Math.sign(dist);
-      if (!move) d.autoWalk = undefined;
+      // Arrive when the next step would reach the target, so a slow frame rate (big steps) can't
+      // overshoot it back and forth forever.
+      if (Math.abs(dist) <= Math.max(2, (95 * delta) / 1000)) {
+        body.reset(d.autoWalk, this.player.y);
+        d.autoWalk = undefined;
+        move = 0;
+      } else move = Math.sign(dist);
     }
-    body.setVelocityX(move * (this.lanternRaised ? 50 : 95)); // you walk slowly with the lantern held high
+    // Hold Shift to run; you walk slowly with the lantern held high.
+    const running = k.SHIFT.isDown && !this.lanternRaised && d?.autoWalk === undefined;
+    body.setVelocityX(move * (this.lanternRaised ? 50 : running ? 180 : 95));
+    if (move && free) this.did.move = true;
+    if (move && running && free) this.did.run = true;
+    this.player.anims.timeScale = running && move ? 1.8 : 1;
     if (move) this.facing = move;
     this.player.setFlipX(this.facing < 0);
     const anim = move && body.blocked.down ? 'elias_walk' : 'elias_idle';
@@ -345,11 +368,11 @@ export class StoryScene extends Phaser.Scene {
       if (this.mining) (this.mining.crack.destroy(), (this.mining = undefined));
     }
 
-    // Ghosts float and flicker.
+    // Ghosts float a little off the ground and their outline breathes. (Their alpha is left to
+    // the script, so fade-ins and fade-outs aren't undone every frame.)
     for (const n of this.npcs) if (n.ghost) {
-      n.sprite.y = n.homeY - 2 + Math.sin(this.time.now / 600 + n.sprite.x) * 2;
-      if (Math.random() < 0.005) n.sprite.setAlpha(0.35);
-      else n.sprite.setAlpha(Math.min(0.85, n.sprite.alpha + 0.03));
+      n.sprite.y = n.homeY - 3 + Math.sin(this.time.now / 600 + n.sprite.x) * 1.5;
+      if (n.glow) n.glow.outerStrength = 1.6 + Math.sin(this.time.now / 400 + n.sprite.x) * 0.6;
     }
     for (const n of this.npcs) if (n.deco) {
       const s = n.sprite;
@@ -381,6 +404,7 @@ export class StoryScene extends Phaser.Scene {
     sources.push(...this.extraLights);
     this.lighting.update(cam, sources);
     const flick = 0.95 + Math.random() * 0.08;
+    this.lanternImg.setPosition(lp.x, lp.y - 3).setFlipX(this.facing < 0).setVisible(this.player.visible && this.lantern > 0);
     this.glow.setPosition(lp.x, lp.y).setScale(0.35 + lantern * 0.3 * flick).setAlpha(this.player.visible ? Math.min(0.7, 0.25 + lantern * 0.25) : 0);
 
     d?.update(delta);
@@ -389,32 +413,52 @@ export class StoryScene extends Phaser.Scene {
   private updateMining(delta: number) {
     const p = this.input.activePointer;
     const wp = this.cameras.main.getWorldPoint(p.x, p.y);
-    const tx = Math.floor(wp.x / TILE), ty = Math.floor(wp.y / TILE);
+    const canDig = (x: number, y: number) => {
+      if (x < 0 || y < 0 || x >= WT || y >= HT) return false;
+      const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y - 20, x * TILE + 8, y * TILE + 8);
+      return MINABLE.has(this.world.fg[y][x]) && dist <= 5 * TILE && y > SURF; // the town itself can't be dug up
+    };
+    let tx = Math.floor(wp.x / TILE), ty = Math.floor(wp.y / TILE);
     const inside = tx >= 0 && ty >= 0 && tx < WT && ty < HT;
-    const id = inside ? this.world.fg[ty][tx] : 0;
+    const id0 = inside ? this.world.fg[ty][tx] : 0;
     const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y - 20, tx * TILE + 8, ty * TILE + 8);
-    const diggable = inside && MINABLE.has(id) && dist <= 5 * TILE && ty > SURF; // the town itself can't be dug up
+    let diggable = canDig(tx, ty);
     // Show what's under the cursor: gold if you can dig it, a faint red if it's solid but not
     // diggable from here (too far, or part of the town).
     this.digCursor.clear();
-    if (inside && id && !this.director.pointerOnUi && ty > SURF - 1 && dist <= 8 * TILE) {
+    if (inside && id0 && !this.director.pointerOnUi && ty > SURF - 1 && dist <= 8 * TILE) {
       this.digCursor.lineStyle(1, diggable ? 0xffe08a : 0xe05050, diggable ? 0.9 : 0.35).strokeRect(tx * TILE + 0.5, ty * TILE + 0.5, TILE - 1, TILE - 1);
     }
-    if (!p.leftButtonDown() || this.director.pointerOnUi || !diggable) {
-      if (this.mining) (this.mining.crack.destroy(), (this.mining = undefined));
+    // Three ways to dig: hold the left button, tap it repeatedly, or hold X (digs the block under
+    // your feet, or the one in front if there's nothing below).
+    let power = 0;
+    const taps = this.digTaps;
+    this.digTaps = 0;
+    if (diggable && !this.director.pointerOnUi) power = (p.leftButtonDown() ? delta : 0) + taps * 140;
+    if (this.keys.X.isDown) {
+      const fx = Math.floor(this.player.x / TILE), fy = Math.floor((this.player.y + 2) / TILE);
+      const pick = [[fx, fy], [fx + this.facing, fy - 1], [fx + this.facing, fy - 2]].find(([x, y]) => canDig(x, y));
+      if (pick) ([tx, ty] = pick, (diggable = true), (power = delta));
+    }
+    if (!power) {
+      // Keep the crack for a moment so taps add up, then let it heal.
+      if (this.mining && (this.mining.idle = (this.mining.idle ?? 0) + delta) > 1200) (this.mining.crack.destroy(), (this.mining = undefined));
       return;
     }
+    const id = this.world.fg[ty][tx];
     if (!this.mining || this.mining.tx !== tx || this.mining.ty !== ty) {
       this.mining?.crack.destroy();
       this.mining = { tx, ty, t: 0, crack: this.add.image(tx * TILE, ty * TILE, 'w_crack').setOrigin(0).setDepth(DEPTH.fg + 1).setAlpha(0) };
     }
-    this.mining.t += delta;
+    this.mining.idle = 0;
+    this.mining.t += power;
     this.mining.crack.setAlpha(Math.min(1, this.mining.t / 380));
     if (this.mining.t > 400) {
       this.clearTile(tx, ty);
       this.mining.crack.destroy();
       this.mining = undefined;
       this.dug++;
+      this.did.dig = true;
       this.director.audio.play('creak3', 0.25, 600 - Math.random() * 400);
       for (let i = 0; i < 6; i++) {
         const bit = this.add.rectangle(tx * TILE + 8, ty * TILE + 8, 2, 2, id === T.RUBBLE ? 0x5a4a3a : 0x4a3a2a).setDepth(DEPTH.fg + 1);

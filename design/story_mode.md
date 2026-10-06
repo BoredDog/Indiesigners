@@ -3,7 +3,7 @@
 Echoes of Sorrow told as a **Terraria-style side-view world** (Gothicvania CC0 tiles and sprites, per-tile lighting, a little digging). It plays the way **Minecraft: Story Mode** plays: episodes, timed dialogue choices that characters remember, and quick-time events at action beats. The story follows `design/script_final` (Ivy → Luke → Hanna; the fourth person is withheld until the end).
 
 **Play:** `npm run dev`, then pick **STORY MODE** on the title screen, or go to `/?scene=Story`. Add `&episode=3` to jump (0-based) and `&fresh=1` to wipe the save.
-**Controls:** A/D move · W/Space jump · S drop through a plank · E interact · **hold F or the right mouse button to raise the lantern** · C evidence board · hold the left mouse button to dig · 1–4 pick a choice · Esc pause.
+**Controls:** A/D move (hold Shift to run) · W/Space jump · S drop through a plank · E interact · **hold F or the right mouse button to raise the lantern** · C evidence board · hold or tap the left mouse button, or hold X, to dig · 1–4 pick a choice · Esc pause.
 
 ## Playtest review: what was confusing, and the fix
 | # | Problem (as a player) | Fix |
@@ -17,6 +17,18 @@ Echoes of Sorrow told as a **Terraria-style side-view world** (Gothicvania CC0 t
 | 7 | Every memory opened with the same QTE | Ivy: timing (steady the lantern) · Luke: mash (push the boat) · Hanna: press (reach for her) · tunnel: press (run) · chamber: mash (hold the light) |
 | 8 | The final choice didn't say what it meant | "REMEMBER: let the clock move, the ghosts can rest, I carry it" vs "FORGET: use the lantern on myself. Again." |
 | 9 | Choices felt free of consequence | "Ivy will remember that." on key choices; Hanna recalls whether you asked her name; spotting the figure (Ivy, Luke) and hearing Hanna change Elias's finale lines. Each ghost's goodbye in the good ending depends on what you said to them, and on whether you helped Luke push the boat. The summary lists it all |
+
+## Onboarding and wayfinding (`src/world/guide.ts`)
+- **Tutorial cards:** one at a time, at the bottom of the screen, with key caps. Each teaches a control the first time it matters and disappears once the player has used it. The save remembers which have been learned.
+  - Episode 1 investigation: walk, run, jump, E on a !, and the evidence board.
+  - Near the first hidden trace: raise the lantern.
+  - At the well: dig.
+- **The first dialogue lines** show SPACE OR CLICK beside the arrow.
+- **Location signs** fade in over each landmark as you approach:
+  - CEMETERY, THE OLD WELL, SCHOOL, OLD HOUSE (ARCHIVE), CLOCK TOWER and TOWER TOP: THE BELL.
+  - TOWN SQUARE, RIVER DOCK, ARCHIVE VAULT and THE DEEPEST CHAMBER.
+- **Objective arrows** sit at the screen edge, labelled, pointing to every open "!" that's off screen. Objectives without a spot pass a target: `d.objective(text, { x, y, label })`.
+- **The lantern hint** ("hold F") appears only when a hidden trace is near, never everywhere.
 
 ## Echo sight: the lantern (`Director.trace`, `Director.updateSight`)
 The lantern is the detective tool, in the spirit of Hitman's instinct or Batman's detective mode.
@@ -43,7 +55,10 @@ Before the results screen, the case is retold as Elias's hard-boiled detective c
 - Click, Space or Enter moves on a beat. SKIP jumps to the last page, which can't be skipped.
 
 ## Quick-time events (`src/story/qte.ts`)
-Every QTE opens with a short READY → NOW! lead-in that ignores input, so it never catches a dialogue key press. Mashing clicks on every tap. The timing QTE shows HIT or MISS each round and pauses between rounds, and its gold target brightens while a press would count. Failure text matches the QTE: TOO SLOW, NOT ENOUGH or MISSED.
+- **No surprises.** Every QTE opens on an instruction card that waits for PRESS SPACE TO START, then GO!.
+- **Can't be failed through.** A miss shows TRY AGAIN, and the story only continues once it's passed. Each retry is gentler: a longer window, fewer taps or a wider timing ring.
+- **Generous windows.** Press is at least 2.4 seconds, and mash at least 5 seconds with a slow drain.
+- **Feedback.** The ring QTE shows HIT or MISS each round, and its gold target brightens while a press would count. Failure text matches the QTE: TOO SLOW, NOT ENOUGH or MISSED.
 
 ## Evidence board (`src/world/board.ts`)
 The board is laid out in columns: **People · What they remember · The village · Questions · The figure**.
@@ -110,7 +125,7 @@ What happened that night, stated plainly in Episode 6: Elias tried to draw Nia's
 | `tools/shots-story.ts` | Screenshot run (`npm run test:story`) |
 
 ## Known gaps
-- Ivy, Luke and Hanna have no walk animation (they're ghosts, so they float). Nia uses the villager woman sprite scaled to child height, tinted as a ghost, with a three-pixel white flower in her hair. Her dialogue portrait (`pt_nia`) is drawn in code in the same crimson dress and bonnet; a hand-drawn `nia.png` like the other portraits would match them better.
+- Ivy, Luke and Hanna are drawn from the full-size character art, smooth-scaled to Elias's height, with a soft glow, and they fade out below the knees into mist (`ghx_*` textures). They have no walk cycle; they glide. Nia uses the villager woman sprite scaled to child height, tinted as a ghost, with a three-pixel white flower in her hair. Her dialogue portrait (`pt_nia`) is drawn in code in the same crimson dress and bonnet; a hand-drawn `nia.png` like the other portraits would match them better.
 - Rubble at the well is the only place digging is required; you can dig other dirt underground freely.
 - Text speed and skip-scene settings are not built yet.
 - Memories: the camera drifts after whoever is moving (`d.watch(npc)`), and `await d.follow()` eases back to Elias rather than snapping. Bells are shown as expanding rings (`d.toll`), never sound words.

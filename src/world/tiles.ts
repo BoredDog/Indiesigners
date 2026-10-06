@@ -136,6 +136,24 @@ export function buildWorldTextures(scene: Phaser.Scene) {
     c.fillStyle = 'rgba(160,200,230,0.35)';
     c.fillRect(T.WATER * TILE, 0, TILE, 2);
   });
+  // Ghosts, rebuilt from the full-size character art (not the muddy 50 px copies): smooth-scaled,
+  // and fading out below the knees into mist, which reads as a ghost and hides the stiff legs.
+  for (const n of ['ivy', 'luke', 'hanna']) {
+    const key = `ghx_${n}`;
+    if (scene.textures.exists(key) || !scene.textures.exists(`pt_${n}`)) continue;
+    const img = scene.textures.get(`pt_${n}`).getSourceImage() as HTMLImageElement;
+    canvasTex(scene, key, img.width, img.height, (c) => {
+      c.drawImage(img, 0, 0);
+      c.globalCompositeOperation = 'destination-out';
+      const g = c.createLinearGradient(0, img.height * 0.6, 0, img.height);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(1, 'rgba(0,0,0,1)');
+      c.fillStyle = g;
+      c.fillRect(0, 0, img.width, img.height);
+      c.globalCompositeOperation = 'source-over';
+    });
+    scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
+  }
   // The graveyard hedge, faded out on its right so it melts into the street instead of
   // ending in a hard edge.
   canvasTex(scene, 'w_cem_graveyard', scene.textures.get('gv_cem_graveyard').getSourceImage().width, scene.textures.get('gv_cem_graveyard').getSourceImage().height, (c) => {
