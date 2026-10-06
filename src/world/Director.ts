@@ -9,6 +9,7 @@ import type { StoryScene, Npc } from '../scenes/StoryScene';
 import { ZOOM } from './tiles';
 import { StoryAudio, type SoundKey } from '../story/audio';
 import { Qte } from '../story/qte';
+import { saveChapter } from '../story/chapters';
 import { ECHO_FIRST, ECHO_NOTE, Tuner } from '../story/tuner';
 import { Candles, IVY_CANDLES } from '../story/candles';
 import { River, LUKE_RIVER } from '../story/river';
@@ -215,6 +216,7 @@ export class Director {
         this.clearTraces();
         this.save.episode++;
         this.onSave(this.save);
+        saveChapter(this.save); // unlocks this episode in SCENE SELECT
       }
       await this.summary();
     } catch (e) {
