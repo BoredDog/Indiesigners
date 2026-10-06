@@ -44,6 +44,9 @@ const STEP = `
   const ex = d.exploring;
   if (ex && !ex.busy && !d.busyUi) {
     const spot = d.spots.find((s) => !s.when || s.when());
+    // Nothing visible left: stand by a hidden echo trace and raise the lantern (the runner holds F).
+    const tr = (d.traces || []).find((t) => !t.revealed);
+    if (!spot && tr) { d.teleport(tr.img.x, d.a.footprints.y); return 'sight'; }
     if (spot) { d.teleport(spot.x, spot.y); d.tryInteract(); return 'spot:' + spot.id; }
     const A = d.a, S = 60, T = 16;
     if (w.world.fg[S][40] === 0 && d.player.y < (S + 8) * T) { for (let y = S + 1; y <= S + 7; y++) for (let x = 39; x <= 41; x++) if (w.world.fg[y][x]) w.clearTile(x, y); d.teleport(A.shaft.x, A.shaft.y); return 'dig'; }
@@ -65,6 +68,7 @@ try {
     const ep = await js<number>('return window.__story?.save.episode ?? -1');
     if (ep !== episode) { episode = ep; console.log(`episode ${ep}  (${((Date.now() - t0) / 1000) | 0}s)`); }
     if (r === 'summary') break;
+    if (r === 'sight') { await page.keyboard.down('f'); await page.waitForTimeout(900); await page.keyboard.up('f'); }
     if (r === 'qte') await page.keyboard.press('Space');
     else if (r === 'advance' || r === 'boot') await page.keyboard.press('Space');
     same = r === last ? same + 1 : 0;

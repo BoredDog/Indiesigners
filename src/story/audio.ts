@@ -22,7 +22,7 @@ export class StoryAudio {
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.bed?.stop());
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => (this.bed?.stop(), this.hum(false)));
   }
 
   private get ctx(): AudioContext | undefined {
@@ -44,6 +44,33 @@ export class StoryAudio {
   }
   bell(times = 1) {
     for (let i = 0; i < times; i++) this.scene.time.delayedCall(i * 1400, () => this.play('bell', 0.7, -900));
+  }
+
+  private humNode?: { gain: GainNode; stop: () => void };
+  /** A low, steady hum while the lantern is raised (fades in and out). */
+  hum(on: boolean) {
+    const ctx = this.ctx, dest = this.dest;
+    if (!ctx || !dest) return;
+    if (on && !this.humNode) {
+      const gain = ctx.createGain();
+      gain.gain.value = 0.0001;
+      const a = ctx.createOscillator(), b = ctx.createOscillator();
+      a.type = 'sine'; a.frequency.value = 110;
+      b.type = 'triangle'; b.frequency.value = 165.4; // a slightly sour fifth, so it hums rather than sings
+      const bg = ctx.createGain(); bg.gain.value = 0.25;
+      a.connect(gain); b.connect(bg).connect(gain);
+      gain.connect(dest);
+      a.start(); b.start();
+      gain.gain.exponentialRampToValueAtTime(0.06, ctx.currentTime + 0.25);
+      this.humNode = { gain, stop: () => { a.stop(); b.stop(); } };
+    } else if (!on && this.humNode) {
+      const h = this.humNode;
+      this.humNode = undefined;
+      h.gain.gain.cancelScheduledValues(ctx.currentTime);
+      h.gain.gain.setValueAtTime(Math.max(0.0001, h.gain.gain.value), ctx.currentTime);
+      h.gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+      setTimeout(h.stop, 260);
+    }
   }
 
   /** Short synthesized one-shots. */

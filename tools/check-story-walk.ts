@@ -56,6 +56,41 @@ try {
   check(p.y <= bellY + 4, `climbed the tower to the bell floor (feet at ${p.y | 0}, bell floor ${bellY})`);
   const near = await js<boolean>('const d = window.__story; return !!d.spots.find((s) => s.id === "bell") && Math.abs(d.player.x - d.a.bell.x) < 60');
   check(near, 'the bell rope spot is reachable from there');
+
+  // 3. Dig the well rubble with a real held left mouse button, after opening and closing the
+  //    board with its own button (that used to leave digging switched off).
+  const box = (await page.$('canvas'))!.boundingBox ? await (await page.$('canvas'))!.boundingBox() : null;
+  const toScreen = (gx: number, gy: number) => ({ x: box!.x + (gx / 1920) * box!.width, y: box!.y + (gy / 1080) * box!.height });
+  const btn = toScreen(1920 - 190, 50);
+  await page.mouse.click(btn.x, btn.y);
+  await frames(20);
+  await page.keyboard.press('c');
+  await frames(20);
+  const S = 60, WX = 40;
+  await js(`const d = window.__story, w = window.__echoes.game.scene.getScene('Story'); for (let y = ${S}; y <= ${S} + 2; y++) for (let x = ${WX - 1}; x <= ${WX + 1}; x++) w.clearTile(x, y); d.teleport(${WX * 16 + 8}, ${(S + 3) * 16});`);
+  await frames(30);
+  const target = await js<{ x: number; y: number }>(`const cam = window.__echoes.game.scene.getScene('Story').cameras.main; const v = cam.worldView; return { x: (${WX * 16 + 8} - v.x) * cam.zoom, y: (${(S + 3) * 16 + 8} - v.y) * cam.zoom };`);
+  const m = toScreen(target.x, target.y);
+  await page.mouse.move(m.x, m.y);
+  await page.mouse.down();
+  await frames(60);
+  await page.mouse.up();
+  const dug = await js<number>(`return window.__echoes.game.scene.getScene('Story').world.fg[${S + 3}][${WX}]`);
+  check(dug === 0, `held the left mouse button and dug a block of well rubble (tile now ${dug})`);
+  // Keep digging down the column, the way a player would, and make sure Elias drops through.
+  for (let i = 0; i < 12; i++) {
+    const below = await js<{ x: number; y: number; ty: number } | null>(`const w = window.__echoes.game.scene.getScene('Story'), cam = w.cameras.main, v = cam.worldView, p = w.player; let ty = Math.floor(p.y / 16); while (ty < ${S + 8} && w.world.fg[ty][${WX}] === 0) ty++; if (ty >= ${S + 8}) return null; return { x: (${WX * 16 + 8} - v.x) * cam.zoom, y: (ty * 16 + 8 - v.y) * cam.zoom, ty };`);
+    if (!below) break;
+    const pt = toScreen(below.x, below.y);
+    await page.mouse.move(pt.x, pt.y);
+    await page.mouse.down();
+    await frames(45);
+    await page.mouse.up();
+    await frames(20);
+  }
+  await frames(40);
+  const feet = await js<number>('return window.__story.player.y');
+  check(feet > (S + 8) * 16, `dug through all the rubble and dropped into the shaft (feet at tile ${Math.floor(feet / 16)}, rubble ends at ${S + 6})`);
 } catch (e) {
   console.log('FAIL', e);
   failed++;

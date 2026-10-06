@@ -49,11 +49,15 @@ export class StoryScene extends Phaser.Scene {
   facing = 1;
   locked = true;
   lantern = 0.75; // lantern brightness 0..1 (scripts change it)
+  lanternBoost = 0; // extra light while the lantern is raised (echo sight)
+  lanternRaised = false; // F or the right mouse button held
   extraLights: LightSource[] = [];
   props = new Map<string, Phaser.GameObjects.Image>();
   npcs: Npc[] = [];
   director!: Director;
   private lighting!: Lighting;
+  private digCursor!: Phaser.GameObjects.Graphics;
+  private waterLayer!: Phaser.Tilemaps.TilemapLayer;
   private parallax: { img: Phaser.GameObjects.TileSprite; f: number }[] = [];
   private skyGrad?: Phaser.GameObjects.Image;
   private skyFeather?: Phaser.GameObjects.Image;
@@ -81,6 +85,7 @@ export class StoryScene extends Phaser.Scene {
     this.extraLights = [];
     this.world = generateWorld();
     this.buildBackdrop();
+    this.digCursor = this.add.graphics().setDepth(DEPTH.light + 1);
     this.buildMap();
     this.buildProps();
     this.buildFog();
@@ -99,11 +104,15 @@ export class StoryScene extends Phaser.Scene {
     cam.roundPixels = true;
 
     const k = this.input.keyboard!;
-    this.keys = k.addKeys('A,D,W,S,LEFT,RIGHT,UP,DOWN,SPACE') as Record<string, Phaser.Input.Keyboard.Key>;
+    this.keys = k.addKeys('A,D,W,S,F,LEFT,RIGHT,UP,DOWN,SPACE') as Record<string, Phaser.Input.Keyboard.Key>;
+    this.input.mouse?.disableContextMenu(); // the right mouse button raises the lantern
     k.on('keydown-ESC', () => openPause(this, 'Story'));
 
-    const save: StorySave = data.fresh ? { episode: 0, flags: {}, found: [], remembered: [] } : (loadStory() ?? { episode: 0, flags: {}, found: [], remembered: [] });
-    if (data.episode !== undefined) save.episode = Number(data.episode);
+    const fresh = data.fresh === true || data.fresh === '1' || data.fresh === 'true';
+    const save: StorySave = fresh ? { episode: 0, flags: {}, found: [], remembered: [] } : (loadStory() ?? { episode: 0, flags: {}, found: [], remembered: [] });
+    if (data.episode !== undefined && data.episode !== '') save.episode = Number(data.episode);
+    // A finished story starts over rather than dropping straight into the ending.
+    if (save.episode >= EPISODES.length) Object.assign(save, { episode: 0, flags: {}, found: [], remembered: [] });
     writeStory(save);
     this.scene.launch('StoryUI');
     const ui = this.scene.get('StoryUI');
@@ -165,7 +174,8 @@ export class StoryScene extends Phaser.Scene {
     const ts = map.addTilesetImage('wtiles', 'wtiles', TILE, TILE, 0, 0)!;
     const bg = map.createBlankLayer('bg', ts)!.setDepth(DEPTH.wallLayer);
     const fg = map.createBlankLayer('fg', ts)!.setDepth(DEPTH.fg);
-    const water = map.createBlankLayer('water', ts)!.setDepth(DEPTH.water).setAlpha(0.8);
+    const water = map.createBlankLayer('water', ts)!.setDepth(DEPTH.water).setAlpha(0); // dry until a memory fills it
+    this.waterLayer = water;
     for (let y = 0; y < HT; y++) {
       for (let x = 0; x < WT; x++) {
         if (this.world.bg[y][x]) bg.putTileAt(this.world.bg[y][x], x, y);
@@ -187,7 +197,20 @@ export class StoryScene extends Phaser.Scene {
       const img = this.add.image(p.x, p.y, p.key).setOrigin(0.5, 1).setDepth(DEPTH.props + (p.depth ?? 0)).setFlipX(!!p.flip);
       if (p.scale) img.setScale(p.scale);
       if (p.id) this.props.set(p.id, img);
+      if (p.id === 'boat') img.setAngle(6).setData('home', { x: p.x, y: p.y });
     }
+  }
+
+  /**
+   * The river in the present is dry. Inside Luke's memory it fills again (the boat rises and
+   * floats), and when the memory ends it drains away.
+   */
+  setRiver(full: boolean, ms = 1600) {
+    this.tweens.add({ targets: this.waterLayer, alpha: full ? 0.8 : 0, duration: ms, ease: 'Sine.InOut' });
+    const boat = this.props.get('boat');
+    if (!boat) return;
+    const home = boat.getData('home') as { x: number; y: number };
+    this.tweens.add({ targets: boat, x: home.x, y: full ? SURF * TILE + 6 : home.y, angle: full ? 0 : 6, duration: ms, ease: 'Sine.InOut' });
   }
 
   /** Slow, eerie fog (CC0 smoke sprites) drifting through the zones the map marks. */
@@ -221,6 +244,10 @@ export class StoryScene extends Phaser.Scene {
     const body = this.player.body as Phaser.Physics.Arcade.Body;
     body.setSize(14, 40).setOffset(13, 12);
     body.setGravityY(900).setMaxVelocity(200, 600);
+    // Footsteps land on the walk cycle's two contact frames, so the sound matches the feet.
+    this.player.on(Phaser.Animations.Events.ANIMATION_UPDATE, (anim: Phaser.Animations.Animation, frame: Phaser.Animations.AnimationFrame) => {
+      if (anim.key === 'elias_walk' && (frame.index === 1 || frame.index === 4) && body.blocked.down) this.director?.audio.step();
+    });
     this.physics.add.collider(this.player, this.fgLayer, undefined, () => this.time.now > this.dropUntil || !this.onPlank());
     this.physics.world.setBounds(0, 0, WT * TILE, HT * TILE);
     this.player.setCollideWorldBounds(true);
@@ -294,6 +321,7 @@ export class StoryScene extends Phaser.Scene {
     const d = this.director;
     const free = !this.locked && d && !d.busyUi;
     let move = 0;
+    this.lanternRaised = !!free && (k.F.isDown || this.input.activePointer.rightButtonDown());
     if (free) {
       if (k.A.isDown || k.LEFT.isDown) move -= 1;
       if (k.D.isDown || k.RIGHT.isDown) move += 1;
@@ -305,15 +333,17 @@ export class StoryScene extends Phaser.Scene {
       move = Math.abs(dist) < 2 ? 0 : Math.sign(dist);
       if (!move) d.autoWalk = undefined;
     }
-    body.setVelocityX(move * 95);
+    body.setVelocityX(move * (this.lanternRaised ? 50 : 95)); // you walk slowly with the lantern held high
     if (move) this.facing = move;
     this.player.setFlipX(this.facing < 0);
     const anim = move && body.blocked.down ? 'elias_walk' : 'elias_idle';
     if (this.player.anims.currentAnim?.key !== anim) this.player.play(anim);
-    if (move && body.blocked.down && Math.floor(this.time.now / 260) !== Math.floor((this.time.now - delta) / 260)) d?.audio.step();
 
     if (free) this.updateMining(delta);
-    else if (this.mining) (this.mining.crack.destroy(), (this.mining = undefined));
+    else {
+      this.digCursor.clear();
+      if (this.mining) (this.mining.crack.destroy(), (this.mining = undefined));
+    }
 
     // Ghosts float and flicker.
     for (const n of this.npcs) if (n.ghost) {
@@ -345,28 +375,32 @@ export class StoryScene extends Phaser.Scene {
     // Lighting.
     const lp = this.lanternPos();
     const sources: LightSource[] = this.world.lights.map((l) => ({ ...l, strength: 0.85 }));
-    if (this.player.visible && this.lantern > 0) sources.push({ x: lp.x, y: lp.y, r: Math.round(5 + this.lantern * 7), strength: 0.6 + this.lantern * 0.35 });
+    const lantern = Math.min(1.5, this.lantern + this.lanternBoost);
+    if (this.player.visible && lantern > 0) sources.push({ x: lp.x, y: lp.y, r: Math.round(5 + lantern * 7), strength: Math.min(1, 0.6 + lantern * 0.35) });
     for (const n of this.npcs) if (n.ghost) sources.push({ x: n.sprite.x, y: n.sprite.y - 20, r: 4, strength: 0.55 });
     sources.push(...this.extraLights);
     this.lighting.update(cam, sources);
     const flick = 0.95 + Math.random() * 0.08;
-    this.glow.setPosition(lp.x, lp.y).setScale(0.35 + this.lantern * 0.3 * flick).setAlpha(this.player.visible ? 0.25 + this.lantern * 0.25 : 0);
+    this.glow.setPosition(lp.x, lp.y).setScale(0.35 + lantern * 0.3 * flick).setAlpha(this.player.visible ? Math.min(0.7, 0.25 + lantern * 0.25) : 0);
 
     d?.update(delta);
   }
 
   private updateMining(delta: number) {
     const p = this.input.activePointer;
-    if (!p.isDown || this.director.pointerOnUi) {
-      if (this.mining) (this.mining.crack.destroy(), (this.mining = undefined));
-      return;
-    }
     const wp = this.cameras.main.getWorldPoint(p.x, p.y);
     const tx = Math.floor(wp.x / TILE), ty = Math.floor(wp.y / TILE);
-    if (tx < 0 || ty < 0 || tx >= WT || ty >= HT) return;
-    const id = this.world.fg[ty][tx];
+    const inside = tx >= 0 && ty >= 0 && tx < WT && ty < HT;
+    const id = inside ? this.world.fg[ty][tx] : 0;
     const dist = Phaser.Math.Distance.Between(this.player.x, this.player.y - 20, tx * TILE + 8, ty * TILE + 8);
-    if (!MINABLE.has(id) || dist > 5 * TILE || ty <= SURF) { // the town itself can't be dug up
+    const diggable = inside && MINABLE.has(id) && dist <= 5 * TILE && ty > SURF; // the town itself can't be dug up
+    // Show what's under the cursor: gold if you can dig it, a faint red if it's solid but not
+    // diggable from here (too far, or part of the town).
+    this.digCursor.clear();
+    if (inside && id && !this.director.pointerOnUi && ty > SURF - 1 && dist <= 8 * TILE) {
+      this.digCursor.lineStyle(1, diggable ? 0xffe08a : 0xe05050, diggable ? 0.9 : 0.35).strokeRect(tx * TILE + 0.5, ty * TILE + 0.5, TILE - 1, TILE - 1);
+    }
+    if (!p.leftButtonDown() || this.director.pointerOnUi || !diggable) {
       if (this.mining) (this.mining.crack.destroy(), (this.mining = undefined));
       return;
     }

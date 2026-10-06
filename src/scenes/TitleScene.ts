@@ -66,10 +66,16 @@ export class TitleScene extends Phaser.Scene {
 
   private showMenu() {
     const save = loadStory();
-    const ep = save ? Math.min(save.episode, EPISODES.length - 1) : 0;
     const items: [string, () => void][] = [];
-    items.push([save && save.episode > 0 ? `CONTINUE: ${EPISODES[ep].n}` : 'STORY MODE', () => pageTurn(this, () => this.scene.start('Story'))]);
-    if (save) items.push(['RESTART STORY', () => this.confirmRestart()]);
+    // Always pass explicit data: Phaser reuses a scene's last start data when given none, so a
+    // CONTINUE after RESTART or PLAY AGAIN used to start fresh and wipe the save.
+    const play = (fresh: boolean) => pageTurn(this, () => this.scene.start('Story', { fresh, episode: undefined }));
+    const finished = !!save && save.episode >= EPISODES.length;
+    if (finished) items.push(['PLAY AGAIN', () => play(true)]);
+    else if (save && save.episode > 0) {
+      items.push([`CONTINUE: ${EPISODES[save.episode].n}`, () => play(false)]);
+      items.push(['RESTART STORY', () => this.confirmRestart()]);
+    } else items.push(['STORY MODE', () => play(false)]);
     items.push(['HOW TO PLAY', () => this.howToPlay()]);
     items.push(['SETTINGS', () => openPause(this, 'Title')]);
     items.push(['CREDITS', () => this.credits()]);
@@ -157,7 +163,7 @@ export class TitleScene extends Phaser.Scene {
 
   private confirmRestart() {
     const c = this.modal(900, 440, 'RESTART STORY?', [
-      ['RESTART', () => pageTurn(this, () => this.scene.start('Story', { fresh: true }))],
+      ['RESTART', () => pageTurn(this, () => this.scene.start('Story', { fresh: true, episode: undefined }))],
       ['CANCEL', () => undefined],
     ]);
     c.add(ptext(this, W / 2, H / 2 - 10, 'Start again from Episode One?\nYour current progress will be lost.', 36, '#d8d0e8').setOrigin(0.5).setAlign('center').setLineSpacing(10));

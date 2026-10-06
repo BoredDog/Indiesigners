@@ -20,7 +20,7 @@ const frames = async (n: number) => {
 
 const FOUND_A = "'case','figure','footprints','key','bell','records','photo','symbols','drawing','ivy','ivyMem','luke'";
 const FOUND_B = "'case','figure','footprints','key','bell','records','photo','symbols','ivy','ivyMem','luke','lukeMem','carried'";
-const CASES: { name: string; ep: number; advance: number; setup?: string; wait?: number; clicks?: [number, number][]; title?: 'menu' | 'howto' | 'restart' }[] = [
+const CASES: { name: string; ep: number; advance: number; setup?: string; wait?: number; clicks?: [number, number][]; settle?: number; hold?: string; title?: 'menu' | 'howto' | 'restart' }[] = [
   { name: 'title-menu', ep: -1, advance: 0, title: 'menu' },
   { name: 'title-howto', ep: -1, advance: 0, title: 'howto' },
   { name: 'title-restart', ep: -1, advance: 0, title: 'restart' },
@@ -28,6 +28,11 @@ const CASES: { name: string; ep: number; advance: number; setup?: string; wait?:
   { name: '01-arrival', ep: 0, advance: 1 },
   { name: '02-street', ep: 0, advance: 9, setup: 'const d=window.__story; d.teleport(d.a.footprints.x - 60, d.a.footprints.y);' },
   { name: '03-ivy-namecard', ep: 1, advance: 0, setup: 'const d=window.__story; d.teleport(d.a.school.x - 30, d.a.school.y);' },
+  // Echo sight: raise the lantern (hold F) by the footprints and the well.
+  { name: 'echo-off', ep: 1, advance: 0, setup: "const d=window.__story; d.teleport(d.a.footprints.x - 10, d.a.footprints.y); d.trace('footprints', d.a.footprints.x - 20, d.a.footprints.y, 'w_echo_steps');" },
+  { name: 'echo-on', ep: 1, advance: 0, hold: 'f', settle: 50, setup: "const d=window.__story; d.teleport(d.a.footprints.x - 10, d.a.footprints.y); d.trace('footprints', d.a.footprints.x - 20, d.a.footprints.y, 'w_echo_steps');" },
+  { name: 'echo-well', ep: 1, advance: 0, hold: 'f', settle: 50, setup: "const d=window.__story; d.teleport(d.a.well.x + 20, d.a.well.y); d.trace('wellmarks', d.a.well.x - 8, d.a.well.y - 20, 'w_runes');" },
+  { name: 'river-memory', ep: 2, advance: 0, wait: 60, setup: 'const d=window.__story; d.teleport(d.a.dock.x - 120, d.a.dock.y); d.world.setRiver(true, 1);' },
   { name: '04-dock', ep: 2, advance: 0, setup: 'const d=window.__story; d.teleport(d.a.dock.x - 40, d.a.dock.y);' },
   { name: '05-board', ep: 2, advance: 0, setup: `const d=window.__story; d.save.found.push(${FOUND_A}); d.save.flags.qKey=true; d.save.flags.sawLanternIvy=true; d.busyUi=false; d.openCasebook();` },
   { name: 'board-select', ep: 2, advance: 0, clicks: [[560, 300]], setup: `const d=window.__story; d.save.found.push(${FOUND_A}); d.save.flags.qKey=true; d.save.flags.sawLanternIvy=true; d.busyUi=false; d.openCasebook();` },
@@ -41,6 +46,12 @@ const CASES: { name: string; ep: number; advance: number; setup?: string; wait?:
   { name: 'ui-choice', ep: 1, advance: 0, setup: "void window.__story.choice(['Watch the figure on the bank.', 'Watch Luke.', 'Ask about the watch.', '…'], { timer: 60, prompt: 'Someone is walking back toward the village. Quick, where do you look?' });" },
   { name: 'ui-toasts', ep: 1, advance: 0, wait: 4, setup: "const d=window.__story; d.found('drawing'); d.remember('Ivy');" },
   { name: 'ui-say', ep: 1, advance: 0, setup: "void window.__story.say('Hanna', 'This isn’t the first time you’ve stood in my doorway. Ask yourself why you don’t remember the others.');" },
+  { name: 'ui-nia', ep: 1, advance: 0, setup: "void window.__story.say('Nia', 'Every year you come home, Eli, and I ring the bell so you’ll know the way.');" },
+  // The closing case-file comic (reduce motion on, so every beat is fully drawn when it's shot).
+  { name: 'comic-p1', ep: 1, advance: 2, wait: 40, settle: 40, setup: "const d=window.__story; d.save.flags.ending='light'; d.save.flags.pushedBoat=true; window.__echoes.gameState.setSetting('reduceMotion', true); window.__caseFileHold = true; void d.summary();" },
+  { name: 'comic-p2', ep: 1, advance: 7, wait: 40, settle: 40, setup: "const d=window.__story; d.save.flags.ending='light'; d.save.flags.pushedBoat=true; window.__echoes.gameState.setSetting('reduceMotion', true); window.__caseFileHold = true; void d.summary();" },
+  { name: 'comic-light', ep: 1, advance: 9, wait: 40, settle: 40, setup: "const d=window.__story; d.save.flags.ending='light'; d.save.flags.pushedBoat=true; window.__echoes.gameState.setSetting('reduceMotion', true); window.__caseFileHold = true; void d.summary();" },
+  { name: 'comic-dark', ep: 1, advance: 9, wait: 40, settle: 40, setup: "const d=window.__story; d.save.flags.ending='dark'; d.save.flags.pushedBoat=true; window.__echoes.gameState.setSetting('reduceMotion', true); window.__caseFileHold = true; void d.summary();" },
   { name: 'ui-qte', ep: 1, advance: 0, wait: 4, setup: "void window.__story.qte.mash('HELP LUKE PUSH THE BOAT', 'SPACE');" },
   { name: 'ui-summary', ep: 1, advance: 0, setup: "const d=window.__story; d.save.flags.ending='light'; d.save.flags.sawCarried=true; d.save.remembered.push('Ivy will remember that.'); void d['summary']();" },
   { name: 'toy-horse', ep: 1, advance: 0, setup: "const d=window.__story; d.teleport(d.a.footprints.x - 60, d.a.footprints.y); setTimeout(() => d.world.add.image(d.player.x + 22, d.player.y, 'w_horse').setOrigin(0.5, 1).setDepth(7).setFlipX(true), 300);" },
@@ -108,8 +119,11 @@ try {
       await page.keyboard.press('Space');
       await frames(30);
     }
+    if (c.hold) await page.keyboard.down(c.hold);
+    if (c.settle) await frames(c.settle);
     if (c.wait === undefined) await frames(20);
     await page.screenshot({ path: `${outDir}/${c.name}.png` });
+    if (c.hold) await page.keyboard.up(c.hold);
     console.log('shot', c.name);
   }
 } catch (e) {

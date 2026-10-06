@@ -3,7 +3,7 @@
 Echoes of Sorrow told as a **Terraria-style side-view world** (Gothicvania CC0 tiles and sprites, per-tile lighting, a little digging). It plays the way **Minecraft: Story Mode** plays: episodes, timed dialogue choices that characters remember, and quick-time events at action beats. The story follows `design/script_final` (Ivy → Luke → Hanna; the fourth person is withheld until the end).
 
 **Play:** `npm run dev`, then pick **STORY MODE** on the title screen, or go to `/?scene=Story`. Add `&episode=3` to jump (0-based) and `&fresh=1` to wipe the save.
-**Controls:** A/D move · W/Space jump · S drop through a plank · E interact · C evidence board · hold the left mouse button to dig · 1–4 pick a choice · Esc pause.
+**Controls:** A/D move · W/Space jump · S drop through a plank · E interact · **hold F or the right mouse button to raise the lantern** · C evidence board · hold the left mouse button to dig · 1–4 pick a choice · Esc pause.
 
 ## Playtest review: what was confusing, and the fix
 | # | Problem (as a player) | Fix |
@@ -17,6 +17,33 @@ Echoes of Sorrow told as a **Terraria-style side-view world** (Gothicvania CC0 t
 | 7 | Every memory opened with the same QTE | Ivy: timing (steady the lantern) · Luke: mash (push the boat) · Hanna: press (reach for her) · tunnel: press (run) · chamber: mash (hold the light) |
 | 8 | The final choice didn't say what it meant | "REMEMBER: let the clock move, the ghosts can rest, I carry it" vs "FORGET: use the lantern on myself. Again." |
 | 9 | Choices felt free of consequence | "Ivy will remember that." on key choices; Hanna recalls whether you asked her name; spotting the figure (Ivy, Luke) and hearing Hanna change Elias's finale lines. Each ghost's goodbye in the good ending depends on what you said to them, and on whether you helped Luke push the boat. The summary lists it all |
+
+## Echo sight: the lantern (`Director.trace`, `Director.updateSight`)
+The lantern is the detective tool, in the spirit of Hitman's instinct or Batman's detective mode.
+- **Hold F, or the right mouse button,** to raise it. Elias walks at half speed, the screen closes into a teal vignette, the light grows and the lantern hums.
+- **Echo traces** are hidden sprites that only appear inside the raised lantern's light. Once revealed they stay faintly visible, and the clue spot they gate gets its "!" mark.
+- **The instinct:** while the lantern is down, a faint teal ring pulses from it whenever a hidden trace is within about seven tiles.
+- **Where it's used:**
+  - Episode 1: the footprints (the first required clue, so it teaches the mechanic) and the symbols on the well.
+  - Episode 4: prints on the riverbank, a second chance at the CARRIED clue for players who watched Luke instead of the figure.
+- Add a trace with `d.trace(id, x, y, textureKey)`. Gate a spot with `when: () => d.revealed(id)`. Traces are cleared at the end of each episode.
+
+## The river
+The river is dry in the present, as in the team script: a shallow bed of cracked mud with the last boat lying on its side, shallow enough to walk through and climb out of. In Luke's memory the water fills back in and the boat floats (`StoryScene.setRiver`). When the memory ends, it drains away again.
+
+## Closing comic: the case file (`src/story/caseFile.ts`)
+Before the results screen, the case is retold as Elias's hard-boiled detective comic: "CASE FILE 217: VEYRA".
+- **Look:** three pages of ink-framed panels in near-greyscale halftone (the shared `ComicFxPipeline`), with typewritten captions in Special Elite, in his voice.
+- **Art:** the painted backgrounds from the art pack (`public/assets/story/comic/`), with game sprites and props baked into each panel.
+- **Pages:**
+  1. The letter, the bell and the stopped clocks.
+  2. The three witnesses, then the photograph and the lantern.
+  3. The ending. In the good ending, colour floods back into Veyra at 2:18. In the forget ending, ink swallows the panel and the case stays open.
+- Luke's caption changes if you helped push the boat.
+- Click, Space or Enter moves on a beat. SKIP jumps to the last page, which can't be skipped.
+
+## Quick-time events (`src/story/qte.ts`)
+Every QTE opens with a short READY → NOW! lead-in that ignores input, so it never catches a dialogue key press. Mashing clicks on every tap. The timing QTE shows HIT or MISS each round and pauses between rounds, and its gold target brightens while a press would count. Failure text matches the QTE: TOO SLOW, NOT ENOUGH or MISSED.
 
 ## Evidence board (`src/world/board.ts`)
 The board is laid out in columns: **People · What they remember · The village · Questions · The figure**.
@@ -83,7 +110,9 @@ What happened that night, stated plainly in Episode 6: Elias tried to draw Nia's
 | `tools/shots-story.ts` | Screenshot run (`npm run test:story`) |
 
 ## Known gaps
-- Ivy, Luke and Hanna have no walk animation (they're ghosts, so they float). Nia uses the villager woman sprite scaled to child height, tinted as a ghost, with a three-pixel white flower in her hair. She has no portrait yet.
+- Ivy, Luke and Hanna have no walk animation (they're ghosts, so they float). Nia uses the villager woman sprite scaled to child height, tinted as a ghost, with a three-pixel white flower in her hair. Her dialogue portrait (`pt_nia`) is drawn in code in the same crimson dress and bonnet; a hand-drawn `nia.png` like the other portraits would match them better.
 - Rubble at the well is the only place digging is required; you can dig other dirt underground freely.
 - Text speed and skip-scene settings are not built yet.
 - Memories: the camera drifts after whoever is moving (`d.watch(npc)`), and `await d.follow()` eases back to Elias rather than snapping. Bells are shown as expanding rings (`d.toll`), never sound words.
+- Saves are written at the end of each episode, so CONTINUE restarts the episode you were on, with all evidence kept. A finished story offers PLAY AGAIN.
+- Every start of the Story scene passes explicit data (`{ fresh, episode }`): Phaser reuses a scene's last start data when given none.

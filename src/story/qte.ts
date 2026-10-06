@@ -22,7 +22,11 @@ export class Qte {
     return comicSettings.reduceMotion ? 1.6 : 1;
   }
 
-  private frame(prompt: string, key: KeyName, how: string) {
+  /**
+   * Builds the overlay and plays a short lead-in, so a QTE never springs on you mid-dialogue:
+   * the prompt slides in and input is ignored until "NOW".
+   */
+  private async frame(prompt: string, key: KeyName, how: string) {
     const s = this.d.scene;
     const layer = s.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH);
     layer.add(s.add.rectangle(0, 0, W, H, 0x000000, 0.35).setOrigin(0).setInteractive());
@@ -39,8 +43,19 @@ export class Qte {
     const pulse = () => {
       cap.setScale(0.92);
       capText.setScale(0.92);
+      this.d.audio.play('click', 0.18, -200);
       s.time.delayedCall(70, () => (cap.setScale(1), capText.setScale(1)));
     };
+    // Lead-in: fade the overlay up, flash READY, then go.
+    layer.setAlpha(0);
+    s.tweens.add({ targets: layer, alpha: 1, duration: 180 });
+    const ready = label(s, W / 2, H * 0.44, 'READY', 80, { color: '#ffe08a', strokeThickness: 12 }).setOrigin(0.5);
+    layer.add(ready);
+    this.d.audio.tone('heartbeat');
+    await this.d.wait(750 * this.slow);
+    ready.setText('NOW!');
+    await this.d.wait(220);
+    ready.destroy();
     return { layer, g, pulse };
   }
 
@@ -60,9 +75,9 @@ export class Qte {
     };
   }
 
-  private async result(layer: Phaser.GameObjects.Container, ok: boolean) {
+  private async result(layer: Phaser.GameObjects.Container, ok: boolean, fail = 'TOO SLOW') {
     const s = this.d.scene;
-    const t = label(s, W / 2, H * 0.44, ok ? 'GOT IT' : 'TOO SLOW', 90, { color: ok ? '#7fe0d4' : '#e07070', strokeThickness: 14 }).setOrigin(0.5);
+    const t = label(s, W / 2, H * 0.44, ok ? 'GOT IT' : fail, 90, { color: ok ? '#7fe0d4' : '#e07070', strokeThickness: 14 }).setOrigin(0.5);
     layer.add(t);
     this.d.audio.tone(ok ? 'chime' : 'glitch');
     await this.d.wait(650);
@@ -71,7 +86,7 @@ export class Qte {
   }
 
   async press(prompt: string, key: KeyName = 'SPACE', ms = 1800): Promise<boolean> {
-    const { layer, g, pulse } = this.frame(prompt, key, 'Press before the ring closes');
+    const { layer, g, pulse } = await this.frame(prompt, key, 'Press before the ring closes');
     const total = ms * this.slow;
     let hit = false;
     const off = this.listen(key, () => ((hit = true), pulse()));
@@ -90,7 +105,7 @@ export class Qte {
   }
 
   async mash(prompt: string, key: KeyName = 'SPACE', ms = 3600, need = 14): Promise<boolean> {
-    const { layer, g, pulse } = this.frame(prompt, key, 'Tap fast to fill the bar');
+    const { layer, g, pulse } = await this.frame(prompt, key, 'Tap fast to fill the bar');
     const total = ms * this.slow;
     let fill = 0;
     const off = this.listen(key, () => {
@@ -111,38 +126,54 @@ export class Qte {
     } finally {
       off();
     }
-    return this.result(layer, fill >= 1);
+    return this.result(layer, fill >= 1, 'NOT ENOUGH');
   }
 
   async timing(prompt: string, key: KeyName = 'SPACE', rounds = 3, need = 2): Promise<boolean> {
-    const { layer, g, pulse } = this.frame(prompt, key, 'Press when the bright ring meets the faint one');
-    const period = 1300 * this.slow, target = 110, tol = 34;
-    let hits = 0, round = 0, t = 0, pressed = false;
-    const marks = this.d.scene.add.text(W / 2, H * 0.62 - 200, '', { fontFamily: `"${FONTS.sfx}"`, fontSize: '48px', color: '#e8fbff', resolution: TEXT_RESOLUTION }).setOrigin(0.5);
+    const { layer, g, pulse } = await this.frame(prompt, key, `Press as the bright ring crosses the gold one. ${need} of ${rounds} to pass.`);
+    const s = this.d.scene;
+    // The gold target sits outside the key cap so the moving ring is never hidden behind it.
+    const period = 1500 * this.slow, target = 190, tol = 30, cx = W / 2, cy = H * 0.62;
+    let hits = 0, round = 0, t = 0, pressed = false, pause = 0;
+    const marks = s.add.text(W / 2, cy - 260, '○'.repeat(rounds), { fontFamily: `"${FONTS.sfx}"`, fontSize: '48px', color: '#e8fbff', resolution: TEXT_RESOLUTION }).setOrigin(0.5);
     layer.add(marks);
-    const radius = () => 420 * (1 - t / period);
+    const radius = () => 440 * (1 - t / period);
+    /** Each round ends with a word on the ring and a short breath before the next. */
+    const endRound = (hit: boolean) => {
+      if (hit) hits++;
+      round++;
+      marks.setText('●'.repeat(hits) + '✕'.repeat(round - hits) + '○'.repeat(rounds - round));
+      const w = label(s, cx, cy - target - 40, hit ? 'HIT' : 'MISS', 52, { color: hit ? '#7fe0d4' : '#e07070', strokeThickness: 8 }).setOrigin(0.5);
+      layer.add(w);
+      s.tweens.add({ targets: w, alpha: 0, y: w.y - 30, duration: 600, onComplete: () => w.destroy() });
+      if (!hit) this.d.audio.play('click', 0.25, -1200);
+      pause = 420;
+    };
     const off = this.listen(key, () => {
-      if (pressed) return;
+      if (pressed || pause > 0) return;
       pressed = true;
       pulse();
-      if (Math.abs(radius() - target) <= tol) hits++;
+      endRound(Math.abs(radius() - target) <= tol);
     });
     try {
       await this.d.until(() => {
-        t += this.d.lastDt;
-        if (t >= period || pressed) {
-          round++;
-          t = 0;
-          pressed = false;
-          marks.setText('●'.repeat(hits) + '○'.repeat(round - hits));
+        if (pause > 0) {
+          pause -= this.d.lastDt;
+          if (pause <= 0) (t = 0, (pressed = false));
+          g.clear().lineStyle(10, 0xffe08a, 0.8).strokeCircle(cx, cy, target);
+          return round >= rounds && pause <= 0;
         }
-        g.clear().lineStyle(8, 0xe8fbff, 0.35).strokeCircle(W / 2, H * 0.62, target);
-        g.lineStyle(10, 0x7fe0d4, 0.95).strokeCircle(W / 2, H * 0.62, Math.max(4, radius()));
-        return round >= rounds;
+        t += this.d.lastDt;
+        if (t >= period) endRound(false);
+        const inside = Math.abs(radius() - target) <= tol;
+        // The gold ring brightens while a press would count, which teaches the timing.
+        g.clear().lineStyle(inside ? 14 : 10, 0xffe08a, inside ? 1 : 0.6).strokeCircle(cx, cy, target);
+        g.lineStyle(10, 0x7fe0d4, 0.95).strokeCircle(cx, cy, Math.max(4, radius()));
+        return false;
       });
     } finally {
       off();
     }
-    return this.result(layer, hits >= need);
+    return this.result(layer, hits >= need, 'MISSED');
   }
 }

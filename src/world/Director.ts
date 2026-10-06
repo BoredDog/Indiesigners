@@ -11,6 +11,7 @@ import { StoryAudio, type SoundKey } from '../story/audio';
 import { Qte } from '../story/qte';
 import { comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
+import { playCaseFile } from '../story/caseFile';
 import { PANEL, panel, pbutton, ptext } from './ui';
 import { NODES, openBoard } from './board';
 
@@ -37,7 +38,7 @@ export interface Episode {
 }
 
 const PORTRAIT: Record<string, string> = {
-  Elias: 'pt_elias_hatman', 'Young Elias': 'pt_elias_hatman', Ivy: 'pt_ivy', Luke: 'pt_luke', Hanna: 'pt_hanna', 'The woman': 'pt_hanna',
+  Elias: 'pt_elias_hatman', 'Young Elias': 'pt_elias_hatman', Ivy: 'pt_ivy', Luke: 'pt_luke', Hanna: 'pt_hanna', 'The woman': 'pt_hanna', Nia: 'pt_nia',
 };
 
 /** UI lives in its own unzoomed scene, above the zoomed pixel world. */
@@ -60,7 +61,15 @@ export class Director {
   alive = true;
   autoWalk?: number;
   busyUi = false;
-  pointerOnUi = false;
+  /**
+   * True while the mouse is over any clickable UI (buttons, the prompt, the board). Checked
+   * live: a hover flag can get stuck when a button is covered before its pointerout fires,
+   * which used to switch digging off for good.
+   */
+  get pointerOnUi() {
+    const ui = this.scene;
+    return this.boardOpen || ui.input.hitTestPointer(ui.input.activePointer).some((o) => (o as unknown as { visible?: boolean }).visible !== false);
+  }
   private onSave: (s: StorySave) => void;
   private waiters: (() => boolean)[] = [];
   private spots: Spot[] = [];
@@ -74,6 +83,15 @@ export class Director {
   private marks: Phaser.GameObjects.Text[] = [];
   private boardOpen = false;
   private closeBoard?: () => void;
+  /**
+   * Echo sight: hold F (or the right mouse button) to raise the lantern. Hidden traces near
+   * Elias surface in its light and unlock clues that are otherwise invisible.
+   */
+  sight = 0; // 0..1, eased toward 1 while the lantern is raised
+  traces: { id: string; img: Phaser.GameObjects.Image; revealed: boolean; onReveal?: () => void }[] = [];
+  private sightFx!: Phaser.GameObjects.Image;
+  private sightHint!: Phaser.GameObjects.Text;
+  private pingAt = 0;
 
   constructor(world: StoryScene, ui: Phaser.Scene, save: StorySave, onSave: (s: StorySave) => void) {
     this.world = world;
@@ -89,14 +107,25 @@ export class Director {
     this.prompt = ui.add.container(0, 0, [bg, this.promptText]).setVisible(false).setDepth(10);
     this.prompt.setData('bg', bg);
     this.objectiveBox = ui.add.container(30, 30).setDepth(10);
+    // Echo sight overlay: a teal vignette that closes in while the lantern is raised.
+    if (!ui.textures.exists('w_sight')) {
+      const t = ui.textures.createCanvas('w_sight', 256, 144)!;
+      const c = t.getContext(), g = c.createRadialGradient(128, 72, 30, 128, 72, 150);
+      g.addColorStop(0, 'rgba(127,224,212,0)');
+      g.addColorStop(0.6, 'rgba(20,60,70,0.25)');
+      g.addColorStop(1, 'rgba(4,14,20,0.85)');
+      c.fillStyle = g;
+      c.fillRect(0, 0, 256, 144);
+      t.refresh();
+    }
+    this.sightFx = ui.add.image(W / 2, H / 2, 'w_sight').setDisplaySize(W, H).setAlpha(0).setDepth(1);
+    this.sightHint = ptext(ui, 40, H - 36, 'HOLD [F] OR RIGHT MOUSE  Raise the lantern', 28, '#7fe0d4').setOrigin(0, 1).setDepth(9).setAlpha(0.85).setVisible(false);
 
-    const cb = pbutton(ui, W - 190, 50, 320, 64, 'EVIDENCE BOARD [C]', () => this.openCasebook(), 32).setDepth(10);
-    cb.on('pointerover', () => (this.pointerOnUi = true)).on('pointerout', () => (this.pointerOnUi = false));
+    pbutton(ui, W - 190, 50, 320, 64, 'EVIDENCE BOARD [C]', () => this.openCasebook(), 32).setDepth(10);
     this.badge = ptext(ui, W - 40, 22, '', 30, '#ffe08a').setOrigin(1, 0).setDepth(11);
     ui.input.keyboard?.on('keydown-C', () => (this.boardOpen ? this.closeBoard?.() : this.openCasebook()));
     ui.input.keyboard?.on('keydown-E', () => this.tryInteract());
     this.prompt.setSize(300, 60).setInteractive({ useHandCursor: true }).on('pointerup', () => this.tryInteract());
-    this.prompt.on('pointerover', () => (this.pointerOnUi = true)).on('pointerout', () => (this.pointerOnUi = false));
     world.events.on(Phaser.Scenes.Events.PAUSE, () => ui.scene.pause());
     world.events.on(Phaser.Scenes.Events.RESUME, () => ui.scene.resume());
   }
@@ -110,6 +139,7 @@ export class Director {
         await this.episodeCard(ep.n, ep.title);
         await ep.run(this);
         this.memory(false);
+        this.clearTraces();
         this.save.episode++;
         this.onSave(this.save);
       }
@@ -122,6 +152,7 @@ export class Director {
   update(dt: number) {
     this.lastDt = dt;
     this.waiters = this.waiters.filter((w) => !w());
+    this.updateSight(dt);
     // Interaction prompt over the nearest usable spot.
     const s = this.nearestSpot();
     if (s && this.exploring && !this.exploring.busy && !this.busyUi) {
@@ -141,6 +172,63 @@ export class Director {
       const p = this.toScreen(sp.x, sp.y - 70);
       m.setPosition(p.x, p.y + Math.sin(this.world.time.now / 250 + i) * 6).setVisible(p.x > 0 && p.x < W && p.y > 0 && p.y < H);
     });
+  }
+
+  /** Places a hidden echo trace: invisible until the raised lantern's light reaches it. */
+  trace(id: string, x: number, y: number, key: string, opts: { scale?: number; angle?: number; onReveal?: () => void } = {}) {
+    const img = this.world.add.image(x, y, key).setOrigin(0.5, 1).setDepth(21.5).setScale(opts.scale ?? 1).setAngle(opts.angle ?? 0)
+      .setTint(0x7fe0d4).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0);
+    this.traces.push({ id, img, revealed: false, onReveal: opts.onReveal });
+    return img;
+  }
+  revealed(id: string) {
+    return this.traces.some((t) => t.id === id && t.revealed);
+  }
+  clearTraces() {
+    this.traces.forEach((t) => t.img.destroy());
+    this.traces = [];
+  }
+
+  private updateSight(dt: number) {
+    const free = !!this.exploring && !this.exploring.busy && !this.busyUi && !this.boardOpen && !this.world.locked;
+    const raised = free && this.world.lanternRaised;
+    this.sight = Phaser.Math.Clamp(this.sight + (raised ? dt / 260 : -dt / 200), 0, 1);
+    this.world.lanternBoost = this.sight * 0.7;
+    this.sightFx.setAlpha(this.sight * 0.9);
+    this.sightHint.setVisible(free);
+    if (raised && this.sight > 0.5) this.audio.hum(true);
+    else this.audio.hum(false);
+    const px = this.player.x, py = this.player.y - 20, reach = 9 * 16 * this.sight;
+    let near = false;
+    for (const t of this.traces) {
+      const dist = Phaser.Math.Distance.Between(px, py, t.img.x, t.img.y - t.img.displayHeight / 2);
+      if (!t.revealed && dist < 7 * 16) near = true;
+      const lit = dist < reach;
+      if (lit && !t.revealed && this.sight > 0.8) {
+        t.revealed = true;
+        this.audio.tone('chime');
+        // A burst of light where it surfaced, so the eye goes straight to it.
+        const cx = t.img.x, cy = t.img.y - t.img.displayHeight / 2;
+        for (let i = 0; i < 2; i++) {
+          const g = this.world.add.graphics().setDepth(21.6).setBlendMode(Phaser.BlendModes.ADD);
+          const o = { r: 2, a: 0.9 };
+          this.world.tweens.add({ targets: o, r: 26 + i * 14, a: 0, delay: i * 160, duration: 700, ease: 'Sine.Out', onUpdate: () => g.clear().lineStyle(1.5, 0x7fe0d4, o.a).strokeCircle(cx, cy, o.r), onComplete: () => g.destroy() });
+        }
+        t.onReveal?.();
+      }
+      // Lit traces shimmer; revealed ones stay faintly visible so you can find them again.
+      const shimmer = 0.8 + 0.2 * Math.sin(this.world.time.now / 180);
+      const want = lit ? 0.95 * shimmer : t.revealed ? 0.3 + 0.4 * this.sight : 0;
+      t.img.setAlpha(t.img.alpha + (want - t.img.alpha) * Math.min(1, dt / 120));
+    }
+    // The instinct: when something hidden is close and the lantern is down, it stirs.
+    if (near && free && this.sight < 0.1 && this.world.time.now > this.pingAt) {
+      this.pingAt = this.world.time.now + 2600;
+      const lp = this.world.lanternPos();
+      const g = this.world.add.graphics().setDepth(21).setBlendMode(Phaser.BlendModes.ADD);
+      const o = { r: 4, a: 0.5 };
+      this.world.tweens.add({ targets: o, r: 34, a: 0, duration: 900, ease: 'Sine.Out', onUpdate: () => g.clear().lineStyle(1.5, 0x7fe0d4, o.a).strokeCircle(lp.x, lp.y, o.r), onComplete: () => g.destroy() });
+    }
   }
 
   until(test: () => boolean): Promise<void> {
@@ -273,8 +361,10 @@ export class Director {
    * A bell toll you can see: pale rings swell out from (x, y) in the world, and the camera
    * shudders once. Used instead of a comic sound word.
    */
-  async toll(x: number, y: number, rings = 3) {
+  /** The bell strikes: the sound and the rings start on the same frame. */
+  async toll(x: number, y: number, rings = 3, sound = true) {
     const w = this.world;
+    if (sound) this.audio.play('bell', 0.7, -900);
     w.cameras.main.shake(260, 0.0025);
     for (let i = 0; i < rings; i++) {
       const g = w.add.graphics().setDepth(21).setBlendMode(Phaser.BlendModes.ADD);
@@ -616,6 +706,8 @@ export class Director {
   private async summary() {
     const ui = this.scene;
     this.objective(null);
+    // The case, retold as Elias's detective comic, before the results screen.
+    await playCaseFile(ui, { ending: this.save.flags.ending === 'light' ? 'light' : 'dark', flags: this.save.flags });
     const c = ui.add.container(0, 0).setDepth(60);
     c.add(ui.add.rectangle(0, 0, W, H, 0x05040a, 0.96).setOrigin(0));
     c.add(label(ui, W / 2, 130, 'THE END', 90).setOrigin(0.5));
@@ -638,7 +730,7 @@ export class Director {
       `Evidence found: ${this.save.found.length}`,
     ].join('\n'));
     c.add(ptext(ui, W / 2, top + ch + 70, 'Some memories could have gone another way.', 38, '#d8d0e8').setOrigin(0.5));
-    c.add(pbutton(ui, W / 2 - 200, H - 150, 360, 80, 'PLAY AGAIN', () => this.world.scene.restart({ fresh: true })));
-    c.add(pbutton(ui, W / 2 + 200, H - 150, 360, 80, 'TITLE SCREEN', () => this.world.scene.start('Title')));
+    c.add(pbutton(ui, W / 2 - 200, H - 150, 360, 80, 'PLAY AGAIN', () => this.world.scene.restart({ fresh: true, episode: undefined })));
+    c.add(pbutton(ui, W / 2 + 200, H - 150, 360, 80, 'TITLE SCREEN', () => this.world.scene.start('Title', {})));
   }
 }

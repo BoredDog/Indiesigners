@@ -33,9 +33,9 @@ export const EPISODES: Episode[] = [
       await d.say('Elias', 'Ten years ago, at 2:17 in the morning, every person in this village disappeared. The stories say a few of them stayed.');
       await d.narr('Ten years ago I was found on a country road with no memory and this lantern in my hand. It has been my living ever since. In its light I can see what a place remembers.');
       d.found('case');
-      d.audio.bell(2);
       await d.pan(A.clock.x, A.clock.y + 30, 1600);
       await d.toll(A.clock.x, A.clock.y);
+      await d.wait(500);
       await d.toll(A.clock.x, A.clock.y);
       await d.narr('They say the clock tower hasn’t rung in ten years. It rang the moment I set foot in the square.');
       // Nia's toy horse rolls out of the dark and stops at his boots. (Pays off in the finale.)
@@ -73,6 +73,7 @@ export const EPISODES: Episode[] = [
       if (c === 1) await d.narr('The walls gave my voice back to me, and nothing else.');
       if (c === 2) await d.narr('I didn’t call again. I had the feeling the village was already listening.');
       await d.say('Elias', 'Start with what’s real. Look around. Pin everything to the board.');
+      await d.narr('Held high, the lantern shows what a place remembers: a footprint, a mark, a hand on a door. Things nobody else can see. When something hidden is close, the flame stirs.');
 
       // --- free investigation: 4 required, 2 optional ---
       const seen = new Set<string>();
@@ -80,7 +81,7 @@ export const EPISODES: Episode[] = [
       // Spoiler-free: only a count. If the player goes ~2.5 min without a new clue, one vague nudge
       // for the next unchecked thing — never what it is.
       const NUDGE: Record<string, string> = {
-        footprints: 'The street itself may have something to say.',
+        footprints: 'The street itself may have something to say. Raise the lantern on it.',
         key: 'Look closely where the trail runs out.',
         bell: 'Something above the rooftops deserves a closer look.',
         house: 'Someone was watching from a window earlier.',
@@ -88,7 +89,7 @@ export const EPISODES: Episode[] = [
       let lastFind = d.world.time.now;
       const progress = () => {
         lastFind = d.world.time.now;
-        d.objective(`Investigate Veyra (${need.filter((k) => seen.has(k)).length}/4). Look for the ! marks.`);
+        d.objective(`Investigate Veyra (${need.filter((k) => seen.has(k)).length}/4). Check the ! marks, and raise the lantern where the flame stirs.`);
       };
       const nudger = d.world.time.addEvent({
         delay: 5000, loop: true,
@@ -101,15 +102,17 @@ export const EPISODES: Episode[] = [
         },
       });
       progress();
-      const steps = d.world.add.image(A.footprints.x, A.footprints.y - 1, 'w_steps').setOrigin(0.5, 1).setDepth(1);
+      // The footprints are an echo: only the raised lantern shows them.
+      d.trace('footprints', A.footprints.x - 20, A.footprints.y, 'w_echo_steps');
+      d.trace('wellmarks', A.well.x - 8, A.well.y - 20, 'w_runes');
       const key = d.world.add.image(A.footprints.x + 18, A.footprints.y - 1, 'w_key').setOrigin(0.5, 1).setDepth(1).setVisible(false);
       await d.explore(
         [
           {
-            id: 'footprints', x: A.footprints.x, y: A.footprints.y, label: 'Footprints', when: () => !seen.has('footprints'),
+            id: 'footprints', x: A.footprints.x, y: A.footprints.y, label: 'Footprints', when: () => d.revealed('footprints') && !seen.has('footprints'),
             run: async () => {
               seen.add('footprints');
-              await d.narr('Footprints in the dried mud, several sets, all heading for the clock tower. Each trail stops mid-stride, as though the walker had been lifted out of the world.');
+              await d.narr('Footprints, glowing faintly in the lantern light. Several sets, all heading for the clock tower. Each trail stops mid-stride, as though the walker had been lifted out of the world.');
               d.found('footprints');
               key.setVisible(true);
               progress();
@@ -120,17 +123,16 @@ export const EPISODES: Episode[] = [
             run: async () => {
               seen.add('key');
               key.destroy();
-              steps.setAlpha(0.4);
               await d.narr('Where the footprints end, a small iron key. Dried blood on the bow. Whoever dropped it was hurt.');
               d.found('key');
               progress();
             },
           },
           {
-            id: 'well', x: A.well.x, y: A.well.y, label: 'The old well', when: () => !seen.has('well'),
+            id: 'well', x: A.well.x, y: A.well.y, label: 'The old well', when: () => d.revealed('wellmarks') && !seen.has('well'),
             run: async () => {
               seen.add('well');
-              await d.narr('Symbols cut into the stones of the well, worn soft by rain. Under the moss, a lock. A very small one.');
+              await d.narr('In the lantern light, symbols surface on the stones of the well, as if someone had just finished carving them. Under the moss, a lock. A very small one.');
               d.found('symbols');
             },
           },
@@ -233,7 +235,6 @@ export const EPISODES: Episode[] = [
       crowd.forEach((n, i) => void d.npcWalk(n, A.square.x + i * 24, 110 + i * 15));
       d.watch(crowd[1]);
       await d.narr('Footsteps outside. People running, all of them toward the square.');
-      d.audio.bell(1);
       await d.toll(A.clock.x, A.clock.y, 2);
       await d.say('Ivy', 'Someone rang the bell. …I don’t know who.');
       const look = await d.choice(['Watch the crowd.', 'Watch the light in the street.'], { timer: 6, silent: 0, prompt: 'Ivy turns to the window. Quick, where do you look?' });
@@ -265,6 +266,7 @@ export const EPISODES: Episode[] = [
       d.objective('The lantern pulls east. Go to the river dock.');
       await d.explore([{ id: 'dock', x: A.dock.x - 20, y: A.dock.y, label: 'The dock', run: async () => 'done' }]);
       d.objective(null);
+      await d.narr('The river is gone. Where it ran there is only cracked mud, and a boat lying on its side. No drought leaves a riverbed this clean.');
       const luke = d.npc('luke', A.dock.x + 16, A.dock.y, { ghost: true, tint: GHOST, flip: true });
       luke.sprite.setAlpha(0);
       await d.fadeNpc(luke, 0.85);
@@ -278,6 +280,7 @@ export const EPISODES: Episode[] = [
       await d.say('Luke', 'Someone helped me push the last boat out that night. I never thanked him. Never saw his face.');
       await d.narr('The lantern flares on its own. It wants this one.');
       d.memory(true);
+      d.world.setRiver(true, 2200);
       await d.banner('LUKE’S MEMORY, 2:05 AM', '#bfefff', 1300);
       await d.narr('Luke is alone on the dock, mending a net by lamplight. The village is asleep.');
       const pick = await d.choice(['Watch the figure on the bank.', 'Watch Luke.'], { timer: 6, silent: 1, prompt: 'Someone is walking along the bank toward the village. Quick, where do you look?' });
@@ -293,7 +296,6 @@ export const EPISODES: Episode[] = [
       } else {
         await d.narr('Luke ties off a knot, and yawns, and doesn’t look up.');
       }
-      d.audio.bell(1);
       await d.toll(A.clock.x, A.clock.y, 2);
       await d.narr('2:17. The bell tolls across the water. Then the river changes. It begins to run the wrong way, with a sound like a long breath drawn in.');
       await d.narr('Luke doesn’t wait to understand it. He starts getting people into the boats.');
@@ -316,6 +318,8 @@ export const EPISODES: Episode[] = [
       await d.follow();
       await d.glitch(2);
       d.memory(false);
+      d.world.setRiver(false, 2600);
+      await d.narr('The water drains out of the memory, and the riverbed is bare again.');
       d.found('lukeMem');
       await d.say('Elias', 'Every clock in Veyra says 2:17. Luke’s watch says 2:31. Something doesn’t add up.');
       await d.deduce('qTime');
@@ -330,7 +334,19 @@ export const EPISODES: Episode[] = [
     run: async (d) => {
       const A = d.a;
       d.objective('Go back to the old house.');
-      await d.explore([{ id: 'house', x: A.house.x + 30, y: A.house.y, label: 'Old house', run: async () => 'done' }]);
+      // If you looked at Luke instead of the figure, the riverbank still remembers the figure's prints.
+      if (!d.save.found.includes('carried')) d.trace('riverprints', A.river.x - 40, A.river.y, 'w_echo_prints', { angle: 0 });
+      await d.explore([
+        { id: 'house', x: A.house.x + 30, y: A.house.y, label: 'Old house', run: async () => 'done' },
+        {
+          id: 'riverprints', x: A.river.x - 40, y: A.river.y, label: 'Prints in the mud', when: () => d.revealed('riverprints') && !d.save.found.includes('carried'),
+          run: async () => {
+            await d.narr('One set of prints on the bank, pressed deep on one side, the way a man walks when he is carrying something in his arms. They lead toward the village. Toward the well.');
+            d.flag('sawCarried');
+            d.found('carried');
+          },
+        },
+      ]);
       d.objective(null);
       await d.narr('In the records, a staff register with a photograph pinned to the page. The woman from the doorway.');
       const hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
@@ -529,7 +545,7 @@ export const EPISODES: Episode[] = [
         await d.narr('The clock tower. For ten years it has held the minute I lit the lantern.');
         d.audio.tone('chime');
         d.world.props.get('clock')?.setTexture('w_clock218');
-        await d.toll(A.clock.x, A.clock.y, 1);
+        await d.toll(A.clock.x, A.clock.y, 1, false);
         await d.narr('The minute hand shivers, and moves. 2:18. The first minute Veyra has had in ten years.');
         await d.follow();
         d.world.dawn(7000);

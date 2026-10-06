@@ -57,18 +57,28 @@ export function generateWorld(): World {
   // Surface: cemetery grass, town cobbles, grass riverbanks.
   for (let x = 0; x < WT; x++) {
     const town = x >= 26 && x < 150;
-    fg[SURF][x] = town ? (x % 2 ? T.COBBLE : T.COBBLE2) : [T.GRASS, T.GRASS2, T.GRASS3][Math.floor(rnd() * 3)];
+    const grass = [T.GRASS, T.GRASS2, T.GRASS3][Math.floor(rnd() * 3)];
+    fg[SURF][x] = town ? (x % 2 ? T.COBBLE : T.COBBLE2) : grass;
+    // The cemetery path turns into the street over a dozen tiles: grass, then the odd stone,
+    // then mossy cobbles, then clean paving.
+    if (x >= 20 && x < 34) {
+      const t = (x - 20) / 14, r = rnd();
+      fg[SURF][x] = r > t + 0.25 ? grass : r > t - 0.3 ? T.COBBLE_MOSS : x % 2 ? T.COBBLE : T.COBBLE2;
+    }
   }
   // World edges: tall stone walls.
   for (let y = 0; y < HT; y++) for (const x of [0, 1, 2, WT - 3, WT - 2, WT - 1]) set(x, y, T.STONE2);
 
   // ---- river + dock ----
+  // In the present the river is dry: a shallow bed of cracked mud you can walk across and climb
+  // out of. The water only comes back inside Luke's memory (StoryScene.setRiver).
   for (let x = X.riverL; x <= X.riverR; x++) {
-    const d = Math.min(x - X.riverL, X.riverR - x, 5);
+    const d = Math.min(x - X.riverL, X.riverR - x, 3);
     for (let y = SURF; y < SURF + d; y++) {
       set(x, y, T.EMPTY);
       water[y][x] = true;
     }
+    if (d > 0) set(x, SURF + d, T.MUD);
   }
   for (let x = X.dockStart; x <= X.dockEnd; x++) {
     set(x, SURF - 1, T.PLANK);
@@ -76,7 +86,8 @@ export function generateWorld(): World {
   }
   anchors.dock = { x: px(X.dockEnd - 1), y: floorY(SURF - 1) };
   anchors.river = { x: px(X.riverL - 3), y: floorY(SURF) };
-  props.push({ key: 'w_boat', x: px(X.dockEnd + 3), y: floorY(SURF) + 6, id: 'boat', depth: 4 });
+  // The last boat, stranded on the riverbed (it floats again in Luke's memory).
+  props.push({ key: 'w_boat', x: px(X.dockEnd + 3), y: floorY(SURF + 3) + 2, id: 'boat', depth: 4 });
   fog.push({ x: px(X.riverL), y: floorY(SURF) - 50, w: px(X.riverR - X.riverL), h: 60 });
 
   // ---- clock tower (built from blocks; climb the plank platforms inside) ----
@@ -121,7 +132,7 @@ export function generateWorld(): World {
   fog.push({ x: towerMid - 160, y: floorY(top + 1), w: 320, h: 60, density: 1.3 });
 
   // ---- houses, well, lamps, clutter ----
-  props.push({ key: 'gv_cem_graveyard', x: px(X.cemetery), y: floorY(SURF), depth: -5 });
+  props.push({ key: 'w_cem_graveyard', x: px(X.cemetery), y: floorY(SURF), depth: -5 });
   fog.push({ x: px(3), y: floorY(SURF) - 70, w: px(26), h: 70 });
   props.push({ key: 'gv_house-a', x: px(X.school), y: floorY(SURF), id: 'school', depth: -2 });
   props.push({ key: 'gv_house-c', x: px(X.house), y: floorY(SURF), id: 'house', depth: -2 });
