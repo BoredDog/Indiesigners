@@ -1,7 +1,7 @@
 name: CI
 
 # Every PR: install + typecheck + build (required to merge into main).
-# Every push to main: same build, then deploy dist/ to GitHub Pages.
+# Every push to main: same build, then deploy dist/ to GitHub Pages and push it to itch.io.
 on:
   pull_request:
   push:
@@ -31,6 +31,11 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+      - if: github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: dist
 
   deploy:
     if: github.event_name == 'push'
@@ -42,3 +47,23 @@ jobs:
     steps:
       - id: deploy
         uses: actions/deploy-pages@v4
+
+  # Uploads the same build to itch.io with butler. The itch page must already exist (create it on
+  # itch.io first); BUTLER_API_KEY is a repo secret.
+  itch:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      ITCH_TARGET: gravity006/echoes-of-sorrow:html5
+      BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+          path: dist
+      - run: |
+          curl -sSL -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d butler && chmod +x butler/butler
+          butler/butler -V
+          butler/butler push dist "$ITCH_TARGET" --userversion "${GITHUB_SHA::7}"
