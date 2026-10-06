@@ -199,6 +199,40 @@ export class StoryAudio {
   }
 
   /** Short synthesized one-shots. 'whisper' sits under a ghost's line; 'sting' is the dark ending. */
+  /**
+   * Distant thunder (title screen): a crack of bright noise for nearer strikes, then a low rumble
+   * whose low-pass slides down as it rolls away, over a sub-bass thump. `near` is 0 (far) to 1.
+   */
+  thunder(near = 0.5) {
+    const ctx = this.ctx, dest = this.dest;
+    if (!ctx || !dest) return;
+    const t = ctx.currentTime, len = 4.5;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * len, ctx.sampleRate), ch = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < ch.length; i++) { last = (last + 0.06 * (Math.random() * 2 - 1)) / 1.06; ch[i] = last * 6 + (Math.random() * 2 - 1) * 0.15; }
+    const src = ctx.createBufferSource(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    src.buffer = buf;
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(500 + 900 * near, t);
+    lp.frequency.exponentialRampToValueAtTime(70, t + len);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.35 + 0.35 * near, t + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    src.connect(lp).connect(g).connect(dest);
+    src.start(t);
+    // The thump.
+    const o = ctx.createOscillator(), og = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(48, t);
+    o.frequency.exponentialRampToValueAtTime(28, t + 1.6);
+    og.gain.setValueAtTime(0.0001, t);
+    og.gain.exponentialRampToValueAtTime(0.25 + 0.25 * near, t + 0.05);
+    og.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+    o.connect(og).connect(dest);
+    o.start(t);
+    o.stop(t + 2);
+  }
+
   tone(kind: 'heartbeat' | 'glitch' | 'whoom' | 'chime' | 'drone' | 'whisper' | 'sting') {
     const ctx = this.ctx, dest = this.dest;
     if (!ctx || !dest) return;

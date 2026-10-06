@@ -14,6 +14,10 @@ import { panel, pbutton, ptext } from '../world/ui';
 export class TitleScene extends Phaser.Scene {
   private menu?: Phaser.GameObjects.Container;
   private overlay?: Phaser.GameObjects.Container;
+  private sky: { img: Phaser.GameObjects.Image; tint: number }[] = [];
+  private flashRect?: Phaser.GameObjects.Rectangle;
+  private dim?: Phaser.GameObjects.Rectangle;
+  private audio?: StoryAudio;
 
   constructor() {
     super('Title');
@@ -30,6 +34,7 @@ export class TitleScene extends Phaser.Scene {
     this.backdropLayers();
     this.rain();
     const audio = new StoryAudio(this);
+    this.audio = audio;
     audio.ambience('rain');
     audio.music('title');
 
@@ -44,6 +49,7 @@ export class TitleScene extends Phaser.Scene {
       this.input.keyboard?.off('keydown', start);
       cta.destroy();
       this.showMenu();
+      this.lightning(); // only after the first click or key, when audio is allowed
     };
     this.input.on('pointerup', start);
     this.input.keyboard?.on('keydown', start);
@@ -58,15 +64,49 @@ export class TitleScene extends Phaser.Scene {
       const img = this.add.image(W / 2, bottom, key).setOrigin(0.5, 1).setTint(tint);
       img.setScale((W + 2 * sway + 8) / img.width);
       if (!comicSettings.reduceMotion) this.tweens.add({ targets: img, x: W / 2 + sway, duration: 14000, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      this.sky.push({ img, tint });
       return img;
     };
+    this.sky = [];
     layer('gv_town_bg', 0x6a6aa0, H + 260, 24);
     layer('gv_town_mid', 0x7a76a8, H + 330, 48);
-    this.add.rectangle(0, 0, W, H, 0x05040a, 0.5).setOrigin(0);
+    this.dim = this.add.rectangle(0, 0, W, H, 0x05040a, 0.5).setOrigin(0);
     // Fade the sky and the ground into darkness so the menu reads cleanly.
     const g = this.add.graphics();
     g.fillGradientStyle(0x07060f, 0x07060f, 0x07060f, 0x07060f, 1, 1, 0, 0).fillRect(0, 0, W, 300);
     g.fillGradientStyle(0x07060f, 0x07060f, 0x07060f, 0x07060f, 0, 0, 1, 1).fillRect(0, H - 260, W, 260);
+    // Lightning flash: over the backdrop, under the title text (added later), so the text stays readable.
+    this.flashRect = this.add.rectangle(0, 0, W, H, 0xdfe6ff, 1).setOrigin(0).setAlpha(0);
+  }
+
+  /**
+   * Every 8–20 s: a quick double flash that lights up the town, then thunder 0.3–1.5 s later as it
+   * rolls in from far away. Reduce Flashing: no flash, only a slight dim, still the rumble. Reduce
+   * Motion: no shake.
+   */
+  private lightning() {
+    const strike = () => {
+      const near = Math.random();
+      if (comicSettings.reduceFlashing) {
+        if (this.dim) this.tweens.add({ targets: this.dim, alpha: 0.62, duration: 120, yoyo: true, hold: 200 });
+      } else {
+        const f = this.flashRect!;
+        this.tweens.chain({ targets: f, tweens: [
+          { alpha: 0.55, duration: 40 }, { alpha: 0.1, duration: 90 }, { alpha: 0.4, duration: 40 }, { alpha: 0, duration: 650, ease: 'Quad.Out' },
+        ] });
+        // The town lights up for a moment, then sinks back into the night.
+        for (const s of this.sky) {
+          s.img.setTint(0xe8ecff);
+          this.time.delayedCall(260, () => s.img.setTint(s.tint));
+        }
+      }
+      this.time.delayedCall(300 + (1 - near) * 1200, () => {
+        this.audio?.thunder(near);
+        if (!comicSettings.reduceMotion && near > 0.6) this.cameras.main.shake(500, 0.002);
+      });
+      this.time.delayedCall(8000 + Math.random() * 12000, strike);
+    };
+    this.time.delayedCall(2500 + Math.random() * 3000, strike);
   }
 
   private showMenu() {
