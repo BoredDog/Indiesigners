@@ -33,6 +33,7 @@ export interface Deduction {
   ask: string;
   answer: string[]; // clue ids that count as right
   wrong: string; // feedback for a wrong link
+  traps?: Record<string, string>; // a specific reply for a wrong-but-plausible clue
   right: string; // what Elias concludes
   nudge: string; // a gentle hint after two wrong answers
 }
@@ -57,15 +58,16 @@ export const NODES: BoardNode[] = [
   { id: 'bell', kind: 'clue', title: 'BELL ROPE', sub: 'Nobody pulled it', detail: 'The bell rang the moment Elias arrived, but dust lies thick on the rope. Nobody has pulled it in years.', hint: 'Somewhere in the village', icon: { key: 'pt_rope', scale: 0.32 }, x: C.village, y: 500 },
   { id: 'records', kind: 'clue', title: 'RECORDS', sub: 'Times run to 2:31', detail: 'The night watchman’s log keeps going after the clocks stopped: 1:58 all quiet, 2:17 bell, 2:24 river turned, 2:31… and then nothing.', hint: 'Somewhere in the village', icon: { key: 'w_lectern', scale: 2 }, x: C.village, y: 610 },
   { id: 'symbols', kind: 'clue', title: 'WELL LOCK', sub: 'Strange symbols', detail: 'Symbols carved into the old well, and a small lock under the moss.', hint: 'Somewhere in the village', icon: { key: 'gv_well', scale: 0.35 }, x: C.village, y: 720 },
-  { id: 'drawing', kind: 'clue', title: '“ELI + NIA”', sub: 'A child’s drawing', detail: 'In the school, a crayon drawing of a boy with a lantern holding a girl’s hand. Same handwriting as the letter.', hint: 'Somewhere in the village', icon: { key: 'w_drawing', scale: 3.5 }, x: C.village, y: 830 },
+  { id: 'drawing', kind: 'clue', title: '“— + NIA”', sub: 'A torn drawing', detail: 'In the school, a crayon drawing of a brother and a sister. He holds a lantern like mine. His name is torn away. Same round hand as the letter.', hint: 'Somewhere in the village', icon: { key: 'w_drawing', scale: 3.5 }, x: C.village, y: 830 },
   // questions (deductions)
   { id: 'qKey', kind: 'question', title: 'WHAT DOES THE KEY OPEN?', sub: 'Link a clue', detail: 'The key is too small for any door in Veyra.', hint: '', x: C.q, y: 360 },
   { id: 'qTime', kind: 'question', title: 'DID TIME STOP AT 2:17?', sub: 'Link a clue', detail: 'Every clock says 2:17. Ivy remembers 2:17. Is that the whole story?', hint: '', x: C.q, y: 560 },
   { id: 'qWho', kind: 'question', title: 'WHO IS THE FIGURE?', sub: 'Link a clue', detail: 'The person with the lantern appears in every memory, face always hidden.', hint: '', x: C.q, y: 760 },
   // the figure
-  { id: 'figure', kind: 'figure', title: 'THE FIGURE', sub: 'Face never seen', detail: 'Someone with a lantern on a staff. In the window, in the crowd, at the river, under the well.', hint: 'A shape in a window…', icon: { key: 'gv_figure_idle', tint: 0x101018, scale: 1.1 }, x: C.fig, y: 330 },
+  { id: 'figure', kind: 'figure', title: 'THE FIGURE', sub: 'Face never seen', detail: 'Someone with a lantern on a staff. In the window, in the crowd, at the river, under the well.', hint: 'A shape in a window…', icon: { key: 'gv_figure_idle', tint: 0x101018, scale: 1.1 }, x: C.fig, y: 300 },
+  { id: 'register', kind: 'clue', title: 'REGISTER', sub: 'Hanna’s staff records', detail: 'Veyra’s staff register, every entry in one careful hand. Hanna’s photograph is pinned to the archivist’s page.', hint: 'Somewhere in the old house', icon: { key: 'w_lectern', scale: 2 }, x: C.fig, y: 430, hidden: true },
   { id: 'photo', kind: 'clue', title: 'BURNED PHOTO', sub: 'The fourth face', detail: 'Three villagers and a fourth person carrying a lantern. The fourth face is scratched out.', hint: 'Somewhere in the village', icon: { key: 'w_photo', scale: 3.2 }, x: C.fig, y: 560 },
-  { id: 'carried', kind: 'clue', title: 'CARRIED', sub: 'Something small', detail: 'Just after two, before the bell, the figure walked toward the well carrying something small in a blanket.', hint: 'Not everything in a memory is in plain sight', icon: { key: 'w_boat', scale: 1.2 }, x: C.fig, y: 760 },
+  { id: 'carried', kind: 'clue', title: 'CARRIED', sub: 'Something small', detail: 'Just after two, before the bell, the figure walked toward the well carrying something small in a blanket.', hint: 'Not everything in a memory is in plain sight', icon: { key: 'w_boat', scale: 1.2 }, x: C.fig, y: 690 },
 ];
 
 export const LINKS: BoardLink[] = [
@@ -82,13 +84,14 @@ export const LINKS: BoardLink[] = [
   { a: 'qTime', b: 'records', text: 'Logged until 2:31', kind: 'contradicts', needs: 'qTime' },
   { a: 'records', b: 'lukeMem', text: 'Both say 2:31' },
   { a: 'figure', b: 'qWho' }, { a: 'qWho', b: 'photo', text: 'The fourth face', kind: 'reveals', needs: 'qWho' },
-  { a: 'drawing', b: 'nia', text: '“ELI + NIA”' }, { a: 'carried', b: 'nia', text: 'What he carried', needs: 'qWho' },
+  { a: 'drawing', b: 'nia', text: 'A brother and a sister' },
+  { a: 'register', b: 'hanna', text: 'Her records' }, { a: 'carried', b: 'nia', text: 'What he carried', needs: 'qWho' },
 ];
 
 export const DEDUCTIONS: Record<string, Deduction> = {
   qKey: { id: 'qKey', ask: 'What does the blood-stained key open?', answer: ['symbols'], wrong: 'Nothing there has a lock that small.', right: 'The lock on the old well. Whatever happened, it went underground.', nudge: 'A key this small fits something small. Which clue mentions a lock?' },
   qTime: { id: 'qTime', ask: 'Ivy remembers the bell at 2:17. What proves the night went on after that?', answer: ['lukeMem', 'records'], wrong: 'That only agrees with 2:17.', right: 'Luke’s watch and the watchman’s log both run on to 2:31. The clocks stopped. The night didn’t.', nudge: 'Look for a time written down that comes after 2:17.' },
-  qWho: { id: 'qWho', ask: 'Who is the figure with the lantern?', answer: ['photo'], wrong: 'That doesn’t show a face.', right: 'The fourth face in the photograph. The one scratched out. …Mine.', nudge: 'You need a face. Which clue shows the figure with others?' },
+  qWho: { id: 'qWho', ask: 'Who is the figure with the lantern?', answer: ['photo'], wrong: 'That doesn’t show a face.', traps: { register: 'That’s what the records say. Someone rewrote the records.' }, right: 'The fourth face in the photograph. The one scratched out. …Mine.', nudge: 'You need a face. Which clue shows the figure with others?' },
 };
 
 /** Board state lives in the save: found node ids + solved deduction ids (as flags). */
@@ -270,7 +273,7 @@ export function openBoard(scene: Phaser.Scene, state: BoardState, opts: { deduce
       misses++;
       pick = null;
       redraw();
-      showInfo(q, `${n.title}? ${d.wrong}`, '#ff9090');
+      showInfo(q, `${n.title}? ${d.traps?.[n.id] ?? d.wrong}`, '#ff9090');
     }
   }
 

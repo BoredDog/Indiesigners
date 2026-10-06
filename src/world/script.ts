@@ -28,8 +28,8 @@ export const EPISODES: Episode[] = [
       await d.fadeIn(1200);
       await d.walkTo(A.start.x + 140);
       await d.nameCard('ELIAS VANE', 'Ghost hunter');
-      await d.narr('The letter came with no stamp and no return address. Four words in pencil, in a child’s round, careful hand: COME HOME, ELI.');
-      await d.say('Elias', 'Nobody has ever called me Eli. And as far as I know, I have never been to Veyra.');
+      await d.narr('The letter came with no stamp and no return address. Four words in pencil, in a child’s round, careful hand. The last one has run in the rain: COME HOME, —.');
+      await d.say('Elias', 'Home. As far as I know, I have never been to Veyra.');
       await d.say('Elias', 'Ten years ago, at 2:17 in the morning, every person in this village disappeared. The stories say a few of them stayed.');
       await d.narr('Ten years ago I was found on a country road with no memory and this lantern in my hand. It has been my living ever since. In its light I can see what a place remembers.');
       d.found('case');
@@ -66,7 +66,9 @@ export const EPISODES: Episode[] = [
       d.world.removeNpc(fig);
       await d.follow();
       d.found('figure');
+      d.stir();
       await d.say('Elias', 'An echo. The house remembers someone standing at that window, a long time ago.');
+      await d.narr('The lantern flame leans toward the glass, the way it does near an echo. More than it ever has.');
       await d.say('Elias', 'Hello? …Is someone in there?');
       const c = await d.choice(['I’m here to help.', 'Show yourself.', '…'], { timer: 7 });
       if (c === 0) await d.narr('No answer. The street took my voice and kept it.');
@@ -115,6 +117,7 @@ export const EPISODES: Episode[] = [
             run: async () => {
               seen.add('footprints');
               await d.narr('Footprints, glowing faintly in the lantern light. Several sets, all heading for the clock tower. Each trail stops mid-stride, as though the walker had been lifted out of the world.');
+              await d.narr('All but one set. That one walks out of the village, from the well. Its boots are my size.');
               d.found('footprints');
               key.setVisible(true);
               progress();
@@ -142,8 +145,8 @@ export const EPISODES: Episode[] = [
             id: 'school', x: A.school.x, y: A.school.y, label: 'School', when: () => !seen.has('school'),
             run: async () => {
               seen.add('school');
-              await d.narr('The school clock stopped at 2:17, like every other clock here. On a desk, a crayon drawing: a boy with a lantern holding a little girl’s hand. Underneath, in the same round hand as my letter: ELI + NIA.');
-              await d.say('Elias', 'The same handwriting. …Eli is a common enough name.');
+              await d.narr('The school clock stopped at 2:17, like every other clock here. On a desk, a crayon drawing of a boy and a little girl, holding hands. The paper is torn across the boy’s name. What’s left reads: — + NIA.');
+              await d.say('Elias', 'A brother and a sister. The brother is holding a lantern like mine. …And it’s the same round hand as my letter.');
               d.found('drawing');
             },
           },
@@ -176,6 +179,8 @@ export const EPISODES: Episode[] = [
               d.found('records');
               d.found('photo');
               await d.narr('Three villagers, and a fourth person holding a lantern. The fourth face has been scratched out, so hard the nib went through the paper.');
+              d.stir();
+              await d.narr('My lantern stirs over the scratched-out face, and goes still when I look away.');
               progress();
             },
           },
@@ -266,7 +271,19 @@ export const EPISODES: Episode[] = [
     run: async (d) => {
       const A = d.a;
       d.objective('The lantern pulls east. Go to the river dock.');
-      await d.explore([{ id: 'dock', x: A.dock.x - 20, y: A.dock.y, label: 'The dock', run: async () => 'done' }]);
+      // An echo Ivy's memory left behind in the school, for anyone who raises the lantern there.
+      d.trace('chalk', A.school.x + 22, A.school.y - 2, 'w_echo_chalk');
+      await d.explore([
+        { id: 'dock', x: A.dock.x - 20, y: A.dock.y, label: 'The dock', run: async () => 'done' },
+        {
+          id: 'chalk', x: A.school.x + 22, y: A.school.y, label: 'Under the desk', when: () => d.revealed('chalk') && !d.has('sawChalk'),
+          run: async () => {
+            d.flag('sawChalk');
+            await d.narr('Under Ivy’s desk, low down where a small child would write, letters in chalk: ELI. The rest has been scrubbed away.');
+            await d.say('Elias', 'The boy she used to teach. Eli.');
+          },
+        },
+      ]);
       d.objective(null);
       await d.narr('The river is gone. Where it ran there is only cracked mud, and a boat lying on its side. No drought leaves a riverbed this clean.');
       const luke = d.npc('luke', A.dock.x + 16, A.dock.y, { ghost: true, tint: GHOST, flip: true });
@@ -350,7 +367,8 @@ export const EPISODES: Episode[] = [
         },
       ]);
       d.objective(null);
-      await d.narr('In the records, a staff register with a photograph pinned to the page. The woman from the doorway.');
+      await d.narr('In the records, Veyra’s staff register, every entry in one careful hand. A photograph is pinned to the archivist’s page. The woman from the doorway.');
+      d.found('register');
       const hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
       hanna.sprite.setAlpha(0);
       await d.fadeNpc(hanna, 0.85);
@@ -359,6 +377,9 @@ export const EPISODES: Episode[] = [
       const asked = d.save.flags.askedWoman;
       if (asked === 2) await d.say('Hanna', 'You didn’t ask my name last time. I wondered if you already knew it.');
       else await d.say('Hanna', 'You came back. You always come back to this house.');
+      await d.narr('On her desk, a bundle of letters tied with string. Nine of them, all opened. Every one says COME HOME.');
+      await d.say('Elias', 'Nine letters. Why would the archivist keep them?');
+      await d.say('Hanna', 'They come every year. So do you.');
       const c = await d.choice(['You kept Veyra’s records.', 'Why did you warn me?', '…'], { timer: 8 });
       if (c === 0) await d.say('Hanna', 'I kept them. Until someone rewrote them.');
       if (c === 1) { await d.say('Hanna', 'Because you carry that lantern, and I know what it does.'); d.remember('Hanna'); }
@@ -387,7 +408,17 @@ export const EPISODES: Episode[] = [
       await d.say('Elias', 'The key fits the well. Whatever happened at 2:17 is underneath it.');
 
       d.objective('Unlock the well with the key.');
-      await d.explore([{ id: 'well', x: A.well.x, y: A.well.y, label: 'Unlock the well', run: async () => 'done' }]);
+      d.trace('staff', A.house.x + 46, A.house.y - 8, 'w_echo_staff');
+      await d.explore([
+        { id: 'well', x: A.well.x, y: A.well.y, label: 'Unlock the well', run: async () => 'done' },
+        {
+          id: 'staff', x: A.house.x + 46, y: A.house.y, label: 'The burned photograph', when: () => d.revealed('staff') && !d.has('sawStaff'),
+          run: async () => {
+            d.flag('sawStaff');
+            await d.narr('In the lantern light, the burned half of the photograph shows what the fire took: a lantern on a long staff, held by someone young. Not Hanna.');
+          },
+        },
+      ]);
       d.sfx('click', 0.6, -200);
       for (const [x, y] of wellTiles()) d.world.clearTile(x, y);
       d.world.props.get('well')?.setAlpha(0.35);
@@ -409,9 +440,9 @@ export const EPISODES: Episode[] = [
       await d.narr('Tunnels, and the drip of water. Symbols on the walls glow as the lantern passes, and fade behind me.');
       const read = new Set<number>();
       const DOCS = [
-        'ECHO LANTERN: MEMORY EXTRACTION. Notes in a careful, young hand. “What the lantern draws out, the subject no longer carries. Grief. Fear. Perhaps even illness.”',
+        'ECHO LANTERN: MEMORY EXTRACTION. Notes in a careful hand, the same hand as Hanna’s staff register. “What the lantern draws out, the subject no longer carries. Grief. Fear. Perhaps even illness.”',
         'MEMORY TRANSFER. “The subject keeps the shape of the event, but not who was in it.”',
-        'MEMORY ALTERATION. Pages and pages, in the same young hand. The lantern doesn’t only show memories. It can rewrite them.',
+        'MEMORY ALTERATION. Pages and pages, in the archive’s hand. The lantern doesn’t only show memories. It can rewrite them.',
       ];
       d.objective('Read the notes in the vault (0/3).');
       await d.explore(
@@ -427,7 +458,8 @@ export const EPISODES: Episode[] = [
         () => read.size === 3,
       );
       await d.say('Elias', 'Someone in Veyra rewrote what people remembered. Ivy, Luke, Hanna. All of them.');
-      await d.narr('A last page on the floor: THREE WITNESSES. ONE APPRENTICE. Someone has cut the apprentice’s name out with a knife.');
+      await d.narr('A last page on the floor: THREE WITNESSES. ONE APPRENTICE. Someone has cut the apprentice’s name out with a knife. Only the last letter is left: —a.');
+      await d.say('Elias', '…Hanna? She kept the records. Who else could have rewritten them?');
       d.objective('Go deeper.', { x: A.collapse.x + 40, y: A.collapse.y, label: 'Deeper' });
       await d.explore([], () => d.player.x > A.collapse.x);
       d.shake(800, 0.012);
@@ -494,6 +526,8 @@ export const EPISODES: Episode[] = [
       await d.narr('Afterwards I used the lantern one last time. On Ivy, on Luke, on Hanna. On the records. Then on myself.');
       await d.narr('I had cut my hand open on the lantern’s cage. I locked the well behind me and walked out into the empty square, and somewhere along the way I dropped the key.');
       await d.narr('I couldn’t undo what I had done. So I undid knowing it.');
+      await d.narr('The page in the vault said APPRENTICE: ELIAS, BROTHER OF NIA. I kept Hanna’s register; that is why the hands match. The knife missed one letter of my sister’s name.');
+      await d.narr('I walked out of the well on my own feet. I have never been sure all of me did.');
       d.world.removeNpc(young);
       d.world.removeNpc(hanna);
       d.memory(false);
@@ -502,16 +536,17 @@ export const EPISODES: Episode[] = [
   },
   // ------------------------------------------------------------------ 7
   {
-    n: 'FINALE',
-    title: '2:17',
+    n: 'EPISODE SEVEN',
+    title: 'COME HOME',
     run: async (d) => {
       const A = d.a;
       d.teleport(A.chamber.x - 30, A.chamber.y);
       await d.fadeIn(1500);
       await d.say('Elias', 'I came here to find out what happened to Veyra. I had the question the wrong way round.');
       await d.say('Elias', 'The village didn’t forget. I did.');
-      const clues = ['sawLanternIvy', 'sawCarried', 'heardHanna'].filter((k) => d.has(k)).length;
-      if (clues >= 2) await d.say('Elias', 'I was in Ivy’s crowd. On Luke’s riverbank. Hanna almost said my name. I just didn’t want to see it.');
+      // Only the moments this player actually saw.
+      const saw = [d.has('sawLanternIvy') && 'I was in Ivy’s crowd.', d.has('sawCarried') && 'I was on Luke’s riverbank.', d.has('heardHanna') && 'Hanna almost said my name.'].filter(Boolean);
+      if (saw.length >= 2) await d.say('Elias', `${saw.join(' ')} I just didn’t want to see it.`);
       d.audio.bell(1);
       d.shake(400, 0.003);
       await d.wait(600);
@@ -528,11 +563,9 @@ export const EPISODES: Episode[] = [
       await d.say('Nia', 'Every year you come home, Eli, and I ring the bell so you’ll know the way. And every year you choose to forget me again.');
       await d.say('Nia', 'It’s all right. I don’t mind writing the letter.');
       await d.narr('The lantern is warm in my hand. It could take this too, the way it did before. The way it has, I think, more than once.');
-      const pick = await d.choice(
-        ['REMEMBER. Let the clock move. They can rest, and I will carry it.', 'FORGET. Use the lantern on myself. Again.'],
-        { prompt: 'What does Elias do?' },
-      );
+      const pick = await d.lanternChoice();
       await d.fadeOut(900);
+      d.forcedSight = 0;
       d.world.removeNpc(nia);
       toy.destroy();
       if (pick === 0) {
@@ -561,9 +594,14 @@ export const EPISODES: Episode[] = [
         for (const g of ghosts) { await d.fadeNpc(g, 0, 1600); d.world.removeNpc(g); await d.wait(300); }
         const sis = d.npc('nia', A.square.x + 20, A.square.y, { ghost: true, tint: GHOST, flip: true });
         await d.say('Nia', 'Took you long enough, Eli.');
-        await d.fadeNpc(sis, 0, 2400);
+        await d.narr('The sun comes up over Veyra for the first time in ten years. In its light I can see the cobbles through my hands.');
+        await d.narr('I was standing at the very heart of the light that night. Of course it took me halfway too.');
+        await d.say('Elias', 'Wait for me.');
+        // He goes with them: Elias and Nia fade out together, the horse in his hand.
+        d.world.tweens.add({ targets: d.player, alpha: 0, duration: 3200 });
+        await d.fadeNpc(sis, 0, 3200);
         d.world.removeNpc(sis);
-        await d.narr('The sun comes up over Veyra for the first time in ten years. I keep the wooden horse. I won’t need the letter again.');
+        await d.narr('I keep the wooden horse. I won’t need the letter again.');
         await d.narr('Some memories disappear. Some are buried. Some wait, patiently, to be remembered.');
         await d.banner('ECHOES OF SORROW', '#ffffff', 2400);
       } else {
@@ -572,7 +610,7 @@ export const EPISODES: Episode[] = [
         d.teleport(A.start.x, A.start.y);
         await d.fadeIn(1500);
         await d.walkTo(A.start.x + 140);
-        await d.narr('The letter came with no stamp and no return address. The paper is soft from folding, as if I have read it a hundred times. COME HOME, ELI.');
+        await d.narr('The letter came with no stamp and no return address. The paper is soft from folding, as if I have read it a hundred times. This year the rain hasn’t touched it: COME HOME, ELI.');
         await d.say('Elias', 'Nobody has ever called me Eli. And as far as I know, I have never been to Veyra.');
         d.audio.bell(2);
         await d.narr('They say the clock tower hasn’t rung in ten years. It rang the moment I set foot in the square.');

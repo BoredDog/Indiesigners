@@ -32,6 +32,10 @@ const CASES: { name: string; ep: number; advance: number; setup?: string; wait?:
   { name: 'echo-off', ep: 1, advance: 0, setup: "const d=window.__story; d.teleport(d.a.footprints.x - 10, d.a.footprints.y); d.trace('footprints', d.a.footprints.x - 20, d.a.footprints.y, 'w_echo_steps');" },
   { name: 'echo-on', ep: 1, advance: 0, hold: 'f', settle: 50, setup: "const d=window.__story; d.teleport(d.a.footprints.x - 10, d.a.footprints.y); d.trace('footprints', d.a.footprints.x - 20, d.a.footprints.y, 'w_echo_steps');" },
   { name: 'echo-well', ep: 1, advance: 0, hold: 'f', settle: 50, setup: "const d=window.__story; d.teleport(d.a.well.x + 20, d.a.well.y); d.trace('wellmarks', d.a.well.x - 8, d.a.well.y - 20, 'w_runes');" },
+  // Round 3: the lantern choice, the register trap on the board.
+  { name: 'final-choice', ep: 1, advance: 0, wait: 40, setup: "void window.__story.lanternChoice();" },
+  { name: 'final-forget-hold', ep: 1, advance: 0, wait: 40, hold: 'f', settle: 60, setup: "void window.__story.lanternChoice();" },
+  { name: 'board-trap', ep: 2, advance: 0, clicks: [[1610, 430], [1660, 960]], setup: `const d=window.__story; d.save.found.push(${FOUND_B}, 'register', 'hanna'); d.save.flags.qKey=true; d.save.flags.qTime=true; d.save.flags.askWho=true; d.deduce('qWho');` },
   // Wayfinding and onboarding.
   { name: 'guide-card', ep: 1, advance: 0, setup: "const d=window.__story; d.save.flags={}; d.teleport(d.a.start.x + 60, d.a.start.y); d.guide.teach(['move','run']);" },
   { name: 'guide-signs', ep: 1, advance: 0, setup: "const d=window.__story; d.teleport(d.a.school.x - 120, d.a.school.y);" },

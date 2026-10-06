@@ -34,7 +34,9 @@ const STEP = `
   // Choices: numbered buttons "1. …".
   const choices = all.filter((o) => o.name && /^btn:\\d\\. /.test(o.name) && o.active);
   if (choices.length) {
-    const want = choices.length === 2 && /REMEMBER|FORGET/.test(choices[0].name) ? (${forget} ? 1 : 0) : Math.min(${pick}, choices.length - 1);
+    // The final choice is a lantern action: FORGET means holding F (the runner does that).
+    if (choices.length === 2 && /REMEMBER/.test(choices[0].name) && ${forget}) return 'forget-hold';
+    const want = choices.length === 2 && /REMEMBER|FORGET/.test(choices[0].name) ? 0 : Math.min(${pick}, choices.length - 1);
     choices[want].emit('pointerup');
     return 'choice:' + choices[want].name;
   }
@@ -71,6 +73,7 @@ try {
     const ep = await js<number>('return window.__story?.save.episode ?? -1');
     if (ep !== episode) { episode = ep; console.log(`episode ${ep}  (${((Date.now() - t0) / 1000) | 0}s)`); }
     if (r === 'summary') break;
+    if (r === 'forget-hold') { await page.keyboard.down('f'); await page.waitForTimeout(4000); await page.keyboard.up('f'); }
     if (r === 'sight') { await page.keyboard.down('f'); await page.waitForTimeout(900); await page.keyboard.up('f'); }
     if (r === 'qte') for (let k = 0; k < 3; k++) await page.keyboard.press('Space'); // a burst, like a player mashing
     else if (r === 'advance' || r === 'boot') await page.keyboard.press('Space');

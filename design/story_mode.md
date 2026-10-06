@@ -56,7 +56,7 @@ Before the results screen, the case is retold as Elias's hard-boiled detective c
 
 ## Quick-time events (`src/story/qte.ts`)
 - **No surprises.** Every QTE opens on an instruction card that waits for PRESS SPACE TO START, then GO!.
-- **Can't be failed through.** A miss shows TRY AGAIN, and the story only continues once it's passed. Each retry is gentler: a longer window, fewer taps or a wider timing ring.
+- **Retry, then a way out.** A miss shows TRY AGAIN, and each retry is gentler: a longer window, fewer taps, a slower drain or a wider timing ring. After three misses a CONTINUE option (or Enter) moves on with the missed version of the scene. This keeps the consequences (Luke's and Hanna's other lines) and gives an exit to anyone who can't do the action.
 - **Generous windows.** Press is at least 2.4 seconds, and mash at least 5 seconds with a slow drain.
 - **Feedback.** The ring QTE shows HIT or MISS each round, and its gold target brightens while a press would count. Failure text matches the QTE: TOO SLOW, NOT ENOUGH or MISSED.
 
@@ -71,6 +71,17 @@ The board is laid out in columns: **People · What they remember · The village 
   3. **Who is the figure?** → the burned photo's fourth face. The THE FIGURE card flips to ELIAS. The player makes the twist.
 
 Edit nodes, links and answers in the `NODES`, `LINKS` and `DEDUCTIONS` tables.
+
+## The twist, and the false suspect
+The goal: nobody can name the figure by the end of Episode 1, and the evidence leans on Hanna until Episode 6.
+- **Episode 1:** the letter's name has run in the rain (COME HOME, —), and the school drawing is torn to "— + NIA". The flame stirs at the window figure and over the scratched-out face. One set of footprints walks *out* of the village from the well, in boots his size.
+- **Episode 3:** an optional echo under Ivy's desk spells ELI in chalk.
+- **Episode 4:** Hanna's staff register becomes a clue, and nine opened COME HOME letters sit on her desk ("They come every year. So do you."). An optional echo in the burned half of the photograph shows a lantern on a staff, held by someone young. "Stop. E—" is the first time anyone says his initial.
+- **Episode 5:** the vault notes are in the same hand as Hanna's register, and the apprentice's name is cut out leaving "—a". Elias suspects Hanna.
+- **Episode 6:** the register is a trap answer to "Who is the figure?" ("That's what the records say. Someone rewrote the records."). The cut line read APPRENTICE: ELIAS, BROTHER OF NIA; he kept Hanna's register, so the hands match. Plant: "I walked out of the well on my own feet. I have never been sure all of me did."
+- **Episode 7, COME HOME:** the choice is a lantern action. Hold F (or right mouse, or hold FORGET) to raise it to your face, or set it down to REMEMBER.
+  - REMEMBER: Elias fades at sunrise with Nia and the ghosts; he was halfway too.
+  - FORGET: the loop restarts, and this time the letter reads clean: COME HOME, ELI.
 
 ## The throughline
 One idea ties every beat together: **Nia rings the bell, and every year her brother comes home and chooses whether to remember her.**
