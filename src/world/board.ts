@@ -333,16 +333,20 @@ export function openBoard(scene: Phaser.Scene, state: BoardState, opts: { deduce
     info.add(ptext(scene, 90, H - 166, 'HOW THE BOARD WORKS', 30, '#ffe08a'));
     info.add(ptext(scene, 90, H - 126, 'Every clue you find is pinned here. Click a card to read it and light up the cards it links to. Red cards are open questions: click one, then present the clue that answers it. Cards marked ? are still out there.', 28, '#aab8d8', W - 200));
   }
-  const close = pbutton(scene, W - 170, 60, 240, 64, 'CLOSE [C]', () => {
+  // Every way out (the CLOSE button, the C key via Director.closeBoard) goes through here, so a
+  // question the story is waiting on can't be closed unanswered and the episode can't move on.
+  const tryClose = () => {
     if (opts.deduce && !state.flags[opts.deduce]) {
       const q = NODES.find((n) => n.id === opts.deduce)!;
       showInfo(q, 'Answer the question first. Elias won’t move on until he knows.', '#ffb0b0');
+      opts.sfx?.('wrong');
       return;
     }
     layer.destroy();
     opts.onClose();
-  }, 30);
+  };
+  const close = pbutton(scene, W - 170, 60, 240, 64, 'CLOSE [C]', tryClose, 30);
   layer.add(close);
   opts.sfx?.('page');
-  return { layer, close: () => (layer.destroy(), opts.onClose()) };
+  return { layer, close: tryClose };
 }
