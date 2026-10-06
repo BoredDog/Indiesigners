@@ -9,6 +9,7 @@ import type { StoryScene, Npc } from '../scenes/StoryScene';
 import { ZOOM } from './tiles';
 import { StoryAudio, type SoundKey } from '../story/audio';
 import { Qte } from '../story/qte';
+import { ECHO_FIRST, ECHO_NOTE, Tuner } from '../story/tuner';
 import { comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import { playCaseFile } from '../story/caseFile';
@@ -55,11 +56,18 @@ export class StoryUIScene extends Phaser.Scene {
   }
 }
 
+/** Puzzles that `?try=` can open on their own, for testing. */
+const TRY_OUT: Record<string, (d: Director) => Promise<void>> = {
+  tune1: (d) => d.tuner.tune(ECHO_FIRST),
+  tune2: (d) => d.tuner.tune(ECHO_NOTE),
+};
+
 export class Director {
   world: StoryScene;
   scene: Phaser.Scene; // UI scene (QTEs draw here)
   audio: StoryAudio;
   qte: Qte;
+  tuner: Tuner;
   save: StorySave;
   lastDt = 16;
   alive = true;
@@ -109,6 +117,7 @@ export class Director {
     this.onSave = onSave;
     this.audio = new StoryAudio(world);
     this.qte = new Qte(this);
+    this.tuner = new Tuner(this);
     world.events.once(Phaser.Scenes.Events.SHUTDOWN, () => (this.alive = false));
 
     this.promptText = ptext(ui, 0, 0, '', 34, '#ffe08a').setOrigin(0.5);
@@ -141,9 +150,11 @@ export class Director {
   }
 
   // ---------------------------------------------------------------- running
-  async run(episodes: Episode[]) {
+  async run(episodes: Episode[], tryOut?: string) {
     this.setBed();
     try {
+      // Dev: ?scene=Story&try=tune1 opens one puzzle straight away, then the story carries on.
+      if (tryOut && TRY_OUT[tryOut]) await TRY_OUT[tryOut](this);
       while (this.save.episode < episodes.length) {
         const ep = episodes[this.save.episode];
         this.lock();

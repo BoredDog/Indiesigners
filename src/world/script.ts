@@ -14,6 +14,7 @@
 import type { Episode } from './Director';
 import { collapseTiles, wellTiles, SURF } from './worldgen';
 import { TILE } from './tiles';
+import { ECHO_FIRST } from '../story/tuner';
 
 const GHOST = 0xd8f4ff;
 
@@ -201,6 +202,7 @@ export const EPISODES: Episode[] = [
       await d.deduce('qKey');
       d.objective(null);
       await d.narr('The lantern in my hand begins to hum. The flame leans toward the school, the way a plant leans toward a window.');
+      await d.tuner.tune(ECHO_FIRST); // puzzle: tune the lantern to the echo
       await d.banner('MEMORY ECHO DETECTED');
     },
   },

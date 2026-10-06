@@ -120,6 +120,47 @@ export class StoryAudio {
     }
   }
 
+  /**
+   * The tuning puzzle's sound: the echo's tone and the lantern's tone. While they're apart they
+   * beat against each other; when they match, the beating stops and it hums as one note.
+   */
+  tuner(): { set: (echoHz: number, echoGain: number, myHz: number, myGain: number) => void; stop: () => void } {
+    const ctx = this.ctx, dest = this.dest;
+    if (!ctx || !dest) return { set: () => undefined, stop: () => undefined };
+    const out = ctx.createGain();
+    out.gain.value = 0.0001;
+    out.connect(dest);
+    out.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 0.4);
+    const voice = () => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine';
+      g.gain.value = 0;
+      o.connect(g).connect(out);
+      o.start();
+      return { o, g };
+    };
+    const echo = voice(), mine = voice();
+    let stopped = false;
+    return {
+      set: (echoHz, echoGain, myHz, myGain) => {
+        if (stopped) return;
+        const t = ctx.currentTime;
+        echo.o.frequency.setTargetAtTime(echoHz, t, 0.03);
+        echo.g.gain.setTargetAtTime(echoGain, t, 0.05);
+        mine.o.frequency.setTargetAtTime(myHz, t, 0.03);
+        mine.g.gain.setTargetAtTime(myGain, t, 0.05);
+      },
+      stop: () => {
+        if (stopped) return;
+        stopped = true;
+        out.gain.cancelScheduledValues(ctx.currentTime);
+        out.gain.setValueAtTime(Math.max(0.0001, out.gain.value), ctx.currentTime);
+        out.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+        setTimeout(() => (echo.o.stop(), mine.o.stop(), out.disconnect()), 360);
+      },
+    };
+  }
+
   private waterBed?: { stop: () => void };
   /** Running water while the river is full (Luke's memory). */
   water(on: boolean) {

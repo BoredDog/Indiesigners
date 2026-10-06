@@ -31,6 +31,8 @@ const STEP = `
     d.closeBoard();
     return 'board:' + (q || 'close');
   }
+  // Tuning puzzle: snap the knobs onto the echo and wait for it to lock.
+  if (d.tuner && d.tuner.state) { if (!d.tuner.state.locked) d.tuner.state.auto(); return 'tune'; }
   // Choices: numbered buttons "1. …".
   const choices = all.filter((o) => o.name && /^btn:\\d\\. /.test(o.name) && o.active);
   if (choices.length) {

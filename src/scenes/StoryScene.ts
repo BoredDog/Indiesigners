@@ -81,7 +81,7 @@ export class StoryScene extends Phaser.Scene {
     StoryAudio.preload(this);
   }
 
-  create(data: { fresh?: boolean | string; episode?: string | number } = {}) {
+  create(data: { fresh?: boolean | string; episode?: string | number; try?: string } = {}) {
     buildWorldTextures(this);
     makeAnims(this);
     this.props.clear();
@@ -129,7 +129,7 @@ export class StoryScene extends Phaser.Scene {
     ui.events.once(Phaser.Scenes.Events.CREATE, () => {
       this.director = new Director(this, ui, save, writeStory);
       (window as unknown as { __story: Director }).__story = this.director; // test hook
-      void this.director.run(EPISODES);
+      void this.director.run(EPISODES, data.try);
     });
   }
 
