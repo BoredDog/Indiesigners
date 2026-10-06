@@ -33,6 +33,8 @@ const STEP = `
   }
   // Tuning puzzle: snap the knobs onto the echo and wait for it to lock.
   if (d.tuner && d.tuner.state) { if (!d.tuner.state.locked) d.tuner.state.auto(); return 'tune'; }
+  // Memory grid: let the solver walk it.
+  if (d.grid && d.grid.state) { if (!d.grid.state.solved && !d.grid.state.started) { d.grid.state.started = true; d.grid.state.auto(); } return 'grid'; }
   // Choices: numbered buttons "1. …".
   const choices = all.filter((o) => o.name && /^btn:\\d\\. /.test(o.name) && o.active);
   if (choices.length) {
