@@ -56,6 +56,7 @@ const STEP = `
     // Nothing visible left: stand by a hidden echo trace and raise the lantern (the runner holds F).
     const tr = (d.traces || []).find((t) => !t.revealed);
     if (!spot && tr) { d.teleport(tr.img.x, d.a.footprints.y); return 'sight'; }
+    if (!spot && d.following) { d.teleport(d.following.x(), d.a.well.y); return 'follow'; }
     if (spot) { d.teleport(spot.x, spot.y); d.tryInteract(); return 'spot:' + spot.id; }
     const A = d.a, S = 60, T = 16;
     if (w.world.fg[S][40] === 0 && d.player.y < (S + 8) * T) { for (let y = S + 1; y <= S + 7; y++) for (let x = 39; x <= 41; x++) if (w.world.fg[y][x]) w.clearTile(x, y); d.teleport(A.shaft.x, A.shaft.y); return 'dig'; }

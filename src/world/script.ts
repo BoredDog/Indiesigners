@@ -14,7 +14,8 @@
 import type { Episode } from './Director';
 import { collapseTiles, wellTiles, SURF } from './worldgen';
 import { TILE } from './tiles';
-import { ECHO_FIRST, ECHO_NOTE } from '../story/tuner';
+import { ECHO_FIRST } from '../story/tuner';
+import { followHanna } from '../story/follow';
 import { IVY_CANDLES } from '../story/candles';
 import { LUKE_RIVER } from '../story/river';
 
@@ -375,9 +376,7 @@ export const EPISODES: Episode[] = [
       d.shake(800, 0.005);
       d.audio.tone('drone');
       await d.narr('A sound from under the ground, low, like a held note. Hanna follows it out of the house, down the street, to the old well.');
-      await d.tuner.tune(ECHO_NOTE); // puzzle: follow the note she heard
-      d.watch(hanna);
-      await d.npcWalk(hanna, A.well.x + 20, 80);
+      await followHanna(d, hanna, A.well.x, A.well.y); // activity: follow her through the memory to the well
       await d.pan(A.well.x, A.well.y - 30, 900);
       const fig = d.npc('figure', A.well.x - 30, A.well.y, { tint: 0x101018 });
       await d.narr('Below the well, a lantern burns. The figure stands beside it.');

@@ -12,6 +12,7 @@ import { Qte } from '../story/qte';
 import { ECHO_FIRST, ECHO_NOTE, Tuner } from '../story/tuner';
 import { Candles, IVY_CANDLES } from '../story/candles';
 import { River, LUKE_RIVER } from '../story/river';
+import { followHanna } from '../story/follow';
 import { comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import { playCaseFile } from '../story/caseFile';
@@ -64,6 +65,16 @@ const TRY_OUT: Record<string, (d: Director) => Promise<void>> = {
   tune2: (d) => d.tuner.tune(ECHO_NOTE),
   candles: (d) => d.candles.play(IVY_CANDLES),
   river: (d) => d.river.play(LUKE_RIVER),
+  follow: async (d) => {
+    // Hanna's memory at the old house, as in Episode 4.
+    const A = d.a;
+    d.teleport(A.house.x + 30, A.house.y);
+    d.memory(true);
+    const hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: 0xd8f4ff, flip: true });
+    await followHanna(d, hanna, A.well.x, A.well.y);
+    d.world.removeNpc(hanna);
+    d.memory(false);
+  },
 };
 
 export class Director {
@@ -73,6 +84,8 @@ export class Director {
   qte: Qte;
   tuner: Tuner;
   candles: Candles;
+  /** Set while the player is following someone (Episode 4); read by the autoplay test. */
+  following?: { x: () => number };
   river: River;
   save: StorySave;
   lastDt = 16;
