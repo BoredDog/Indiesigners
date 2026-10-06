@@ -41,13 +41,23 @@ export class PauseScene extends Phaser.Scene {
         next: () => gameState.setSetting('reduceFlashing', !gameState.settings.reduceFlashing),
       },
       {
+        name: 'MUSIC',
+        value: () => volumeLabel(gameState.settings.music),
+        next: () => gameState.setSetting('music', nextVolume(gameState.settings.music)),
+      },
+      {
+        name: 'SOUND',
+        value: () => volumeLabel(gameState.settings.sfx),
+        next: () => gameState.setSetting('sfx', nextVolume(gameState.settings.sfx)),
+      },
+      {
         name: 'FULLSCREEN',
         value: () => (this.scale.isFullscreen ? 'ON' : 'OFF'),
         next: () => (this.scale.isFullscreen ? this.scale.stopFullscreen() : this.scale.startFullscreen()),
       },
     ];
     rows.forEach((r, i) => {
-      const y = 330 + i * 100;
+      const y = 300 + i * 78;
       const b = button(this, W / 2, y, `${r.name}: ${r.value()}`, () => {
         r.next();
         // Fullscreen changes asynchronously; refresh on the next tick.
@@ -71,4 +81,12 @@ export class PauseScene extends Phaser.Scene {
     this.scene.stop(this.returnTo);
     this.scene.start('Title');
   }
+}
+
+const VOLUMES = [1, 0.75, 0.5, 0.25, 0];
+const volumeLabel = (v: number) => (v <= 0 ? 'OFF' : `${Math.round(v * 100)}%`);
+/** The next step down (100 → 75 → 50 → 25 → OFF → 100), from wherever the value is now. */
+function nextVolume(v: number) {
+  const i = VOLUMES.findIndex((x) => x < v - 0.001);
+  return i === -1 ? VOLUMES[0] : VOLUMES[i];
 }

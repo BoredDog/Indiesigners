@@ -522,6 +522,7 @@ export const EPISODES: Episode[] = [
       nia.sprite.setAlpha(0);
       await d.fadeNpc(nia, 0.85, 1600);
       await d.nameCard('NIA', 'The one who rings the bell');
+      d.score('finale'); // Nia's theme, in full, for the last act
       const toy = d.world.add.image(d.player.x - 30, d.player.y, 'w_horse').setOrigin(0.5, 1).setDepth(7);
       await d.narr('I take the wooden horse out of my pocket and set it down between us.');
       await d.say('Nia', 'You found my horse.');
@@ -547,6 +548,7 @@ export const EPISODES: Episode[] = [
         await d.pan(A.clock.x, A.clock.y + 30, 1600);
         await d.narr('The clock tower. For ten years it has held the minute I lit the lantern.');
         d.audio.tone('chime');
+        d.score('dawn'); // the theme turns major as the clock moves
         d.world.props.get('clock')?.setTexture('w_clock218');
         await d.toll(A.clock.x, A.clock.y, 1, false);
         await d.narr('The minute hand shivers, and moves. 2:18. The first minute Veyra has had in ten years.');
@@ -568,6 +570,8 @@ export const EPISODES: Episode[] = [
         await d.banner('ECHOES OF SORROW', '#ffffff', 2400);
       } else {
         d.flag('ending', 'dark');
+        d.score('none');
+        d.audio.tone('sting');
         d.flash(900);
         d.teleport(A.start.x, A.start.y);
         await d.fadeIn(1500);
