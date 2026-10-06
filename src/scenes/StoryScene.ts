@@ -272,7 +272,8 @@ export class StoryScene extends Phaser.Scene {
       if (anim.key === 'elias_walk' && (frame.index === 1 || frame.index === 4) && body.blocked.down) this.director?.audio.step(this.surface(), this.player.y > (SURF + 4) * TILE);
     });
     this.physics.add.collider(this.player, this.fgLayer, undefined, () => this.time.now > this.dropUntil || !this.onPlank());
-    this.physics.world.setBounds(0, 0, WT * TILE, HT * TILE);
+    // The east end is open fog, not a wall: an invisible edge stops Elias inside the fog bank.
+    this.physics.world.setBounds(0, 0, (WT - 9) * TILE, HT * TILE);
     this.player.setCollideWorldBounds(true);
   }
   /** What Elias is standing on, for his footsteps. */
