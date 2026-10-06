@@ -102,6 +102,8 @@ export const EPISODES: Episode[] = [
         },
       });
       progress();
+      // First free control: teach the basics, one card at a time, as they become useful.
+      d.guide.teach(['move', 'run', 'jump', 'interact', 'board']);
       // The footprints are an echo: only the raised lantern shows them.
       d.trace('footprints', A.footprints.x - 20, A.footprints.y, 'w_echo_steps');
       d.trace('wellmarks', A.well.x - 8, A.well.y - 20, 'w_runes');
@@ -137,10 +139,10 @@ export const EPISODES: Episode[] = [
             },
           },
           {
-            id: 'school', x: A.school.x, y: A.school.y, label: 'Schoolhouse', when: () => !seen.has('school'),
+            id: 'school', x: A.school.x, y: A.school.y, label: 'School', when: () => !seen.has('school'),
             run: async () => {
               seen.add('school');
-              await d.narr('The schoolhouse clock stopped at 2:17, like every other clock here. On a desk, a crayon drawing: a boy with a lantern holding a little girl’s hand. Underneath, in the same round hand as my letter: ELI + NIA.');
+              await d.narr('The school clock stopped at 2:17, like every other clock here. On a desk, a crayon drawing: a boy with a lantern holding a little girl’s hand. Underneath, in the same round hand as my letter: ELI + NIA.');
               await d.say('Elias', 'The same handwriting. …Eli is a common enough name.');
               d.found('drawing');
             },
@@ -198,7 +200,7 @@ export const EPISODES: Episode[] = [
       }
       await d.deduce('qKey');
       d.objective(null);
-      await d.narr('The lantern in my hand begins to hum. The flame leans toward the schoolhouse, the way a plant leans toward a window.');
+      await d.narr('The lantern in my hand begins to hum. The flame leans toward the school, the way a plant leans toward a window.');
       await d.banner('MEMORY ECHO DETECTED');
     },
   },
@@ -208,8 +210,8 @@ export const EPISODES: Episode[] = [
     title: 'IVY',
     run: async (d) => {
       const A = d.a;
-      d.objective('Follow the humming lantern to the schoolhouse.');
-      await d.explore([{ id: 'school', x: A.school.x, y: A.school.y, label: 'Schoolhouse', run: async () => 'done' }]);
+      d.objective('Follow the humming lantern to the school.');
+      await d.explore([{ id: 'school', x: A.school.x, y: A.school.y, label: 'School', run: async () => 'done' }]);
       d.objective(null);
       const ivy = d.npc('ivy', A.school.x + 40, A.school.y, { ghost: true, tint: GHOST, flip: true });
       ivy.sprite.setAlpha(0);
@@ -229,7 +231,7 @@ export const EPISODES: Episode[] = [
       if (!ok) await d.narr('The light shudders, then catches anyway, as if it wanted to.');
       d.memory(true);
       await d.banner('IVY’S MEMORY, 2:17 AM', '#bfefff', 1300);
-      await d.narr('Ten years ago. Ivy is alone in the schoolhouse, packing her bag by candlelight.');
+      await d.narr('Ten years ago. Ivy is alone in the school, packing her bag by candlelight.');
       d.shake(700, 0.004);
       const crowd = [d.npc('oldman', A.start.x + 60, A.school.y), d.npc('bearded', A.start.x + 20, A.school.y), d.npc('woman', A.start.x - 20, A.school.y)];
       crowd.forEach((n, i) => void d.npcWalk(n, A.square.x + i * 24, 110 + i * 15));
@@ -390,7 +392,8 @@ export const EPISODES: Episode[] = [
       for (const [x, y] of wellTiles()) d.world.clearTile(x, y);
       d.world.props.get('well')?.setAlpha(0.35);
       await d.narr('The key was never meant for a door. It was meant for what lies underneath.');
-      d.objective('Climb down the well. Hold the left mouse button on rubble to dig through it.');
+      d.objective('Climb down the well and dig through the rubble.', { x: A.well.x, y: A.well.y, label: 'The old well' });
+      d.guide.teach(['dig']);
       await d.explore([], () => d.player.y > (SURF + 8) * TILE);
       d.objective(null);
     },
@@ -425,7 +428,7 @@ export const EPISODES: Episode[] = [
       );
       await d.say('Elias', 'Someone in Veyra rewrote what people remembered. Ivy, Luke, Hanna. All of them.');
       await d.narr('A last page on the floor: THREE WITNESSES. ONE APPRENTICE. Someone has cut the apprentice’s name out with a knife.');
-      d.objective('Go deeper.');
+      d.objective('Go deeper.', { x: A.collapse.x + 40, y: A.collapse.y, label: 'Deeper' });
       await d.explore([], () => d.player.x > A.collapse.x);
       d.shake(800, 0.012);
       d.sfx('slam', 0.6, -1200);
@@ -433,7 +436,7 @@ export const EPISODES: Episode[] = [
       for (const [x, y] of collapseTiles()) d.world.placeTile(x, y, 13);
       if (!moved) { d.flash(200); await d.narr('Stone and earth come down. I crawl clear with the lantern still lit and one hand bleeding, like the key.'); d.flag('hurt'); }
       else await d.narr('I throw myself forward as the tunnel caves in behind me. There is no going back.');
-      d.objective('Go deeper.');
+      d.objective('Go deeper.', { x: A.chamber.x, y: A.chamber.y, label: 'The deepest chamber' });
       await d.explore([], () => Math.abs(d.player.x - A.chamber.x) < 120 && d.player.y > A.chamber.y - 40);
       d.objective(null);
       d.world.extraLights.push({ x: A.pedestal.x, y: A.pedestal.y, r: 7, strength: 1 });

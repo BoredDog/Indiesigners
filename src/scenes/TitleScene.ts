@@ -29,7 +29,7 @@ export class TitleScene extends Phaser.Scene {
     this.rain();
 
     label(this, W / 2, 270, 'ECHOES OF SORROW', 150, { strokeThickness: 16 }).setOrigin(0.5);
-    ptext(this, W / 2, 380, 'Veyra, 2:17 AM. Something is calling you home.', 40, '#bfefff').setOrigin(0.5);
+    ptext(this, W / 2, 380, 'Ten years ago, a village vanished. Something is calling you home.', 40, '#bfefff').setOrigin(0.5);
 
     const cta = ptext(this, W / 2, 760, 'PRESS ANY KEY', 52, '#ffe08a').setOrigin(0.5);
     if (!comicSettings.reduceFlashing) this.tweens.add({ targets: cta, alpha: 0.35, duration: 900, yoyo: true, repeat: -1 });
@@ -132,15 +132,16 @@ export class TitleScene extends Phaser.Scene {
       'You are Elias Vane, a ghost hunter.',
       'A letter with no sender calls you',
       'to Veyra, where every villager',
-      'vanished at 2:17 AM ten years ago.',
+      'vanished ten years ago, at 2:17 AM.',
       'Find out what happened that night.',
     ]);
     section(left, top + 290, 'CONTROLS', [
-      'A / D          Walk',
+      'A / D          Walk (Shift: run)',
       'W / Space      Jump',
-      'S              Drop through a plank',
+      'S              Drop down a plank',
       'E              Examine or talk',
-      'Left mouse     Dig loose rubble',
+      'F / R-mouse    Raise the lantern',
+      'Mouse / X      Dig rubble',
       'C              Evidence board',
       'Esc            Pause',
     ]);
@@ -149,7 +150,7 @@ export class TitleScene extends Phaser.Scene {
       'Every clue is pinned to the',
       'evidence board. Click a card to',
       'see its links. Red questions need',
-      'the right clue linked to them.',
+      'the right clue. None fits? Explore.',
     ]);
     section(colR, top + 290, 'CHOICES & ACTION', [
       'Choose replies with the mouse or',
@@ -157,7 +158,7 @@ export class TitleScene extends Phaser.Scene {
       'the clock is ticking, and silence',
       'is an answer too. People remember',
       'what you say. When a key appears',
-      'on screen, press it quickly.',
+      'on screen, press it to start.',
     ]);
   }
 

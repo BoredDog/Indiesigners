@@ -43,7 +43,7 @@ const C = { people: 250, mem: 560, village: 900, q: 1260, fig: 1610 };
 export const NODES: BoardNode[] = [
   { id: 'case', kind: 'question', title: 'WHAT HAPPENED AT 2:17?', sub: 'The whole village vanished', detail: 'Ten years ago, at 2:17 AM, everyone in Veyra disappeared. The case was closed. Nothing was ever found.', hint: '', x: 960, y: 125 },
   // people
-  { id: 'ivy', kind: 'person', title: 'IVY', sub: 'The schoolteacher', detail: 'A ghost at the schoolhouse. Packs her bag every night and never leaves.', hint: 'Someone who never left', icon: { key: 'pt_ivy', crop: 40 }, x: C.people, y: 300 },
+  { id: 'ivy', kind: 'person', title: 'IVY', sub: 'The schoolteacher', detail: 'A ghost at the school. Packs her bag every night and never leaves.', hint: 'Someone who never left', icon: { key: 'pt_ivy', crop: 40 }, x: C.people, y: 300 },
   { id: 'luke', kind: 'person', title: 'LUKE', sub: 'The boatman', detail: 'A ghost on the river dock. Got the village into boats that night.', hint: 'Someone who never left', icon: { key: 'pt_luke', crop: 40 }, x: C.people, y: 480 },
   { id: 'hanna', kind: 'person', title: 'HANNA', sub: 'The archivist', detail: 'The woman in the doorway of the old house. She kept Veyra’s records, and warned you about memories.', hint: 'Someone who never left', icon: { key: 'pt_hanna', crop: 40 }, x: C.people, y: 660 },
   { id: 'nia', kind: 'person', title: 'NIA', sub: 'Eli’s little sister', detail: 'Elias’s little sister. Sick all winter, ten years ago. The reason for everything, and the hand in the letter.', hint: '', icon: { key: 'gv_woman_idle', tint: 0xffe0c0, scale: 1 }, x: C.people, y: 840, hidden: true },
@@ -57,7 +57,7 @@ export const NODES: BoardNode[] = [
   { id: 'bell', kind: 'clue', title: 'BELL ROPE', sub: 'Nobody pulled it', detail: 'The bell rang the moment Elias arrived, but dust lies thick on the rope. Nobody has pulled it in years.', hint: 'Somewhere in the village', icon: { key: 'pt_rope', scale: 0.32 }, x: C.village, y: 500 },
   { id: 'records', kind: 'clue', title: 'RECORDS', sub: 'Times run to 2:31', detail: 'The night watchman’s log keeps going after the clocks stopped: 1:58 all quiet, 2:17 bell, 2:24 river turned, 2:31… and then nothing.', hint: 'Somewhere in the village', icon: { key: 'w_lectern', scale: 2 }, x: C.village, y: 610 },
   { id: 'symbols', kind: 'clue', title: 'WELL LOCK', sub: 'Strange symbols', detail: 'Symbols carved into the old well, and a small lock under the moss.', hint: 'Somewhere in the village', icon: { key: 'gv_well', scale: 0.35 }, x: C.village, y: 720 },
-  { id: 'drawing', kind: 'clue', title: '“ELI + NIA”', sub: 'A child’s drawing', detail: 'In the schoolhouse, a crayon drawing of a boy with a lantern holding a girl’s hand. Same handwriting as the letter.', hint: 'Somewhere in the village', icon: { key: 'w_drawing', scale: 3.5 }, x: C.village, y: 830 },
+  { id: 'drawing', kind: 'clue', title: '“ELI + NIA”', sub: 'A child’s drawing', detail: 'In the school, a crayon drawing of a boy with a lantern holding a girl’s hand. Same handwriting as the letter.', hint: 'Somewhere in the village', icon: { key: 'w_drawing', scale: 3.5 }, x: C.village, y: 830 },
   // questions (deductions)
   { id: 'qKey', kind: 'question', title: 'WHAT DOES THE KEY OPEN?', sub: 'Link a clue', detail: 'The key is too small for any door in Veyra.', hint: '', x: C.q, y: 360 },
   { id: 'qTime', kind: 'question', title: 'DID TIME STOP AT 2:17?', sub: 'Link a clue', detail: 'Every clock says 2:17. Ivy remembers 2:17. Is that the whole story?', hint: '', x: C.q, y: 560 },
@@ -191,7 +191,7 @@ export function openBoard(scene: Phaser.Scene, state: BoardState, opts: { deduce
         tx = -w / 2 + 84;
       }
       const title = n.id === 'figure' && state.flags.qWho ? 'ELIAS' : n.title;
-      const sub = n.id === 'figure' && state.flags.qWho ? 'The apprentice. Me.' : n.kind === 'question' ? (solved(n.id) ? 'SOLVED' : mode === n.id ? 'Answering now' : 'Click to answer') : n.sub;
+      const sub = n.id === 'figure' && state.flags.qWho ? 'The apprentice. Me.' : n.kind === 'question' ? (solved(n.id) ? 'SOLVED' : mode === n.id ? 'Answering now' : !DEDUCTIONS[n.id] || DEDUCTIONS[n.id].answer.some((id) => isFound(state, id)) ? 'Click to answer' : 'Needs a clue you haven’t found') : n.sub;
       if (n.id === 'case') {
         c.add(ptext(scene, 0, 0, title, 34, '#ffb0b0').setOrigin(0.5));
       } else {
@@ -240,9 +240,12 @@ export function openBoard(scene: Phaser.Scene, state: BoardState, opts: { deduce
     question.removeAll(true);
     if (!mode) return;
     const d = DEDUCTIONS[mode];
+    // If the clue that answers it isn't on the board yet, say so plainly instead of letting the
+    // player cycle through every card.
+    const ready = d.answer.some((id) => isFound(state, id));
     const top = 24, pw = 980;
     const t = ptext(scene, W / 2, 0, d.ask, 36, '#ffb0b0', pw - 60).setOrigin(0.5).setAlign('center');
-    const how = ptext(scene, W / 2, 0, misses >= 2 ? `Hint: ${d.nudge}` : 'Click a clue to read it, then present the one that answers this.', 26, misses >= 2 ? '#ffe08a' : '#aab8d8', pw - 60).setOrigin(0.5).setAlign('center');
+    const how = ptext(scene, W / 2, 0, !ready ? 'You haven’t found the clue that answers this yet. Close the board and keep investigating.' : misses >= 2 ? `Hint: ${d.nudge}` : 'Click a clue to read it, then present the one that answers this.', 26, !ready || misses >= 2 ? '#ffe08a' : '#aab8d8', pw - 60).setOrigin(0.5).setAlign('center');
     t.setY(top + 18 + t.height / 2);
     how.setY(top + 28 + t.height + how.height / 2);
     question.add([panel(scene, W / 2 - pw / 2, top, pw, t.height + how.height + 46, 0.97), t, how]);

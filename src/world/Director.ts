@@ -12,6 +12,7 @@ import { Qte } from '../story/qte';
 import { comicSettings } from '../comic';
 import { H, W, label } from '../scenes/coreUi';
 import { playCaseFile } from '../story/caseFile';
+import { Guide } from './guide';
 import { PANEL, panel, pbutton, ptext } from './ui';
 import { NODES, openBoard } from './board';
 
@@ -92,6 +93,11 @@ export class Director {
   private sightFx!: Phaser.GameObjects.Image;
   private sightHint!: Phaser.GameObjects.Text;
   private pingAt = 0;
+  /** True while an unrevealed echo trace is close by (the lantern hint shows only then). */
+  nearTrace = false;
+  guide!: Guide;
+  private objTarget?: { x: number; y: number; label: string };
+  private lines = 0; // dialogue lines shown so far (the first few show how to continue)
 
   constructor(world: StoryScene, ui: Phaser.Scene, save: StorySave, onSave: (s: StorySave) => void) {
     this.world = world;
@@ -120,6 +126,7 @@ export class Director {
     }
     this.sightFx = ui.add.image(W / 2, H / 2, 'w_sight').setDisplaySize(W, H).setAlpha(0).setDepth(1);
     this.sightHint = ptext(ui, 40, H - 36, 'HOLD [F] OR RIGHT MOUSE  Raise the lantern', 28, '#7fe0d4').setOrigin(0, 1).setDepth(9).setAlpha(0.85).setVisible(false);
+    this.guide = new Guide(this);
 
     pbutton(ui, W - 190, 50, 320, 64, 'EVIDENCE BOARD [C]', () => this.openCasebook(), 32).setDepth(10);
     this.badge = ptext(ui, W - 40, 22, '', 30, '#ffe08a').setOrigin(1, 0).setDepth(11);
@@ -153,6 +160,7 @@ export class Director {
     this.lastDt = dt;
     this.waiters = this.waiters.filter((w) => !w());
     this.updateSight(dt);
+    this.guide.update();
     // Interaction prompt over the nearest usable spot.
     const s = this.nearestSpot();
     if (s && this.exploring && !this.exploring.busy && !this.busyUi) {
@@ -190,19 +198,20 @@ export class Director {
   }
 
   private updateSight(dt: number) {
-    const free = !!this.exploring && !this.exploring.busy && !this.busyUi && !this.boardOpen && !this.world.locked;
+    const free = this.isFree();
     const raised = free && this.world.lanternRaised;
     this.sight = Phaser.Math.Clamp(this.sight + (raised ? dt / 260 : -dt / 200), 0, 1);
     this.world.lanternBoost = this.sight * 0.7;
     this.sightFx.setAlpha(this.sight * 0.9);
-    this.sightHint.setVisible(free);
+    // Only where it's needed: near something hidden, once the tutorial card has taught it.
+    this.sightHint.setVisible(free && this.nearTrace && !!this.save.flags.tut_lantern);
     if (raised && this.sight > 0.5) this.audio.hum(true);
     else this.audio.hum(false);
     const px = this.player.x, py = this.player.y - 20, reach = 9 * 16 * this.sight;
     let near = false;
     for (const t of this.traces) {
       const dist = Phaser.Math.Distance.Between(px, py, t.img.x, t.img.y - t.img.displayHeight / 2);
-      if (!t.revealed && dist < 7 * 16) near = true;
+      if (!t.revealed && dist < 9 * 16) near = true;
       const lit = dist < reach;
       if (lit && !t.revealed && this.sight > 0.8) {
         t.revealed = true;
@@ -221,6 +230,7 @@ export class Director {
       const want = lit ? 0.95 * shimmer : t.revealed ? 0.3 + 0.4 * this.sight : 0;
       t.img.setAlpha(t.img.alpha + (want - t.img.alpha) * Math.min(1, dt / 120));
     }
+    this.nearTrace = near;
     // The instinct: when something hidden is close and the lantern is down, it stirs.
     if (near && free && this.sight < 0.1 && this.world.time.now > this.pingAt) {
       this.pingAt = this.world.time.now + 2600;
@@ -229,6 +239,18 @@ export class Director {
       const o = { r: 4, a: 0.5 };
       this.world.tweens.add({ targets: o, r: 34, a: 0, duration: 900, ease: 'Sine.Out', onUpdate: () => g.clear().lineStyle(1.5, 0x7fe0d4, o.a).strokeCircle(lp.x, lp.y, o.r), onComplete: () => g.destroy() });
     }
+  }
+
+  /** The player can walk around and act (not in dialogue, a cutscene or the board). */
+  isFree() {
+    return !!this.exploring && !this.exploring.busy && !this.busyUi && !this.boardOpen && !this.world.locked;
+  }
+  /** Where the objective arrows point: every open "!" spot (nearest first), or a set target. */
+  objectiveTargets(): { x: number; y: number; label: string }[] {
+    const p = this.player;
+    const open = this.spots.filter((s) => !s.when || s.when()).map((s) => ({ x: s.x, y: s.y, label: s.label }));
+    if (this.objTarget) open.push(this.objTarget);
+    return open.sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x));
   }
 
   until(test: () => boolean): Promise<void> {
@@ -439,6 +461,12 @@ export class Director {
     c.add(body);
     const arrow = ptext(ui, x + w - 50, y + h - 52, '▼', 34, '#ffe08a').setVisible(false);
     c.add(arrow);
+    // The first few lines say how to continue, for anyone who skipped HOW TO PLAY.
+    if (this.lines++ < 6) {
+      const how = ptext(ui, x + w - 70, y + h - 46, 'SPACE OR CLICK', 26, '#aab8d8').setOrigin(1, 0);
+      c.add(how);
+      ui.tweens.add({ targets: how, alpha: 0.4, yoyo: true, repeat: -1, duration: 700 });
+    }
     ui.tweens.add({ targets: arrow, y: arrow.y + 6, yoyo: true, repeat: -1, duration: 400 });
     return { c, body, arrow, full: opts.narration ? text : text };
   }
@@ -564,8 +592,10 @@ export class Director {
     await this.wait(500);
   }
 
-  objective(text: string | null) {
+  /** Sets the objective line. `target` adds an arrow for objectives that have no "!" spot. */
+  objective(text: string | null, target?: { x: number; y: number; label: string }) {
     this.objectiveBox.removeAll(true);
+    this.objTarget = text ? target : undefined;
     if (!text) return;
     const t = ptext(this.scene, 24, 16, `▶ ${text}`, 36, '#ffe08a');
     this.objectiveBox.add([panel(this.scene, 0, 0, t.width + 48, 66, 0.8), t]);
@@ -629,6 +659,7 @@ export class Director {
   }
 
   private openCasebook() {
+    this.guide.boardOpened = true;
     if (this.boardOpen || this.busyUi) return;
     this.boardOpen = true;
     this.busyUi = true;
@@ -661,6 +692,7 @@ export class Director {
     if (!ex || ex.busy || this.busyUi || this.boardOpen) return;
     const s = this.nearestSpot();
     if (!s) return;
+    this.guide.interacted = true;
     ex.busy = true;
     this.lock();
     let r: void | 'done';

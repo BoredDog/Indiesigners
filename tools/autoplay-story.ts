@@ -39,6 +39,9 @@ const STEP = `
     return 'choice:' + choices[want].name;
   }
   // QTE overlay (depth 70): press space via the scene's keyboard listeners.
+  // Ring-timing QTE: press only while the ring is inside the window, like a player would.
+  const q = d.qte && d.qte.state;
+  if (q && q.kind === 'timing' && q.phase === 'play' && !q.window) return 'qte-wait';
   if (all.some((o) => o.depth === 70)) return 'qte';
   // Exploring: go to the next spot or satisfy the movement objective.
   const ex = d.exploring;
@@ -69,12 +72,13 @@ try {
     if (ep !== episode) { episode = ep; console.log(`episode ${ep}  (${((Date.now() - t0) / 1000) | 0}s)`); }
     if (r === 'summary') break;
     if (r === 'sight') { await page.keyboard.down('f'); await page.waitForTimeout(900); await page.keyboard.up('f'); }
-    if (r === 'qte') await page.keyboard.press('Space');
+    if (r === 'qte') for (let k = 0; k < 3; k++) await page.keyboard.press('Space'); // a burst, like a player mashing
     else if (r === 'advance' || r === 'boot') await page.keyboard.press('Space');
-    same = r === last ? same + 1 : 0;
+    // QTEs repeat until passed (and get easier), so time spent in one isn't a stall.
+    same = r === last && !r.startsWith('qte') ? same + 1 : 0;
     last = r;
     if (same > 400) throw new Error(`stalled on "${r}" in episode ${ep}`);
-    await page.waitForTimeout(r === 'qte' ? 40 : 120);
+    await page.waitForTimeout(r === 'qte-wait' ? 10 : r === 'qte' ? 40 : 120);
   }
   const done = await js<boolean>(`const ui = window.__echoes.game.scene.getScene('StoryUI'); const all=[]; const walk=(o)=>{all.push(o);(o.list||[]).forEach(walk)}; ui.children.list.forEach(walk); return all.some((o)=>o.name==='btn:PLAY AGAIN');`);
   const save = await js<{ flags: Record<string, unknown>; found: string[]; remembered: string[] }>('return window.__story.save');
