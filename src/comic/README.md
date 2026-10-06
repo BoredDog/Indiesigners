@@ -25,4 +25,4 @@ word.on('reveal', () => { gameState.addEvidence('ev_sis_bell'); page.panel('P3')
 
 Demo / test bench: `npm run dev` (boots `src/dev/ComicDemoScene.ts`).
 Screenshots + console-error check: `npm run build && npx tsx tools/shots-comic.ts`.
-Art from Bhumi/Arya: they upload to `art/incoming/<name>/`, then `npm run art` → `public/assets/art/*.webp` + `manifest.json`.
+Comic-mode art lives in `public/assets/art/*.webp`, listed in `manifest.json`.

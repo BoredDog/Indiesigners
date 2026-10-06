@@ -1,6 +1,6 @@
 # src/puzzle — Echo Paths
 
-Owner: Vansh. Turn-based grid puzzles that guard key evidence fragments (PLAN.md §3).
+Owner: Vansh. Turn-based grid puzzles that guard key evidence fragments.
 
 | File | What it does |
 |---|---|

@@ -238,19 +238,24 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private credits() {
-    const c = this.modal(1100, 640, 'CREDITS');
+    const c = this.modal(1100, 820, 'CREDITS');
     const lines = [
       'ECHOES OF SORROW. Team Indiesigners, TGC GameJam 2026',
       '',
-      'Game code: Garv, Nav, Vansh',
-      'Art + story: Bhumi, Arya',
+      'Garv Singh: game code, lead, music and sound',
+      'Nav Singhal: game code, world and gameplay, story scripting',
+      'Vansh Jaiswal: game code, puzzles, puzzle art',
+      'Bhumi Chaudhari: art and story, characters, dialogue',
+      'Arya Pandey: art and story, environments, content, QA',
+      '',
+      'Developed with AI assistance.',
       '',
       'Gothicvania Town, Cemetery and Church by ansimuz (CC0)',
       'Kenney Particle, RPG Audio and Impact Sounds (CC0)',
       'Fonts: Bangers, VT323 (SIL OFL)',
       'Full list in CREDITS.md',
     ];
-    c.add(ptext(this, W / 2, H / 2 - 30, lines.join('\n'), 32, '#ffffff').setOrigin(0.5).setAlign('center').setLineSpacing(6));
+    c.add(ptext(this, W / 2, H / 2 - 30, lines.join('\n'), 30, '#ffffff').setOrigin(0.5).setAlign('center').setLineSpacing(5));
   }
 
   private rain() {

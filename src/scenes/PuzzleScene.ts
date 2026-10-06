@@ -26,7 +26,7 @@ const MOVE_MS = 130;
 const GROUP_COLORS = [COLORS.amber, COLORS.violet, COLORS.olive, COLORS.dustyBlue, 0xc0605a];
 
 /**
- * Echo Paths (PLAN.md §3): a turn-based grid board laid over the memory panel. The player moves the
+ * Echo Paths: a turn-based grid board laid over the memory panel. The player moves the
  * lantern wisp; light from one side casts ink shadows the wisp cannot enter. Rules live in
  * src/puzzle/Rules.ts; this scene only draws state and animates transitions between states.
  */

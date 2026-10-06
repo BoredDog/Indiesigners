@@ -1,7 +1,7 @@
 // Story mode autoplay: plays every episode to the summary screen with a simple "player":
 // advances dialogue, picks choices (first option, or --pick=N), solves board deductions, walks to
 // objectives, digs the rubble, and hammers Space through QTEs. Fails on console errors or a stall.
-// Usage: npm run build && npx tsx tools/autoplay-story.ts [--chrome] [--pick=1] [--ending=forget]
+// Usage: npm run build && npx tsx tools/autoplay-story.ts [--chrome] [--gpu] [--pick=1] [--ending=forget]
 import { chromium } from '@playwright/test';
 import { preview } from 'vite';
 
@@ -9,7 +9,9 @@ const args = process.argv.slice(2);
 const pick = Number(args.find((a) => a.startsWith('--pick='))?.split('=')[1] ?? 0);
 const forget = args.includes('--ending=forget');
 const server = await preview({ preview: { port: 4192, strictPort: true }, logLevel: 'silent' });
-const browser = await chromium.launch({ channel: args.includes('--chrome') ? 'chrome' : undefined, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// --gpu renders on the real GPU: SwiftShader (the default, same everywhere) crawls when a laptop is on battery.
+const gl = args.includes('--gpu') ? ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+const browser = await chromium.launch({ channel: args.includes('--chrome') ? 'chrome' : undefined, args: gl });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors: string[] = [];
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));

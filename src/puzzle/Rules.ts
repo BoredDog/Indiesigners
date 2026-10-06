@@ -1,4 +1,4 @@
-// Echo Paths rules engine (PLAN.md §3.1–3.2). Pure functions over immutable State, shared by the
+// Echo Paths rules engine. Pure functions over immutable State, shared by the
 // Puzzle scene, the in-game hint and tools/solve-puzzles.ts.
 //
 // One turn: the wisp moves 1 tile (pushing a crate if there is one) → the tile it entered acts

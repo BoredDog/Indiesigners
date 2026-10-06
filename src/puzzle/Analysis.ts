@@ -1,5 +1,5 @@
 // Level analysis for V14/V15: which pieces actually matter, and how many dead ends a board has.
-// Pure, shared by tools/solve-puzzles.ts and tools/gen-puzzles.ts (ported to godot/puzzle/echo_analysis.gd).
+// Pure, shared by tools/solve-puzzles.ts and tools/gen-puzzles.ts.
 //
 // A piece is UNUSED if, with it removed (crate/dial/switch/gate/water/cracked tile → plain floor,
 // sentinel → gone), the level is still solvable at the same optimal length.

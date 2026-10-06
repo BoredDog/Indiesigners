@@ -1,4 +1,4 @@
-// Proves every Echo Paths level in content/puzzles/ is solvable within par + 4 (PLAN.md §3.4)
+// Proves every Echo Paths level in content/puzzles/ is solvable within par + 4
 // and prints its shortest solution (the hint path). Exits 1 on a broken or unsolvable level, so
 // `npm run build` (and CI) fails before a bad level can ship.
 // V15: also reports, per level, dead ends (states that can no longer reach the goal) and UNUSED

@@ -16,13 +16,8 @@
     "test:settings": "npm run build && tsx tools/shots-textsize.ts 150",
     "test:browsers": "npm run build && tsx tools/autoplay-full.ts test-results/autoplay-firefox 0 --browser=firefox && tsx tools/autoplay-full.ts test-results/autoplay-edge 0 --browser=msedge && tsx tools/autoplay-full.ts test-results/autoplay-brave 0 --browser=brave",
     "assets": "bash tools/download-assets.sh",
-    "art": "tsx tools/process-art.ts",
     "test": "npm run build && tsx tools/check-core.ts && tsx tools/autoplay-smoke.ts && tsx tools/shots-memory.ts mira && tsx tools/shots-memory.ts arun && tsx tools/shots-memory.ts leela && tsx tools/shots-casebook.ts && tsx tools/shots-conversation.ts && tsx tools/shots-sequence.ts && tsx tools/shots-puzzle.ts && tsx tools/autoplay-full.ts test-results/autoplay 0 5",
-    "test:autoplay": "npm run build && tsx tools/autoplay-full.ts",
-    "answer-key": "tsx tools/answer-key.ts",
-    "script-review:v2": "tsx tools/script-review.ts design/script_review_v2.html v2",
-    "godot:sync": "bash tools/sync-godot-content.sh",
-    "test:godot": "bash tools/sync-godot-content.sh && bash tools/godot.sh --headless --path godot --import && bash tools/godot.sh --headless --path godot res://tests/test_core.tscn && bash tools/godot.sh --headless --path godot res://tests/test_memory.tscn && bash tools/godot.sh --headless --path godot res://tests/test_loop.tscn && bash tools/godot.sh --headless --path godot res://tests/test_casebook.tscn && bash tools/godot.sh --headless --path godot res://tests/test_sequences.tscn && bash tools/godot.sh --headless --path godot res://tests/test_conversation.tscn && bash tools/godot.sh --headless --path godot res://tests/test_accusation.tscn && bash tools/godot.sh --headless --path godot -s res://tests/test_puzzles.gd && bash tools/godot.sh --headless --path godot res://tests/test_puzzle_scene.tscn"
+    "test:autoplay": "npm run build && tsx tools/autoplay-full.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
