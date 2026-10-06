@@ -58,6 +58,12 @@ export class Guide {
     this.arrows = ui.add.graphics().setDepth(9);
   }
 
+  /** Show a lesson right away (the lantern card once it's tuned), even with nothing hidden near. */
+  teachNow(id: Lesson) {
+    this.forced = id;
+    this.teach([id]);
+  }
+  private forced?: Lesson;
   /** Queue lessons; each shows once (remembered in the save) until the player does it. */
   teach(ids: Lesson[]) {
     for (const id of ids) if (!this.d.save.flags[`tut_${id}`] && !this.queue.includes(id)) this.queue.push(id);
@@ -94,7 +100,7 @@ export class Guide {
     if (this.card && this.card.id !== 'lantern' && d.world.time.now - this.card.since > 15000 && this.queue.length > 1) {
       this.queue = [...this.queue.filter((q) => q !== this.card!.id), this.card.id];
     }
-    const want = free ? (this.queue.find((q) => q !== 'lantern' || lantern) ?? null) : null;
+    const want = free ? (this.queue.find((q) => q !== 'lantern' || lantern || this.forced === 'lantern') ?? null) : null;
     if (this.card && this.card.id !== want) {
       const old = this.card.c;
       this.card = undefined;

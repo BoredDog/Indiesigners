@@ -12,6 +12,7 @@ import { H, W, label } from '../scenes/coreUi';
 import type { Director } from '../world/Director';
 import { PIX, panel, pbutton, ptext } from '../world/ui';
 import { T } from '../world/tiles';
+import { backButton } from './back';
 
 // Openings as bits: N 1, E 2, S 4, W 8. Turning clockwise moves each bit one place.
 const N = 1, E = 2, S = 4, Wb = 8;
@@ -39,7 +40,7 @@ export interface RiverSpec {
 
 const DEPTH = 68;
 const BASE: Record<string, number> = { '|': N | S, L: N | E, T: N | E | S, '+': 15, '#': 0, '.': 0 };
-const HINT_AFTER = 15, SKIP_AFTER = 45;
+const HINT_AFTER = 15;
 
 export class River {
   private d: Director;
@@ -50,7 +51,8 @@ export class River {
     this.d = d;
   }
 
-  async play(spec: RiverSpec): Promise<void> {
+  /** Resolves true when the river reaches the dock with no spills, or false if the player goes BACK. */
+  async play(spec: RiverSpec): Promise<boolean> {
     const d = this.d, s = d.scene, { w, h } = spec;
     const tex = s.textures.get('wtiles');
     if (!tex.has('t1')) for (let id = 1; id < 28; id++) tex.add(`t${id}`, 0, id * 16, 0, 16, 16);
@@ -151,7 +153,6 @@ export class River {
       if (hintAt >= 0) fx.lineStyle(6, 0x7fe0d4, 1).strokeCircle(cx(hintAt), cy(hintAt), CELL / 2 - 4);
       count.setText(`TURNS ${turns}\nSPILLS ${spills.length}`);
       hintBtn.setVisible(turns >= HINT_AFTER && !won);
-      skipBtn.setVisible(turns >= SKIP_AFTER && !won);
       const shown = btns.filter((b) => b.visible);
       shown.forEach((b, k) => b.setX(W / 2 + (k - (shown.length - 1) / 2) * 220));
       if (!won && reached && spills.length === 0) (won = true), resolveWin();
@@ -197,9 +198,11 @@ export class River {
       pbutton(s, 0, row, 200, 64, 'UNDO [Z]', undo, 30),
       pbutton(s, 0, row, 200, 64, 'RESET [R]', reset, 30),
       pbutton(s, 0, row, 200, 64, 'HINT', hint, 30),
-      pbutton(s, 0, row, 200, 64, 'SKIP', () => ((won = true), resolveWin()), 30),
     ];
-    const [, , hintBtn, skipBtn] = btns;
+    const [, , hintBtn] = btns;
+    let resolveBack: () => void = () => undefined;
+    const backP = new Promise<void>((r) => (resolveBack = r));
+    const offBack = backButton(s, layer, () => !won && resolveBack());
     layer.add(btns);
     layer.add(ptext(s, W / 2, row + 62, 'Click a piece to turn it (right click turns it back), or move with the arrow keys and press Space.', 28, '#aab8d8').setOrigin(0.5));
 
@@ -240,14 +243,17 @@ export class River {
     s.tweens.add({ targets: layer, alpha: 1, duration: 200 });
     if (!still) s.tweens.add({ targets: boat, y: boat.y - 3, yoyo: true, repeat: -1, duration: 900 });
     try {
-      await Promise.race([winP, d.until(() => !d.alive)]);
+      const back = await Promise.race([winP.then(() => false), backP.then(() => true), d.until(() => !d.alive).then(() => false)]);
+      if (back) return false;
       state.solved = true;
       d.audio.tone('chime');
       d.audio.water(true);
       s.tweens.add({ targets: boat, angle: 0, y: outY + 6, duration: 700, ease: 'Sine.Out' });
       layer.add(label(s, W / 2, by + bh / 2, spec.done ?? 'THE RIVER RUNS', 90, { color: '#7fe0d4', strokeThickness: 14 }).setOrigin(0.5));
       await d.wait(1200);
+      return true;
     } finally {
+      offBack();
       s.input.off('pointermove', onMove);
       s.input.off('pointerup', onUp);
       s.input.keyboard?.off('keydown', onKey);

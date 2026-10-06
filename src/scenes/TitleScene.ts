@@ -33,7 +33,7 @@ export class TitleScene extends Phaser.Scene {
     audio.music('title');
 
     label(this, W / 2, 270, 'ECHOES OF SORROW', 150, { strokeThickness: 16 }).setOrigin(0.5);
-    ptext(this, W / 2, 380, 'Ten years ago, a village vanished. Something is calling you home.', 40, '#bfefff').setOrigin(0.5);
+    ptext(this, W / 2, 380, 'Ten years ago, Veyra vanished. Something is pulling you to this village.', 40, '#bfefff').setOrigin(0.5);
 
     const cta = ptext(this, W / 2, 760, 'PRESS ANY KEY', 52, '#ffe08a').setOrigin(0.5);
     if (!comicSettings.reduceFlashing) this.tweens.add({ targets: cta, alpha: 0.35, duration: 900, yoyo: true, repeat: -1 });

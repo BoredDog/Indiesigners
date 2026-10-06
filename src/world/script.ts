@@ -34,7 +34,7 @@ export const EPISODES: Episode[] = [
       await d.fadeIn(1200);
       await d.walkTo(A.start.x + 140);
       await d.nameCard('ELIAS VANE', 'Ghost hunter');
-      await d.narr('The letter came with no stamp and no return address. Four words in pencil, in a child’s round, careful hand. The last one has run in the rain: COME HOME, —.');
+      await d.narr('The letter came with no stamp and no return address. Two words in pencil, in a child’s round, careful hand, and a smudge where a name should be: COME HOME.');
       await d.say('Elias', 'Home. As far as I know, I have never been to Veyra.');
       await d.say('Elias', 'Ten years ago, at 2:17 in the morning, every person in this village disappeared. The stories say a few of them stayed.');
       await d.narr('Ten years ago I was found on a country road with no memory and this lantern in my hand. It has been my living ever since. In its light I can see what a place remembers.');
@@ -81,7 +81,6 @@ export const EPISODES: Episode[] = [
       if (c === 1) await d.narr('The walls gave my voice back to me, and nothing else.');
       if (c === 2) await d.narr('I didn’t call again. I had the feeling the village was already listening.');
       await d.say('Elias', 'Start with what’s real. Look around. Pin everything to the board.');
-      await d.narr('Held high, the lantern shows what a place remembers: a footprint, a mark, a hand on a door. Things nobody else can see. When something hidden is close, the flame stirs.');
 
       // --- free investigation: 4 required, 2 optional ---
       const seen = new Set<string>();
@@ -112,9 +111,9 @@ export const EPISODES: Episode[] = [
       progress();
       // First free control: teach the basics, one card at a time, as they become useful.
       d.guide.teach(['move', 'run', 'jump', 'interact', 'board']);
-      // The footprints are an echo: only the raised lantern shows them.
-      d.trace('footprints', A.footprints.x - 20, A.footprints.y, 'w_echo_steps');
-      d.trace('wellmarks', A.well.x - 8, A.well.y - 20, 'w_runes');
+      // The lantern shows nothing until it's tuned at the old house: only then do the hidden
+      // footprints and the marks on the well appear in its light.
+      let tuned = false;
       const key = d.world.add.image(A.footprints.x + 18, A.footprints.y - 1, 'w_key').setOrigin(0.5, 1).setDepth(1).setVisible(false);
       await d.explore(
         [
@@ -166,32 +165,51 @@ export const EPISODES: Episode[] = [
             },
           },
           {
-            id: 'house', x: A.house.x + 30, y: A.house.y, label: 'Old house', when: () => !seen.has('house'),
+            id: 'house', x: A.house.x + 30, y: A.house.y, label: 'Old house', when: () => !tuned,
             run: async () => {
-              seen.add('house');
-              const woman = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
-              woman.sprite.setAlpha(0);
-              await d.fadeNpc(woman, 0.85, 1200);
-              await d.narr('A woman stands in the doorway. She is very pale, and she looks at me the way you look at someone you have been expecting for a long time.');
-              const ask = await d.choice(['Who are you?', 'Did you see what happened here?', '…'], { timer: 8 });
-              if (ask === 0) await d.say('Elias', 'Who are you?');
-              if (ask === 1) await d.say('Elias', 'Did you see what happened here?');
-              await d.say('The woman', 'Whatever you find here, don’t trust the first memory you see. Not even your own.');
-              d.remember('The woman', ask === 2 ? 'noticed you didn’t ask her name.' : 'will remember that.');
-              d.flag('askedWoman', ask);
+              let woman: ReturnType<typeof d.npc> | undefined;
+              if (!seen.has('house')) {
+                seen.add('house');
+                woman = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
+                woman.sprite.setAlpha(0);
+                await d.fadeNpc(woman, 0.85, 1200);
+                await d.narr('A woman stands in the doorway. She is very pale, and she looks at me the way you look at someone you have been expecting for a long time.');
+                const ask = await d.choice(['Who are you?', 'Did you see what happened here?', '…'], { timer: 8 });
+                if (ask === 0) await d.say('Elias', 'Who are you?');
+                if (ask === 1) await d.say('Elias', 'Did you see what happened here?');
+                await d.say('The woman', 'Whatever you find here, don’t trust any memory you see. Not even your own.');
+                d.remember('The woman', ask === 2 ? 'noticed you didn’t ask her name.' : 'will remember that.');
+                d.flag('askedWoman', ask);
+                await d.say('The woman', 'And that lantern. You carry it like it’s only a light. Do you know what it really does?');
+                await d.say('Elias', 'It shows me what a place remembers.');
+                await d.say('The woman', 'It shows you more than that, if you tune it. Listen. This house is still humming.');
+              }
+              // Puzzle: tune the lantern. BACK leaves it; the house keeps its "!" until it's done.
+              if (!(await d.tuner.tune(ECHO_FIRST))) {
+                if (woman) d.world.removeNpc(woman);
+                d.objective('The old house is still humming. Come back and tune the lantern when you’re ready.');
+                return;
+              }
+              tuned = true;
+              await d.banner('THE LANTERN IS TUNED', '#7fe0d4', 1400);
+              await d.narr('In its light you can now see what others can’t: footprints, marks, a hand on a door. When something hidden is near, the flame stirs.');
+              d.guide.teachNow('lantern');
+              d.trace('footprints', A.footprints.x - 20, A.footprints.y, 'w_echo_steps');
+              d.trace('wellmarks', A.well.x - 8, A.well.y - 20, 'w_runes');
               d.sfx('creak2', 0.6, -900);
-              d.world.removeNpc(woman);
-                      await d.narr('Then she was gone. She didn’t fade. She simply wasn’t there. Inside, I find the village records and a half-burned photograph.');
+              if (woman) d.world.removeNpc(woman);
+              await d.narr('Then she was gone. She didn’t fade. She simply wasn’t there. Inside, I find the village records and a half-burned photograph.');
               d.found('records');
               d.found('photo');
               await d.narr('Three villagers, and a fourth person holding a lantern. The fourth face has been scratched out, so hard the nib went through the paper.');
               d.stir();
               await d.narr('My lantern stirs over the scratched-out face, and goes still when I look away.');
               progress();
+              d.objective('Go back to the well and the street lamp, and raise the lantern.');
             },
           },
         ],
-        () => need.every((k) => seen.has(k)),
+        () => tuned && need.every((k) => seen.has(k)),
       );
       nudger.remove();
       d.objective(null);
@@ -212,7 +230,6 @@ export const EPISODES: Episode[] = [
       await d.deduce('qKey');
       d.objective(null);
       await d.narr('The lantern in my hand begins to hum. The flame leans toward the school, the way a plant leans toward a window.');
-      await d.tuner.tune(ECHO_FIRST); // puzzle: tune the lantern to the echo
       await d.banner('MEMORY ECHO DETECTED');
     },
   },
@@ -225,7 +242,8 @@ export const EPISODES: Episode[] = [
       d.objective('Follow the humming lantern to the school.');
       await d.explore([{ id: 'school', x: A.school.x, y: A.school.y, label: 'School', run: async () => 'done' }]);
       d.objective(null);
-      await d.candles.play(IVY_CANDLES); // puzzle: light the dark classroom; Ivy appears in the candlelight
+      // Puzzle: light the dark classroom; Ivy appears in the candlelight. BACK leaves it for later.
+      await d.gate({ spot: { id: 'school', x: A.school.x, y: A.school.y, label: 'School' }, objective: 'Come back to the school when you’re ready.', run: () => d.candles.play(IVY_CANDLES) });
       const ivy = d.npc('ivy', A.school.x + 40, A.school.y, { ghost: true, tint: GHOST, flip: true });
       ivy.sprite.setAlpha(0);
       await d.fadeNpc(ivy, 0.85);
@@ -307,7 +325,14 @@ export const EPISODES: Episode[] = [
       await d.say('Luke', 'Someone helped me push the last boat out that night. I never thanked him. Never saw his face.');
       await d.narr('The lantern flares on its own. It wants this one.');
       d.memory(true);
-      await d.river.play(LUKE_RIVER); // puzzle: turn the river back to the dock
+      // Puzzle: turn the river back to the dock. BACK leaves the memory; the dock reopens it.
+      await d.gate({
+        spot: { id: 'dock', x: A.dock.x - 20, y: A.dock.y, label: 'The dock' },
+        objective: 'Come back to the dock when you’re ready.',
+        run: () => d.river.play(LUKE_RIVER),
+        leave: () => d.memory(false),
+        enter: () => d.memory(true),
+      });
       d.world.setRiver(true, 2200);
       await d.banner('LUKE’S MEMORY, 2:05 AM', '#bfefff', 1300);
       await d.narr('Luke is alone on the dock, mending a net by lamplight. The village is asleep.');
@@ -378,7 +403,7 @@ export const EPISODES: Episode[] = [
       d.objective(null);
       await d.narr('In the records, Veyra’s staff register, every entry in one careful hand. A photograph is pinned to the archivist’s page. The woman from the doorway.');
       d.found('register');
-      const hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
+      let hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
       hanna.sprite.setAlpha(0);
       await d.fadeNpc(hanna, 0.85);
       await d.nameCard('HANNA', 'The village archivist');
@@ -399,7 +424,23 @@ export const EPISODES: Episode[] = [
       d.shake(800, 0.005);
       d.audio.tone('drone');
       await d.narr('A sound from under the ground, low, like a held note. Hanna follows it out of the house, down the street, to the old well.');
-      await followHanna(d, hanna, A.well.x, A.well.y); // activity: follow her through the memory to the well
+      // Activity: follow her through the memory to the well. BACK leaves the memory; the house reopens it.
+      await d.gate({
+        spot: { id: 'house', x: A.house.x + 30, y: A.house.y, label: 'Old house' },
+        objective: 'Come back to the old house to follow Hanna’s memory.',
+        run: () => followHanna(d, hanna, A.well.x, A.well.y),
+        leave: async () => {
+          d.world.removeNpc(hanna);
+          d.memory(false);
+          await d.fadeOut(300);
+          d.teleport(A.house.x + 30, A.house.y);
+          await d.fadeIn(300);
+        },
+        enter: () => {
+          d.memory(true);
+          hanna = d.npc('hanna', A.house.x + 64, A.house.y, { ghost: true, tint: GHOST, flip: true });
+        },
+      });
       await d.pan(A.well.x, A.well.y - 30, 900);
       const fig = d.npc('figure', A.well.x - 30, A.well.y, { tint: 0x101018 });
       await d.narr('Below the well, a lantern burns. The figure stands beside it.');

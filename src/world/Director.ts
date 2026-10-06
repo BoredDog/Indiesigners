@@ -63,7 +63,7 @@ export class StoryUIScene extends Phaser.Scene {
 }
 
 /** Puzzles that `?try=` can open on their own, for testing. */
-const TRY_OUT: Record<string, (d: Director) => Promise<void>> = {
+const TRY_OUT: Record<string, (d: Director) => Promise<unknown>> = {
   tune1: (d) => d.tuner.tune(ECHO_FIRST),
   tune2: (d) => d.tuner.tune(ECHO_NOTE),
   candles: (d) => d.candles.play(IVY_CANDLES),
@@ -876,6 +876,22 @@ export class Director {
         return !this.exploring;
       });
     });
+  }
+
+  /**
+   * A puzzle the story waits on. `run()` opens it and resolves true when solved, false on BACK.
+   * After BACK the player is free again; the spot keeps its "!" and reopens the puzzle, and the
+   * story only moves on once it's solved. `leave` / `enter` step out of and back into a memory.
+   */
+  async gate(o: { spot: Omit<Spot, 'run'>; objective: string; run: () => Promise<boolean>; leave?: () => void | Promise<void>; enter?: () => void | Promise<void> }) {
+    for (;;) {
+      if (await o.run()) return;
+      await o.leave?.();
+      this.objective(o.objective, { x: o.spot.x, y: o.spot.y, label: o.spot.label });
+      await this.explore([{ ...o.spot, run: async () => 'done' }]);
+      this.objective(null);
+      await o.enter?.();
+    }
   }
 
   // ---------------------------------------------------------------- end
