@@ -1,6 +1,7 @@
 // Plays every Echo Paths level headlessly through the real Puzzle scene: screenshot the board,
 // play the solver's solution with the normal input path, and check the scene hands the evidence
 // back to its caller (Memory / Village / Archive). Also exercises undo, reset, hint and skip.
+// Every level is played twice: in the 2D view and in the V19 3D (isometric) view.
 // Usage: npm run build && npx tsx tools/shots-puzzle.ts [outDir] [id ...]
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -81,10 +82,14 @@ async function dismissPopups(): Promise<number> {
   return n;
 }
 
-async function open(l: LevelFile) {
+/** Fresh save; `view` is written to the saved settings before the board loads (PUZZLE VIEW, V19). */
+async function open(l: LevelFile, view: '2d' | '3d' = '2d') {
   const r = route(l);
   await page.goto(`http://localhost:4183/?scene=Puzzle&${r.q}`);
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate((v) => {
+    localStorage.clear();
+    if (v === '3d') (window as any).__echoes.gameState.setSetting('puzzleView', '3d');
+  }, view);
   await page.reload();
   await waitScene('Puzzle');
   await page.waitForFunction(() => (window as any).__puzzle?.level);
@@ -93,31 +98,81 @@ async function open(l: LevelFile) {
 }
 
 try {
-  for (const l of levels) {
-    const r = await open(l);
-    await page.waitForTimeout(300);
-    await shot(`${l.id}-0-teach`);
-    const mechanics = await page.evaluate(() => (window as any).__puzzle.mechanics().length);
-    const taught = await dismissPopups();
-    check(taught === mechanics, `${l.id}: ${taught}/${mechanics} mechanic captions on a fresh save`);
-    await shot(`${l.id}-0-start`);
-    // V10: the board must read without colour; keep a greyscale copy for review.
-    await sharp(`${outDir}/${l.id}-0-start.png`).greyscale().toFile(`${outDir}/${l.id}-0-start-grey.png`);
-    const sol = solve(parseLevel(l))!;
-    // Play all but the last move, screenshot mid-solve, then finish.
-    const moves = sol.moves.join('');
-    await page.evaluate((m) => (window as any).__puzzle.play(m), moves.slice(0, -1));
-    await page.waitForTimeout(400);
-    await shot(`${l.id}-1-before-last`);
-    await page.evaluate((m) => (window as any).__puzzle.play(m), moves.slice(-1));
-    await page.waitForTimeout(500);
-    await shot(`${l.id}-2-solved`);
-    await waitScene(r.back, 15_000).catch(() => {});
-    await until(r.ev ? `gs.hasEvidence('${r.ev}')` : `gs.flag('archiveEscaped')`);
-    const scenes = await activeScene(page);
-    check(scenes.includes(r.back), `${l.id}: solution wins and returns to ${r.back} (active: ${scenes.join(',')})`);
-    if (r.ev) check(await gs<boolean>(`gs.hasEvidence('${r.ev}')`), `${l.id}: ${r.ev} recovered`);
-    else check(await gs<boolean>(`gs.flag('archiveEscaped')`), `${l.id}: archive escaped`);
+  for (const view of ['2d', '3d'] as const) {
+    for (const l of levels) {
+      const r = await open(l, view);
+      const tag = view === '3d' ? `${l.id}-3d` : l.id;
+      const what = view === '3d' ? `${l.id} (3D)` : l.id;
+      const iso = await page.evaluate(() => !!(window as any).__puzzle.iso);
+      check(iso === (view === '3d'), `${what}: board drawn in the ${view.toUpperCase()} view`);
+      await page.waitForTimeout(300);
+      await shot(`${tag}-0-teach`);
+      const mechanics = await page.evaluate(() => (window as any).__puzzle.mechanics().length);
+      const taught = await dismissPopups();
+      check(taught === mechanics, `${what}: ${taught}/${mechanics} mechanic captions on a fresh save`);
+      await shot(`${tag}-0-start`);
+      // V10: the board must read without colour; keep a greyscale copy for review.
+      await sharp(`${outDir}/${tag}-0-start.png`).greyscale().toFile(`${outDir}/${tag}-0-start-grey.png`);
+      const sol = solve(parseLevel(l))!;
+      // Play all but the last move, screenshot mid-solve, then finish.
+      const moves = sol.moves.join('');
+      await page.evaluate((m) => (window as any).__puzzle.play(m), moves.slice(0, -1));
+      await page.waitForTimeout(400);
+      await shot(`${tag}-1-before-last`);
+      await page.evaluate((m) => (window as any).__puzzle.play(m), moves.slice(-1));
+      await page.waitForTimeout(500);
+      await shot(`${tag}-2-solved`);
+      await waitScene(r.back, 15_000).catch(() => {});
+      await until(r.ev ? `gs.hasEvidence('${r.ev}')` : `gs.flag('archiveEscaped')`);
+      const scenes = await activeScene(page);
+      check(scenes.includes(r.back), `${what}: solution wins and returns to ${r.back} (active: ${scenes.join(',')})`);
+      if (r.ev) check(await gs<boolean>(`gs.hasEvidence('${r.ev}')`), `${what}: ${r.ev} recovered`);
+      else check(await gs<boolean>(`gs.flag('archiveEscaped')`), `${what}: archive escaped`);
+    }
+  }
+
+  // 3D input: click-to-move on the projected tiles, the keyboard, and switching the view mid-board.
+  {
+    const l = levels.find((x) => x.id === 'pz_sis_1') ?? levels[0];
+    await open(l, '3d');
+    await dismissPopups();
+    const P = <T>(code: string) => page.evaluate((c) => new Function('p', `return ${c}`)((window as any).__puzzle), code) as Promise<T>;
+    const [m1, m2] = solve(parseLevel(l))!.moves;
+    // Page position of the tile the first move goes to (through the canvas box).
+    const target = await page.evaluate((d) => {
+      const p = (window as any).__puzzle;
+      const step: Record<string, number> = { N: -p.level.w, S: p.level.w, E: 1, W: -1 };
+      const i = p.state.pos + step[d];
+      const r = p.game.canvas.getBoundingClientRect();
+      return { x: r.left + (p.cx(i) * r.width) / 1920, y: r.top + (p.cy(i) * r.height) / 1080 };
+    }, m1);
+    await page.mouse.click(target.x, target.y);
+    await idle();
+    check((await P<number>('p.history.length')) === 1, '3D: clicking the projected neighbour tile moves the wisp');
+    const key: Record<string, string> = { N: 'ArrowUp', S: 'ArrowDown', E: 'ArrowRight', W: 'ArrowLeft' };
+    await page.keyboard.press(key[m2]);
+    await idle();
+    check((await P<number>('p.history.length')) === 2, '3D: arrow keys move along the grid');
+    check(await P<boolean>("p.children.list.some((o) => o.name === 'compass')"), '3D: key compass shown');
+    await shot('3d-input');
+    // Esc → Pause → PUZZLE VIEW → RESUME: the board redraws flat and keeps its moves.
+    await page.keyboard.press('Escape');
+    await waitScene('Pause');
+    const pauseClick = (prefix: string) =>
+      page.evaluate((n) => {
+        const s = (window as any).__echoes.game.scene.getScene('Pause');
+        s.children.list.find((o: any) => typeof o.name === 'string' && o.name.startsWith(n))?.emit('click');
+      }, prefix);
+    await pauseClick('btn:PUZZLE VIEW');
+    await page.waitForTimeout(200);
+    check((await gs<string>('gs.settings.puzzleView')) === '2d', 'PUZZLE VIEW toggles 3D → 2D (saved in settings)');
+    await pauseClick('btn:RESUME');
+    await page
+      .waitForFunction(() => (window as any).__puzzle?.level && !(window as any).__puzzle.iso, undefined, { timeout: 10_000 })
+      .catch(() => {});
+    check(!(await P<boolean>('!!p.iso')), 'resuming redraws the board in 2D');
+    check((await P<number>('p.history.length')) === 2, 'switching the view keeps the moves made');
+    await shot('3d-switched-to-2d');
   }
 
   // Controls: undo, reset → HINT after 3, SKIP after 6, skip awards the evidence.
