@@ -343,7 +343,8 @@ export class Director {
     const dist = Math.abs(x - n.sprite.x);
     const animated = !['figure', 'ivy', 'luke', 'hanna'].includes(n.base);
     if (animated) n.sprite.play(`${n.base}_walk`);
-    n.sprite.setFlipX(x < n.sprite.x);
+    // Face the way they walk (Ivy, Luke and Hanna's art faces left; the village sprites face right).
+    n.sprite.setFlipX(['ivy', 'luke', 'hanna'].includes(n.base) ? x > n.sprite.x : x < n.sprite.x);
     return new Promise((res) =>
       this.world.tweens.add({
         targets: n.sprite, x, duration: (dist / speed) * 1000,

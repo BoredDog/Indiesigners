@@ -282,7 +282,9 @@ export class StoryScene extends Phaser.Scene {
     const named = base === 'ivy' || base === 'luke' || base === 'hanna';
     // Nia is a child: the villager woman sprite at child height.
     const tex = named ? `ghx_${base}` : { woman: 'gv_woman_idle', nia: 'gv_woman_idle', bearded: 'gv_bearded_idle', oldman: 'gv_oldman_idle', figure: 'gv_figure_idle', elias: 'gv_hatman_idle' }[base];
-    const sprite = this.add.sprite(x, y, tex).setOrigin(0.5, 1).setDepth(DEPTH.actors - 1).setFlipX(!!opts.flip);
+    // `flip` means "face left". The village sprites face right, but Ivy, Luke and Hanna's art faces
+    // left, so theirs is the other way round.
+    const sprite = this.add.sprite(x, y, tex).setOrigin(0.5, 1).setDepth(DEPTH.actors - 1).setFlipX(named ? !opts.flip : !!opts.flip);
     if (!named) sprite.play(`${base === 'nia' ? 'woman' : base}_idle`);
     if (base === 'nia') sprite.setScale(0.62);
     if (named) sprite.setScale(52 / sprite.height); // same height as Elias

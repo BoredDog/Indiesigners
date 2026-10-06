@@ -32,7 +32,7 @@ export async function followHanna(d: Director, hanna: Npc, wellX: number, street
     // She walks on while you're close; she waits (and the memory dims) while you're not.
     if (!gone && dist < NEAR && s.x > wellX + 20) {
       s.x = Math.max(wellX + 20, s.x - (SPEED * dt) / 1000);
-      s.setFlipX(true);
+      s.setFlipX(false); // walking left (her art faces left)
     }
     const lag = gone ? 0 : Phaser.Math.Clamp((dist - NEAR) / 160, 0, 1);
     dim.setAlpha(dim.alpha + (lag * 0.65 - dim.alpha) * Math.min(1, dt / 200));
